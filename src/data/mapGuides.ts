@@ -52,6 +52,8 @@ export interface MapGuide {
   eeSteps?: EEStep[];
   strategies?: string[];
   loreNote?: string;
+  /** One or two sentences on how to get/use the wonder weapon — shown in the sidebar card */
+  wwNote?: string;
   /** Extra sections rendered after Strategies — e.g. shield builds, WW upgrades, special mechanics */
   customSections?: GuideSection[];
 }
