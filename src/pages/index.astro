@@ -10,6 +10,7 @@ import '../styles/global.css';
     <!-- OPS PANEL (left)                       -->
     <!-- ══════════════════════════════════════ -->
     <section class="panel ops-panel" id="ops-panel">
+      <a href="/maps" class="panel-link" aria-label="Access Database"></a>
       <div class="ops-grid-bg"></div>
       <div class="ops-scanlines"></div>
 
@@ -49,6 +50,7 @@ import '../styles/global.css';
     <!-- LORE PANEL (right)                     -->
     <!-- ══════════════════════════════════════ -->
     <section class="panel lore-panel" id="lore-panel">
+      <a href="/kronorium" class="panel-link" aria-label="Open the Book"></a>
       <div class="lore-paper-bg"></div>
       <div class="lore-centre-glow"></div>
       <div class="lore-vignette"></div>
@@ -203,6 +205,12 @@ import '../styles/global.css';
     align-items: flex-start;
     cursor: pointer;
     will-change: width;
+  }
+
+  .panel-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
   }
 
   .panel-inner {
