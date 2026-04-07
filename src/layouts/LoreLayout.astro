@@ -1,0 +1,128 @@
+---
+interface Props {
+  title?: string;
+}
+const { title = 'The Kronorium' } = Astro.props;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title} — The Kronorium</title>
+  </head>
+  <body>
+
+    <header class="lore-header">
+      <a href="/" class="back-link">
+        <span class="back-arrow">←</span>
+        <span>FIELD MANUAL</span>
+      </a>
+
+      <div class="header-center">
+        <span class="header-omega">Ω</span>
+        <span class="header-title">THE KRONORIUM</span>
+        <span class="header-omega">Ω</span>
+      </div>
+
+      <div class="header-file">FILE NO. Ω-532-115 · CLASSIFIED</div>
+    </header>
+
+    <div class="lore-body">
+      <slot />
+    </div>
+
+  </body>
+</html>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #0e0b07;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .lore-header {
+    flex-shrink: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: #110e09;
+    border-bottom: 1px solid #2e2416;
+    position: relative;
+    z-index: 10;
+  }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: #5a4a32;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: #c9a24a; }
+  .back-arrow { font-size: 12px; }
+
+  .header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    color: #c9a24a;
+    text-transform: uppercase;
+  }
+
+  .header-omega {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: #5a4a32;
+    letter-spacing: 0;
+  }
+
+  .header-file {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #3a2e1e;
+    text-transform: uppercase;
+  }
+
+  /* ── Body slot ── */
+  .lore-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

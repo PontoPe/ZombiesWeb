@@ -1,0 +1,631 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+---
+
+<Layout title="Element 115 — CoD Zombies">
+  <main id="landing">
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- OPS PANEL (left)                       -->
+    <!-- ══════════════════════════════════════ -->
+    <section class="panel ops-panel" id="ops-panel">
+      <div class="ops-grid-bg"></div>
+      <div class="ops-scanlines"></div>
+
+      <!-- HUD corner brackets -->
+      <i class="hud tl"></i>
+      <i class="hud tr"></i>
+      <i class="hud bl"></i>
+      <i class="hud br"></i>
+
+      <div class="panel-inner ops-inner">
+        <p class="ops-label">[ FIELD MANUAL ]</p>
+        <h2 class="ops-title">OPERATIVE<br>HUB</h2>
+        <div class="ops-bar"></div>
+        <ul class="ops-tags">
+          <li>Buildables</li>
+          <li>Easter Eggs</li>
+          <li>Part Locations</li>
+          <li>Strategies</li>
+          <li>Leaderboards</li>
+        </ul>
+        <a href="/maps" class="ops-btn">ACCESS DATABASE <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- CENTER DIVIDER                         -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="divide" aria-hidden="true">
+      <div class="divide-line"></div>
+      <div class="divide-emblem">
+        <span>115</span>
+      </div>
+      <div class="divide-line"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- LORE PANEL (right)                     -->
+    <!-- ══════════════════════════════════════ -->
+    <section class="panel lore-panel" id="lore-panel">
+      <div class="lore-paper-bg"></div>
+      <div class="lore-centre-glow"></div>
+      <div class="lore-vignette"></div>
+      <div class="lore-glare"></div>
+
+      <!-- Ornate corners -->
+      <i class="arc tl"></i>
+      <i class="arc tr"></i>
+      <i class="arc bl"></i>
+      <i class="arc br"></i>
+
+      <div class="panel-inner lore-inner">
+        <p class="lore-file-no">Ω &nbsp;·&nbsp; FILE NO. 532–115 &nbsp;·&nbsp; Ω</p>
+        <p class="lore-label">classified research</p>
+        <h2 class="lore-title">THE<br>KRONORIUM</h2>
+        <div class="lore-bar"></div>
+        <p class="lore-desc">
+          The timeline. The origins.<br>
+          <em>What they don't want you to know.</em>
+        </p>
+        <a href="/kronorium" class="lore-btn">OPEN THE BOOK</a>
+      </div>
+    </section>
+
+  </main>
+</Layout>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- GSAP hover animation                         -->
+<!-- ════════════════════════════════════════════ -->
+<script>
+  import gsap from 'gsap';
+
+  const ops     = document.getElementById('ops-panel') as HTMLElement;
+  const lore    = document.getElementById('lore-panel') as HTMLElement;
+  const opsGrid = ops.querySelector('.ops-grid-bg') as HTMLElement;
+
+  // ── OPS: mouse-parallax grid ──────────────────────────────────
+  ops.addEventListener('mousemove', (e) => {
+    const rect = ops.getBoundingClientRect();
+    const nx = (e.clientX - rect.left)  / rect.width;
+    const ny = (e.clientY - rect.top)   / rect.height;
+    const dx = (0.5 - nx) * 80;
+    const dy = (0.5 - ny) * 60;
+    gsap.to(opsGrid, { backgroundPosition: `${dx}px ${dy}px`, duration: 0.9, ease: 'power2.out' });
+  });
+
+  ops.addEventListener('mouseleave', () => {
+    gsap.to(opsGrid, { backgroundPosition: '0px 0px', duration: 0.8, ease: 'power2.out' });
+  });
+
+  // ── LORE: floating dust particles on hover ────────────────────
+  const activeParticles: HTMLElement[] = [];
+  let loreInterval: ReturnType<typeof setInterval> | null = null;
+
+  function spawnParticle() {
+    const p = document.createElement('div');
+    const size = Math.random() * 3 + 1;
+    const x    = Math.random() * 100;
+    const dur  = Math.random() * 3 + 2.5;
+    const drift = (Math.random() - 0.5) * 80;
+
+    Object.assign(p.style, {
+      position:     'absolute',
+      left:         `${x}%`,
+      bottom:       '-8px',
+      width:        `${size}px`,
+      height:       `${size}px`,
+      borderRadius: '50%',
+      background:   `rgba(201, 162, 74, ${0.25 + Math.random() * 0.45})`,
+      pointerEvents:'none',
+      zIndex:       '1',
+    });
+
+    lore.appendChild(p);
+    activeParticles.push(p);
+
+    gsap.to(p, {
+      y:        -(Math.random() * 350 + 150),
+      x:        drift,
+      opacity:  0,
+      duration: dur,
+      ease:     'power1.out',
+      onComplete() {
+        p.remove();
+        const i = activeParticles.indexOf(p);
+        if (i > -1) activeParticles.splice(i, 1);
+      },
+    });
+  }
+
+  // ── LORE: mouse-following glare + centre glow ────────────────
+  const loreCentreGlow = lore.querySelector('.lore-centre-glow') as HTMLElement;
+  const loreGlare = lore.querySelector('.lore-glare') as HTMLElement;
+
+  // Set initial state: centered, rotated, invisible, ready to track
+  gsap.set(loreGlare, { xPercent: -50, yPercent: -50, rotation: 28, opacity: 0 });
+
+  lore.addEventListener('mousemove', (e) => {
+    const rect = lore.getBoundingClientRect();
+    const x  = e.clientX - rect.left;
+    const y  = e.clientY - rect.top;
+    const nx = x / rect.width;
+    const ny = y / rect.height;
+
+    // Glare streak follows cursor with smooth lag
+    gsap.to(loreGlare, {
+      x:        x,
+      y:        y,
+      opacity:  1,
+      duration: 0.45,
+      ease:     'power2.out',
+    });
+
+    // Centre glow also follows mouse, but larger and softer
+    gsap.to(loreCentreGlow, {
+      '--gx':   `${nx * 100}%`,
+      '--gy':   `${ny * 100}%`,
+      duration: 0.55,
+      ease:     'power2.out',
+    });
+  });
+
+  lore.addEventListener('mouseenter', () => {
+    loreInterval = setInterval(spawnParticle, 120);
+  });
+
+  lore.addEventListener('mouseleave', () => {
+    if (loreInterval) { clearInterval(loreInterval); loreInterval = null; }
+    activeParticles.forEach(p => gsap.to(p, { opacity: 0, duration: 0.6 }));
+    gsap.to(loreGlare, { opacity: 0, duration: 0.5, ease: 'power2.out' });
+    gsap.to(loreCentreGlow, { '--gx': '150%', '--gy': '46%', duration: 1.2, ease: 'power2.out' });
+  });
+</script>
+
+<style>
+  /* ─── Root container ─── */
+  #landing {
+    display: flex;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ─── Shared panel base ─── */
+  .panel {
+    position: relative;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    will-change: width;
+  }
+
+  .panel-inner {
+    position: relative;
+    z-index: 2;
+    padding: 0 56px;
+    padding-top: 33vh;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* OPS PANEL                               */
+  /* ─────────────────────────────────────── */
+
+  .ops-panel {
+    background-color: #0b0c0f;
+    justify-content: flex-end;
+  }
+
+  .ops-inner {
+    /* push content toward the center divider */
+    margin-right: 48px;
+    /* extra top padding to align .ops-bar with .lore-bar (lore has file-no + label above its title) */
+    padding-top: calc(33vh + 40px);
+    text-align: right;
+  }
+
+  /* Subtle orange grid */
+  .ops-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(224, 123, 42, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224, 123, 42, 0.055) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* Scanlines */
+  .ops-scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.07) 3px,
+      rgba(0, 0, 0, 0.07) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* HUD corner brackets */
+  .hud {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    display: block;
+  }
+  .hud.tl { top: 20px;    left: 20px;  border-top: 2px solid #e07b2a; border-left:  2px solid #e07b2a; }
+  .hud.tr { top: 20px;    right: 20px; border-top: 2px solid #e07b2a; border-right: 2px solid #e07b2a; }
+  .hud.bl { bottom: 20px; left: 20px;  border-bottom: 2px solid #e07b2a; border-left:  2px solid #e07b2a; }
+  .hud.br { bottom: 20px; right: 20px; border-bottom: 2px solid #e07b2a; border-right: 2px solid #e07b2a; }
+
+  /* OPS typography */
+  .ops-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: #e07b2a;
+    opacity: 0.9;
+    margin: 0 0 20px;
+  }
+
+  .ops-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(52px, 5.5vw, 90px);
+    line-height: 0.88;
+    color: #dde1ea;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 0 28px;
+  }
+
+  .ops-bar {
+    width: 56px;
+    height: 2px;
+    background: #e07b2a;
+    margin-bottom: 24px;
+    margin-left: auto;
+  }
+
+  .ops-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+  }
+
+  .ops-tags li {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #6b7280;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .ops-tags li::after {
+    content: '  ·';
+    color: #e07b2a;
+  }
+
+  .ops-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    color: #0b0c0f;
+    background: #e07b2a;
+    padding: 13px 26px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+
+  .ops-btn:hover {
+    background: #f09040;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* LORE PANEL                              */
+  /* ─────────────────────────────────────── */
+
+  .lore-panel {
+    background-color: #1c1308;
+    justify-content: flex-start;
+  }
+
+  .lore-inner {
+    /* push content toward the center divider */
+    margin-left: 48px;
+  }
+
+  /* Paper grain + warm amber wash */
+  .lore-paper-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E"),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 22px,
+        rgba(120, 88, 42, 0.08) 22px,
+        rgba(120, 88, 42, 0.08) 23px
+      ),
+      /* warm amber wash over the whole panel */
+      linear-gradient(160deg, rgba(175, 120, 45, 0.09) 0%, rgba(140, 90, 25, 0.06) 100%);
+  }
+
+  /* Small focused glare — position driven by CSS vars so both axes are visible */
+  .lore-centre-glow {
+    position: absolute;
+    inset: 0;
+    --gx: 150%;
+    --gy: 46%;
+    background: radial-gradient(ellipse 52% 40% at var(--gx) var(--gy), rgba(220, 170, 80, 0.18) 0%, rgba(190, 140, 55, 0.06) 55%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Mouse-following glare streak */
+  .lore-glare {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 160px;
+    height: 340px;
+    background: radial-gradient(
+      ellipse at 50% 50%,
+      rgba(255, 245, 195, 0.28) 0%,
+      rgba(230, 185, 90, 0.14) 35%,
+      rgba(200, 155, 60, 0.05) 60%,
+      transparent 75%
+    );
+    pointer-events: none;
+    z-index: 3;
+    will-change: transform, opacity;
+    mix-blend-mode: screen;
+  }
+
+  /* Age stains, burns, water damage — like the reference documents */
+  .lore-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      /* Heavy burned corners — like edge-aged paper */
+      radial-gradient(ellipse at   0%   0%, rgba(3, 1, 0, 0.92) 0%, transparent 42%),
+      radial-gradient(ellipse at 100%   0%, rgba(3, 1, 0, 0.88) 0%, transparent 38%),
+      radial-gradient(ellipse at   0% 100%, rgba(3, 1, 0, 0.92) 0%, transparent 44%),
+      radial-gradient(ellipse at 100% 100%, rgba(3, 1, 0, 0.90) 0%, transparent 40%),
+      /* Ring water stain — wet glass mark, top-left area */
+      radial-gradient(circle at 22% 28%, rgba(140, 95, 30, 0.30) 0%, rgba(140, 95, 30, 0.24) 7%, transparent 8%, transparent 12%, rgba(110, 72, 18, 0.14) 13%, transparent 18%),
+      /* Smaller ring — mid right */
+      radial-gradient(circle at 78% 58%, rgba(115, 75, 22, 0.22) 0%, rgba(115, 75, 22, 0.18) 4%, transparent 5%, transparent 8%, rgba(90, 58, 14, 0.10) 9%, transparent 13%),
+      /* Blotch stain — bottom right */
+      radial-gradient(ellipse at 88% 82%, rgba(120, 78, 22, 0.32) 0%, transparent 22%),
+      /* Edge bleed — right side */
+      radial-gradient(ellipse at 115% 50%, rgba(95, 48, 12, 0.40) 0%, transparent 34%);
+  }
+
+  /* CLASSIFIED rubber-stamp — box style, like the Thundergun blueprint */
+  .lore-panel::after {
+    content: 'CLASSIFIED';
+    position: absolute;
+    top: 52%;
+    left: 52%;
+    transform: translate(-50%, -50%) rotate(-22deg);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(44px, 5.5vw, 76px);
+    letter-spacing: 0.38em;
+    color: rgba(155, 28, 28, 0.3);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+    /* Box border — the defining look of a rubber stamp */
+    border: 5px solid rgba(155, 28, 28, 0.24);
+    padding: 10px 28px;
+  }
+
+  /* Ornate corner brackets — more visible, slightly offset for hand-made feel */
+  .arc {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    display: block;
+    opacity: 0.75;
+    z-index: 3;
+  }
+  .arc.tl { top: 16px;    left: 16px;  border-top: 1px solid #c9a24a; border-left:  1px solid #c9a24a; }
+  .arc.tr { top: 18px;    right: 14px; border-top: 1px solid #c9a24a; border-right: 1px solid #c9a24a; }
+  .arc.bl { bottom: 14px; left: 18px;  border-bottom: 1px solid #c9a24a; border-left:  1px solid #c9a24a; }
+  .arc.br { bottom: 16px; right: 16px; border-bottom: 1px solid #c9a24a; border-right: 1px solid #c9a24a; }
+
+  /* File number — typewriter stamp, like Brutus card */
+  .lore-file-no {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: rgba(160, 125, 65, 0.45);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+
+  /* LORE typography */
+  .lore-label {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: #8b1a1a;
+    letter-spacing: 0.04em;
+    margin: 0 0 14px;
+    display: inline-block;
+    transform: rotate(-2deg);
+    transform-origin: left center;
+  }
+
+  .lore-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: clamp(48px, 5vw, 84px);
+    line-height: 0.92;
+    color: #ede0c8;
+    letter-spacing: 0.07em;
+    margin: 0 0 28px;
+  }
+
+  .lore-bar {
+    width: 72px;
+    height: 3px;
+    /* tapered brush-stroke feel */
+    background: linear-gradient(to right, #c9a24a 0%, #a07830 55%, transparent 100%);
+    margin-bottom: 36px;
+    clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0 60%);
+  }
+
+  .lore-desc {
+    font-family: 'EB Garamond', serif;
+    font-size: 19px;
+    line-height: 1.7;
+    color: #9e8e72;
+    margin: 0 0 76px;
+  }
+
+  .lore-desc em {
+    color: #c9a24a;
+    font-style: italic;
+  }
+
+  .lore-btn {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: #c9a24a;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(201, 162, 74, 0.5);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .lore-btn:hover {
+    color: #e0b860;
+    border-color: #e0b860;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* CENTER DIVIDER                          */
+  /* ─────────────────────────────────────── */
+
+  .divide {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    height: 100%;
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .divide-line {
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(200, 178, 130, 0.35) 20%,
+      rgba(200, 178, 130, 0.35) 80%,
+      transparent
+    );
+  }
+
+  .divide-emblem {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid rgba(200, 178, 130, 0.45);
+    background: #0e0c09;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .divide-emblem span {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: rgba(200, 178, 130, 0.75);
+    letter-spacing: 2px;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* MOBILE                                  */
+  /* ─────────────────────────────────────── */
+
+  @media (max-width: 768px) {
+    #landing {
+      flex-direction: column;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .panel {
+      width: 100% !important;
+      height: 50vh;
+      min-height: 320px;
+      justify-content: center;
+    }
+
+    .ops-inner,
+    .lore-inner {
+      margin: 0;
+      padding: 40px 28px;
+      padding-top: 40px;
+    }
+
+    .divide {
+      position: relative;
+      left: auto;
+      transform: none;
+      height: 72px;
+      width: 100%;
+      flex-direction: row;
+      justify-content: center;
+    }
+
+    .divide-line {
+      width: 80px;
+      height: 1px;
+      flex: unset;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(200, 178, 130, 0.35),
+        transparent
+      );
+    }
+  }
+</style>

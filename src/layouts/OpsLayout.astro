@@ -1,0 +1,170 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  backHref?: string;
+  backLabel?: string;
+}
+const { title = 'Field Manual', backHref = '/', backLabel = 'HOME' } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title} — Field Manual</title>
+  </head>
+  <body class="ops-body">
+
+    <!-- ── Background textures ── -->
+    <div class="ops-grid-bg" aria-hidden="true"></div>
+    <div class="ops-scanlines" aria-hidden="true"></div>
+
+    <!-- ── Top nav ── -->
+    <nav class="ops-nav">
+      <a href={backHref} class="nav-back">
+        <span class="nav-back-arrow">←</span>
+        <span>{backLabel}</span>
+      </a>
+      <div class="nav-center">
+        <span class="nav-label">[ FIELD MANUAL ]</span>
+        <span class="nav-title">{title}</span>
+      </div>
+      <div class="nav-right">
+        <span class="nav-tag">WaW · BO1 · BO2 · BO3 · BO4</span>
+      </div>
+    </nav>
+
+    <!-- ── Page content ── -->
+    <main class="ops-main">
+      <slot />
+    </main>
+
+  </body>
+</html>
+
+<style>
+  .ops-body {
+    background-color: #0b0c0f;
+    color: #dde1ea;
+    min-height: 100vh;
+    position: relative;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  /* Grid texture */
+  .ops-grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(224, 123, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224, 123, 42, 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanlines */
+  .ops-scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.05) 3px,
+      rgba(0, 0, 0, 0.05) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Nav bar */
+  .ops-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 52px;
+    background: rgba(11, 12, 15, 0.92);
+    border-bottom: 1px solid #252830;
+    backdrop-filter: blur(8px);
+    gap: 16px;
+  }
+
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #6b7280;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .nav-back:hover { color: #e07b2a; }
+  .nav-back-arrow { font-size: 14px; }
+
+  .nav-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .nav-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #e07b2a;
+    opacity: 0.7;
+  }
+
+  .nav-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+
+  .nav-right {
+    flex-shrink: 0;
+  }
+
+  .nav-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: #3a3d48;
+  }
+
+  /* Main content */
+  .ops-main {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  @media (max-width: 768px) {
+    .ops-nav { padding: 0 16px; }
+    .nav-right { display: none; }
+    .ops-main { padding: 24px 16px 60px; }
+  }
+</style>

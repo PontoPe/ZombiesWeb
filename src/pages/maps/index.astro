@@ -1,0 +1,923 @@
+---
+import OpsLayout from '../../layouts/OpsLayout.astro';
+import { MAPS, GAMES, CREW_GROUPS } from '../../data/maps';
+import type { GameId } from '../../data/maps';
+
+const GAME_ORDER: GameId[] = ['waw', 'bo1', 'bo2', 'bo3', 'bo4'];
+
+const groups = GAME_ORDER.map(game => ({
+  game,
+  meta: GAMES[game],
+  maps: MAPS.filter(m => m.game === game)
+    .sort((a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime()),
+}));
+
+function diffPips(value: number, max = 5) {
+  return Array.from({ length: max }, (_, i) => i < value);
+}
+
+function starParts(value: number) {
+  const full  = Math.floor(value);
+  const half  = value % 1 >= 0.5;
+  const empty = 5 - full - (half ? 1 : 0);
+  return { full, half, empty };
+}
+---
+
+<OpsLayout title="Map Database">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PAGE HEADER                                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="header-hud-tl" aria-hidden="true"></div>
+    <p class="header-eyebrow">[ OPERATIVE DATABASE ]</p>
+    <h1 class="header-title">MAP DATABASE</h1>
+    <p class="header-sub">
+      <span class="header-count">{MAPS.length} MAPS</span>
+      &nbsp;·&nbsp; World at War through Black Ops 4
+    </p>
+  </header>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- FILTER BAR                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="filter-bar" id="filter-bar">
+
+    <!-- Game -->
+    <div class="filter-group">
+      <span class="filter-group-label">GAME</span>
+      <div class="filter-game-btns">
+        {GAME_ORDER.map(g => (
+          <button
+            class="game-btn"
+            data-filter-game={g}
+            data-game-color={GAMES[g].color}
+          >{GAMES[g].short}</button>
+        ))}
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Crew -->
+    <div class="filter-group">
+      <span class="filter-group-label">CREW</span>
+      <select class="filter-select" id="crew-select">
+        <option value="">All</option>
+        {Object.entries(CREW_GROUPS).map(([k, v]) => (
+          <option value={k}>{v}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Max Quest Diff -->
+    <div class="filter-group">
+      <span class="filter-group-label">MAX QUEST DIFF</span>
+      <div class="filter-range-btns">
+        {[1,2,3,4,5].map(n => (
+          <button class="range-btn" data-filter-quest-diff={n}>{n}</button>
+        ))}
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Max Setup Diff -->
+    <div class="filter-group">
+      <span class="filter-group-label">MAX SETUP</span>
+      <div class="filter-range-btns">
+        {[1,2,3,4,5].map(n => (
+          <button class="range-btn" data-filter-setup-diff={n}>{n}</button>
+        ))}
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Min Rating -->
+    <div class="filter-group">
+      <span class="filter-group-label">MIN RATING</span>
+      <div class="filter-range-btns">
+        {([0, 3, 3.5, 4, 4.5] as const).map(n => (
+          <button class="range-btn" data-filter-rating={n}>
+            {n === 0 ? 'All' : `${n}★`}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Main Quest Only -->
+    <div class="filter-group">
+      <button class="ee-toggle" id="mq-toggle">MAIN QUEST ONLY</button>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Sort -->
+    <div class="filter-group">
+      <span class="filter-group-label">SORT</span>
+      <div class="filter-range-btns">
+        <button class="range-btn active" data-sort="release">DATE</button>
+        <button class="range-btn" data-sort="alpha">A–Z</button>
+        <button class="range-btn" data-sort="rating">RATING</button>
+        <button class="range-btn" data-sort="setup">SETUP</button>
+        <button class="range-btn" data-sort="quest">QUEST</button>
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <button class="filter-reset" id="filter-reset" hidden>✕ RESET</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- RESULT COUNT                                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <p class="gallery-count">
+    <span class="count-num" id="count-num">{MAPS.length}</span>
+    <span class="count-label" id="count-label"> MAPS FOUND</span>
+    <span class="count-filtered" id="count-filtered" hidden> — FILTERED</span>
+  </p>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- GAME SECTIONS                               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="gallery-root">
+
+    {groups.map(({ game, meta: g, maps }) => (
+      <section class="game-section" data-game-section={game}>
+
+        <button
+          class="section-header"
+          data-collapse-section={game}
+          style={`--game-color: ${g.color}`}
+        >
+          <span class="section-collapse-icon">▼</span>
+          <span class="section-game-short" style={`color: ${g.color}`}>{g.short}</span>
+          <span class="section-game-label">{g.label.toUpperCase()}</span>
+          <span class="section-count" data-section-count={game}>
+            {maps.length} MAP{maps.length !== 1 ? 'S' : ''}
+          </span>
+        </button>
+
+        <div class="map-grid">
+          {maps.map(map => {
+            const gameData = GAMES[map.game];
+            const stars = starParts(map.communityRating);
+            return (
+              <a
+                href={`/maps/${map.id}`}
+                class="map-card"
+                data-game={map.game}
+                data-crew={map.crewGroup}
+                data-setup={map.setupDifficulty}
+                data-ee-diff={map.eeDifficulty ?? 0}
+                data-rating={map.communityRating}
+                data-has-quest={map.hasMainQuest}
+                data-release={map.releaseDate}
+                data-title={map.title}
+              >
+                {/* Image / placeholder */}
+                <div class="card-img">
+                  <span class="card-img-letter">{map.title[0]}</span>
+                  <div class="card-img-overlay"></div>
+                  <div class="card-badges">
+                    <span class="badge-game" style={`background: ${gameData.color}`}>
+                      {gameData.short}
+                    </span>
+                    {map.hasMainQuest && <span class="badge-ee">MQ</span>}
+                    {map.hasWonderWeapon && <span class="badge-ww">WW</span>}
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div class="card-body">
+                  <h3 class="card-title">{map.title}</h3>
+                  <p class="card-setting">
+                    {map.setting}
+                    <span class="card-date"> · {map.inUniverseDate}</span>
+                  </p>
+                  <p class="card-desc">{map.description}</p>
+                  <div class="card-rule"></div>
+
+                  {/* Stats */}
+                  <div class="card-stats">
+                    <div class="stat-row">
+                      <span class="stat-label">QUEST</span>
+                      {map.eeDifficulty ? (
+                        <div class="diff-bar-track">
+                          {diffPips(map.eeDifficulty).map(on => (
+                            <div class={`diff-bar-pip ${on ? 'filled' : ''}`}></div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span class="stat-na">N / A</span>
+                      )}
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">SETUP</span>
+                      <div class="diff-bar-track">
+                        {diffPips(map.setupDifficulty).map(on => (
+                          <div class={`diff-bar-pip ${on ? 'filled' : ''}`}></div>
+                        ))}
+                      </div>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">RATING</span>
+                      <span class="star-row">
+                        {'★'.repeat(stars.full)}
+                        {stars.half ? '½' : ''}
+                        <span class="star-empty">{'★'.repeat(stars.empty)}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="card-cta">
+                    <span>ENTER MAP</span>
+                    <span class="cta-arrow">→</span>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    ))}
+
+    <!-- No results -->
+    <div class="no-results" id="no-results" hidden>
+      <p>No maps match your filters.</p>
+      <button id="no-results-reset">Clear filters</button>
+    </div>
+
+  </div><!-- #gallery-root -->
+
+</OpsLayout>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- INTERACTIVITY (vanilla JS, no hydration)        -->
+<!-- ═══════════════════════════════════════════════ -->
+<script>
+  // ── State ──────────────────────────────────────
+  const state = {
+    games:         new Set<string>(),
+    crew:          '',
+    maxQuestDiff:  5,
+    maxSetupDiff:  5,
+    minRating:     0,
+    mainQuestOnly: false,
+    sortBy:        'release' as string,
+  };
+
+  // ── DOM refs ───────────────────────────────────
+  const countNum      = document.getElementById('count-num')!;
+  const countFiltered = document.getElementById('count-filtered')!;
+  const resetBtn      = document.getElementById('filter-reset') as HTMLButtonElement;
+  const noResults     = document.getElementById('no-results')!;
+  const sections      = Array.from(document.querySelectorAll<HTMLElement>('[data-game-section]'));
+
+  // ── Filter logic ───────────────────────────────
+  function matches(card: HTMLElement): boolean {
+    const { game, crew, setup, eeDiff, rating, hasQuest } = card.dataset;
+    if (state.games.size && !state.games.has(game!))      return false;
+    if (state.crew && crew !== state.crew)                 return false;
+    if (state.mainQuestOnly && hasQuest !== 'true')        return false;
+    const diff = parseInt(eeDiff!);
+    if (diff > 0 && diff > state.maxQuestDiff)             return false;
+    if (parseInt(setup!) > state.maxSetupDiff)             return false;
+    if (parseFloat(rating!) < state.minRating)             return false;
+    return true;
+  }
+
+  // ── Sort key ───────────────────────────────────
+  function sortKey(card: HTMLElement): string | number {
+    switch (state.sortBy) {
+      case 'release': return card.dataset.release!;
+      case 'alpha':   return card.dataset.title!.toLowerCase();
+      case 'rating':  return -parseFloat(card.dataset.rating!);
+      case 'setup':   return parseInt(card.dataset.setup!);
+      case 'quest':   return parseInt(card.dataset.eeDiff || '0');
+      default:        return card.dataset.release!;
+    }
+  }
+
+  function compare(a: HTMLElement, b: HTMLElement): number {
+    const ak = sortKey(a), bk = sortKey(b);
+    if (typeof ak === 'number' && typeof bk === 'number') return ak - bk;
+    return String(ak).localeCompare(String(bk));
+  }
+
+  // ── Apply filters + sort ───────────────────────
+  function apply() {
+    let total = 0;
+
+    sections.forEach(section => {
+      const grid   = section.querySelector<HTMLElement>('.map-grid')!;
+      const cards  = Array.from(grid.querySelectorAll<HTMLElement>('.map-card'));
+
+      // Determine visibility
+      cards.forEach(c => { c.hidden = !matches(c); });
+
+      const visible = cards.filter(c => !c.hidden);
+      const hidden  = cards.filter(c =>  c.hidden);
+
+      // Sort visible cards, re-append
+      visible.sort(compare);
+      [...visible, ...hidden].forEach(c => grid.appendChild(c));
+
+      // Section visibility
+      const count = visible.length;
+      total += count;
+      section.hidden = count === 0;
+
+      // Update section count label
+      const countEl = section.querySelector<HTMLElement>('[data-section-count]');
+      if (countEl) countEl.textContent = `${count} MAP${count !== 1 ? 'S' : ''}`;
+    });
+
+    // Update global count
+    countNum.textContent = String(total);
+
+    const filtered = isFiltered();
+    (countFiltered as HTMLElement).hidden = !filtered;
+    resetBtn.hidden = !filtered;
+    noResults.hidden = total > 0;
+
+    updateActiveStates();
+  }
+
+  function isFiltered(): boolean {
+    return (
+      state.games.size > 0 ||
+      state.crew !== '' ||
+      state.maxQuestDiff !== 5 ||
+      state.maxSetupDiff !== 5 ||
+      state.minRating !== 0 ||
+      state.mainQuestOnly
+    );
+  }
+
+  // ── Update button active states ─────────────────
+  function updateActiveStates() {
+    document.querySelectorAll<HTMLButtonElement>('[data-filter-game]').forEach(btn => {
+      const g = btn.dataset.filterGame!;
+      const on = state.games.has(g);
+      btn.classList.toggle('active', on);
+      btn.style.background  = on ? btn.dataset.gameColor! : '';
+      btn.style.borderColor = on ? btn.dataset.gameColor! : '';
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter-quest-diff]').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.filterQuestDiff!) === state.maxQuestDiff);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter-setup-diff]').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.filterSetupDiff!) === state.maxSetupDiff);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter-rating]').forEach(btn => {
+      btn.classList.toggle('active', parseFloat(btn.dataset.filterRating!) === state.minRating);
+    });
+
+    document.getElementById('mq-toggle')?.classList.toggle('active', state.mainQuestOnly);
+
+    document.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === state.sortBy);
+    });
+  }
+
+  // ── Wire events ────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('[data-filter-game]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.filterGame!;
+      state.games.has(g) ? state.games.delete(g) : state.games.add(g);
+      apply();
+    });
+  });
+
+  document.getElementById('crew-select')?.addEventListener('change', e => {
+    state.crew = (e.target as HTMLSelectElement).value;
+    apply();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-filter-quest-diff]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.maxQuestDiff = parseInt(btn.dataset.filterQuestDiff!);
+      apply();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-filter-setup-diff]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.maxSetupDiff = parseInt(btn.dataset.filterSetupDiff!);
+      apply();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-filter-rating]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.minRating = parseFloat(btn.dataset.filterRating!);
+      apply();
+    });
+  });
+
+  document.getElementById('mq-toggle')?.addEventListener('click', () => {
+    state.mainQuestOnly = !state.mainQuestOnly;
+    apply();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.sortBy = btn.dataset.sort!;
+      apply();
+    });
+  });
+
+  function resetFilters() {
+    state.games.clear();
+    state.crew          = '';
+    state.maxQuestDiff  = 5;
+    state.maxSetupDiff  = 5;
+    state.minRating     = 0;
+    state.mainQuestOnly = false;
+    (document.getElementById('crew-select') as HTMLSelectElement).value = '';
+    apply();
+  }
+
+  resetBtn?.addEventListener('click', resetFilters);
+  document.getElementById('no-results-reset')?.addEventListener('click', resetFilters);
+
+  // ── Section collapse ───────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('[data-collapse-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.closest<HTMLElement>('.game-section')!;
+      const isNowCollapsed = section.classList.toggle('is-collapsed');
+      const icon = btn.querySelector('.section-collapse-icon')!;
+      icon.textContent = isNowCollapsed ? '▶' : '▼';
+    });
+  });
+</script>
+
+<style is:global>
+  /* ════════════════════════════════════════════════ */
+  /* Page header                                      */
+  /* ════════════════════════════════════════════════ */
+  .page-header {
+    position: relative;
+    margin-bottom: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #1e2028;
+  }
+
+  .header-hud-tl {
+    position: absolute;
+    top: 0; left: 0;
+    width: 24px; height: 24px;
+    border-top: 2px solid #e07b2a;
+    border-left: 2px solid #e07b2a;
+    opacity: 0.6;
+  }
+
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: #e07b2a;
+    opacity: 0.8;
+    margin: 0 0 10px 0;
+    padding-left: 4px;
+  }
+
+  .header-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1;
+    color: #dde1ea;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
+  }
+
+  .header-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #4a4e5a;
+    letter-spacing: 0.1em;
+    margin: 0;
+  }
+
+  .header-count { color: #e07b2a; }
+
+  /* ════════════════════════════════════════════════ */
+  /* Filter bar                                       */
+  /* ════════════════════════════════════════════════ */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 0;
+    padding: 12px 20px;
+    background: #0f1114;
+    border: 1px solid #1e2028;
+    margin-bottom: 32px;
+    position: sticky;
+    top: 52px;
+    z-index: 50;
+  }
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+  }
+
+  .filter-group-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #4a4e5a;
+    white-space: nowrap;
+  }
+
+  .filter-divider {
+    width: 1px;
+    height: 28px;
+    background: #1e2028;
+    flex-shrink: 0;
+  }
+
+  .filter-game-btns { display: flex; gap: 4px; }
+
+  .game-btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid #252830;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .game-btn:hover { border-color: #e07b2a; color: #dde1ea; }
+  .game-btn.active { color: #fff; }
+
+  .filter-range-btns { display: flex; gap: 3px; }
+
+  .range-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid #252830;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .range-btn:hover { border-color: #e07b2a; color: #dde1ea; }
+  .range-btn.active { background: #e07b2a; border-color: #e07b2a; color: #0b0c0f; }
+
+  .filter-select {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    background: #0b0c0f;
+    border: 1px solid #252830;
+    color: #dde1ea;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+  }
+  .filter-select:focus { border-color: #e07b2a; }
+
+  .ee-toggle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid #252830;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ee-toggle:hover { border-color: #e07b2a; color: #dde1ea; }
+  .ee-toggle.active { background: #1a0f05; border-color: #e07b2a; color: #e07b2a; }
+
+  .filter-reset {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid #3a1a1a;
+    color: #8b2020;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: all 0.15s;
+  }
+  .filter-reset:hover { background: #3a1a1a; color: #e04040; }
+
+  /* ════════════════════════════════════════════════ */
+  /* Result count                                     */
+  /* ════════════════════════════════════════════════ */
+  .gallery-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    margin: 0 0 24px;
+    padding-left: 4px;
+  }
+  .count-num      { color: #e07b2a; font-size: 13px; }
+  .count-label    { color: #4a4e5a; }
+  .count-filtered { color: #3a3d48; }
+
+  /* ════════════════════════════════════════════════ */
+  /* Game sections                                    */
+  /* ════════════════════════════════════════════════ */
+  .game-section { margin-bottom: 48px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #0f1114;
+    border: 1px solid #1e2028;
+    border-left: 3px solid var(--game-color, #e07b2a);
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 20px;
+    transition: background 0.15s;
+  }
+  .section-header:hover { background: #13151c; }
+
+  .game-section.is-collapsed .map-grid { display: none; }
+
+  .section-collapse-icon {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #4a4e5a;
+    flex-shrink: 0;
+  }
+
+  .section-game-short {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+  }
+
+  .section-game-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: #dde1ea;
+    flex: 1;
+  }
+
+  .section-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #4a4e5a;
+    flex-shrink: 0;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Map grid                                         */
+  /* ════════════════════════════════════════════════ */
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Map card                                         */
+  /* ════════════════════════════════════════════════ */
+  .map-card {
+    display: flex;
+    flex-direction: column;
+    background: #0f1114;
+    border: 1px solid #1e2028;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-card:hover { border-color: #e07b2a; transform: translateY(-2px); }
+  .map-card:hover .card-cta { color: #e07b2a; }
+
+  .card-img {
+    position: relative;
+    height: 120px;
+    background: linear-gradient(135deg, #13151c 0%, #0b0c0f 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .card-img-letter {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 64px;
+    color: rgba(224, 123, 42, 0.08);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .card-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, #0f1114 100%);
+  }
+
+  .card-badges {
+    position: absolute;
+    top: 8px; left: 8px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .badge-game {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    color: #fff;
+  }
+
+  .badge-ee, .badge-ww {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border: 1px solid;
+  }
+
+  .badge-ee {
+    color: #c9a24a;
+    border-color: rgba(201, 162, 74, 0.4);
+    background: rgba(201, 162, 74, 0.08);
+  }
+
+  .badge-ww {
+    color: #3ddc84;
+    border-color: rgba(61, 220, 132, 0.3);
+    background: rgba(61, 220, 132, 0.06);
+  }
+
+  .card-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    color: #dde1ea;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .card-setting {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #4a4e5a;
+    letter-spacing: 0.08em;
+    margin: 0 0 10px;
+  }
+
+  .card-date { color: #3a3d48; }
+
+  .card-desc {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #6b7280;
+    margin: 0 0 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .card-rule {
+    height: 1px;
+    background: #1e2028;
+    margin-bottom: 12px;
+  }
+
+  .card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: #3a3d48;
+    width: 54px;
+    flex-shrink: 0;
+  }
+
+  .stat-na {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #2a2d35;
+    letter-spacing: 0.1em;
+  }
+
+  .diff-bar-track { display: flex; gap: 3px; }
+
+  .diff-bar-pip {
+    width: 16px;
+    height: 4px;
+    background: #1e2028;
+  }
+  .diff-bar-pip.filled { background: #e07b2a; }
+
+  .star-row { font-size: 12px; color: #c9a24a; letter-spacing: 1px; }
+  .star-empty { color: #252830; }
+
+  .card-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: #4a4e5a;
+    transition: color 0.15s;
+  }
+
+  .cta-arrow { font-size: 14px; transition: transform 0.15s; }
+  .map-card:hover .cta-arrow { transform: translateX(4px); }
+
+  /* ════════════════════════════════════════════════ */
+  /* No results                                       */
+  /* ════════════════════════════════════════════════ */
+  .no-results {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #4a4e5a;
+    font-size: 13px;
+  }
+  .no-results button {
+    margin-top: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid #252830;
+    color: #e07b2a;
+    cursor: pointer;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Responsive                                       */
+  /* ════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .filter-bar   { top: 52px; padding: 10px; gap: 6px; }
+    .filter-group { padding: 0 8px; }
+    .filter-divider { display: none; }
+    .map-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  }
+
+  @media (max-width: 480px) {
+    .map-grid { grid-template-columns: 1fr; }
+  }
+</style>

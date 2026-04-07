@@ -1,0 +1,32 @@
+---
+import LoreLayout from '../../layouts/LoreLayout.astro';
+import KronoriumTimeline from '../../components/kronorium/KronoriumTimeline.tsx';
+---
+
+<LoreLayout title="The Kronorium">
+  <KronoriumTimeline client:only="react" />
+</LoreLayout>
+
+<style is:global>
+  /* ── Override React Flow chrome to match lore theme ── */
+  .react-flow__controls-button {
+    background: #17130d !important;
+    border-color: #2e2416 !important;
+    color: #7a6a50 !important;
+    fill: #7a6a50 !important;
+  }
+  .react-flow__controls-button:hover {
+    background: #1e1810 !important;
+    color: #c9a24a !important;
+    fill: #c9a24a !important;
+  }
+  .react-flow__controls-button svg {
+    fill: inherit !important;
+  }
+  .react-flow__minimap {
+    border-radius: 2px !important;
+  }
+  .react-flow__edge-path {
+    stroke-dasharray: none;
+  }
+</style>

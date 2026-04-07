@@ -1,0 +1,1198 @@
+---
+import OpsLayout from '../../layouts/OpsLayout.astro';
+import { MAPS, GAMES, CREW_GROUPS } from '../../data/maps.ts';
+import { MAP_GUIDES } from '../../data/mapGuides.ts';
+
+export function getStaticPaths() {
+  return MAPS.map(map => ({ params: { slug: map.id } }));
+}
+
+const { slug } = Astro.params;
+const map = MAPS.find(m => m.id === slug)!;
+const guide = MAP_GUIDES[slug];
+const game = GAMES[map.game];
+
+const relatedMaps = MAPS
+  .filter(m => m.game === map.game && m.id !== map.id)
+  .slice(0, 5);
+
+// Build ToC from what's present
+const tocItems: Array<{ id: string; label: string }> = [
+  { id: 'intel-brief',      label: 'Intel Brief' },
+  { id: 'setup-guide',      label: 'Setup Guide' },
+  ...(guide?.buildables?.map((b, i) => ({ id: `buildable-${i}`, label: b.name })) ?? []),
+  ...(map.hasMainQuest       ? [{ id: 'main-quest', label: map.eeTitle ?? 'Main Quest' }] : []),
+  { id: 'field-strategies', label: 'Field Strategies' },
+  ...(guide?.customSections?.map(s => ({ id: s.id, label: s.title })) ?? []),
+];
+
+const releaseDate = new Date(map.releaseDate).toLocaleDateString('en-US', {
+  year: 'numeric', month: 'long', day: 'numeric',
+});
+
+function pips(value: number, max = 5): boolean[] {
+  return Array.from({ length: max }, (_, i) => i < value);
+}
+
+function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
+  return Array.from({ length: 5 }, (_, i) => {
+    if (rating >= i + 1)   return 'full';
+    if (rating >= i + 0.5) return 'half';
+    return 'empty';
+  });
+}
+---
+
+<OpsLayout
+  title={map.title}
+  backHref="/maps"
+  backLabel="ALL MAPS"
+>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HERO                                        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="hero" style={`--game-color: ${game.color};`}>
+    <div class="hero-top">
+      <span class="hero-id">{ slug }</span>
+      <span class="hero-game-badge" style={`background: ${game.color};`}>{ game.short }</span>
+    </div>
+
+    <h1 class="hero-title">{ map.title }</h1>
+
+    <p class="hero-meta">
+      { map.setting }
+      <span class="meta-dot">·</span>
+      { map.inUniverseDate }
+      <span class="meta-dot">·</span>
+      { CREW_GROUPS[map.crewGroup] }
+    </p>
+
+    <div class="hero-divider"></div>
+
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <span class="pill-label">Setup Difficulty</span>
+        <div class="pips">
+          { pips(map.setupDifficulty).map(on => (
+            <span class={`pip ${on ? 'pip-on' : 'pip-off'}`}></span>
+          ))}
+        </div>
+      </div>
+
+      { map.eeDifficulty && (
+        <div class="stat-pill">
+          <span class="pill-label">Quest Difficulty</span>
+          <div class="pips">
+            { pips(map.eeDifficulty).map(on => (
+              <span class={`pip ${on ? 'pip-on pip-ee' : 'pip-off'}`}></span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div class="stat-pill">
+        <span class="pill-label">Community Rating</span>
+        <div class="stars">
+          { starTypes(map.communityRating).map(type => (
+            <span class={`star star-${type}`}>★</span>
+          ))}
+          <span class="rating-num">{ map.communityRating.toFixed(1) }</span>
+        </div>
+      </div>
+
+      { map.hasWonderWeapon && map.wonderWeapon && (
+        <div class="stat-pill pill-ww">
+          <span class="pill-label">Wonder Weapon</span>
+          <span class="ww-name">{ map.wonderWeapon }</span>
+        </div>
+      )}
+
+      { map.hasMainQuest && map.eeTitle && (
+        <div class="stat-pill pill-ee">
+          <span class="pill-label">Main Quest</span>
+          <span class="ee-title-text">{ map.eeTitle }</span>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CONTENT GRID                                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="content-grid">
+
+    <!-- ── LEFT: Main guide ── -->
+    <div class="guide-main">
+
+      <!-- INTEL BRIEF -->
+      <section class="guide-section" id="intel-brief">
+        <div class="section-head">
+          <span class="section-label">Field Manual — Overview</span>
+          <h2 class="section-title">Intel Brief</h2>
+        </div>
+        <p class="section-desc">{ map.description }</p>
+        { guide?.loreNote && (
+          <div class="lore-note">
+            <span class="lore-note-label">CLASSIFIED ADDENDUM</span>
+            <p>{ guide.loreNote }</p>
+          </div>
+        )}
+      </section>
+
+      <!-- SETUP GUIDE -->
+      <section class="guide-section" id="setup-guide">
+        <div class="section-head">
+          <span class="section-label">Field Manual — Priority</span>
+          <h2 class="section-title">Setup Guide</h2>
+        </div>
+
+        { guide?.powerSteps ? (
+          <div class="setup-block">
+            <h3 class="setup-sub">Power</h3>
+            <ol class="step-list">
+              { guide.powerSteps.map(step => (
+                <li>{ step }</li>
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <div class="placeholder">
+            <span class="ph-label">// POWER ROUTE</span>
+            <p class="ph-text">Guide data not yet filed. Check back soon.</p>
+          </div>
+        )}
+
+        { guide?.papLocation && (
+          <div class="setup-block">
+            <h3 class="setup-sub">Pack-a-Punch Location</h3>
+            <p class="setup-location">{ guide.papLocation }</p>
+          </div>
+        )}
+
+        { guide?.papSteps && (
+          <div class="setup-block">
+            <h3 class="setup-sub">Accessing Pack-a-Punch</h3>
+            <ol class="step-list">
+              { guide.papSteps.map(step => (
+                <li>{ step }</li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </section>
+
+      <!-- BUILDABLES — one section per item -->
+      { guide?.buildables?.map((b, i) => (
+        <section class="guide-section" id={`buildable-${i}`}>
+          <div class="section-head">
+            <span class="section-label">Field Manual — Equipment</span>
+            <h2 class="section-title">{ b.name }</h2>
+          </div>
+          <p class="buildable-desc">{ b.description }</p>
+          <div class="parts-list">
+            { b.parts.map(part => (
+              <div class="part-entry">
+                <span class="part-entry-name">{ part.name }</span>
+                <div class="locations-grid">
+                  { part.locations.map(loc => (
+                    <div class={`location-card ${loc.image ? '' : 'location-card-text-only'}`}>
+                      { loc.image ? (
+                        <a
+                          href={loc.image}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="loc-img-link"
+                          aria-label={`Open reference image for ${loc.name}`}
+                        >
+                          <img src={loc.image} alt={loc.name} class="loc-img" loading="lazy" />
+                        </a>
+                      ) : null}
+                      <span class="loc-name">{ loc.name }</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <!-- MAIN QUEST -->
+      { map.hasMainQuest && (
+        <section class="guide-section" id="main-quest">
+          <div class="section-head">
+            <span class="section-label">Field Manual — Main Quest</span>
+            <h2 class="section-title">{ map.eeTitle ?? 'Main Quest' }</h2>
+          </div>
+
+          { guide?.eeOverview && (
+            <p class="ee-overview">{ guide.eeOverview }</p>
+          )}
+
+          { guide?.eeSteps && guide.eeSteps.length > 0 ? (
+            <div class="ee-steps">
+              { guide.eeSteps.map(step => (
+                <div class="ee-step">
+                  <span class="step-num">{ String(step.num).padStart(2, '0') }</span>
+                  <div class="step-body">
+                    <span class="step-title">{ step.title }</span>
+                    <p class="step-desc">{ step.desc }</p>
+                    { step.image && (
+                      <img src={step.image} alt={step.title} class="step-img" loading="lazy" />
+                    )}
+                    { step.tip && (
+                      <p class="step-tip"><span class="tip-label">TIP</span> { step.tip }</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="placeholder">
+              <span class="ph-label">// DETAILED WALKTHROUGH</span>
+              <p class="ph-text">Step-by-step guide is being compiled. Overview above is a summary.</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      <!-- FIELD STRATEGIES -->
+      <section class="guide-section" id="field-strategies">
+        <div class="section-head">
+          <span class="section-label">Field Manual — Tactics</span>
+          <h2 class="section-title">Field Strategies</h2>
+        </div>
+
+        { guide?.strategies ? (
+          <ul class="strategy-list">
+            { guide.strategies.map(s => (
+              <li>{ s }</li>
+            ))}
+          </ul>
+        ) : (
+          <div class="placeholder">
+            <span class="ph-label">// TACTICS REPORT</span>
+            <p class="ph-text">Strategy data not yet filed. Check back soon.</p>
+          </div>
+        )}
+      </section>
+
+      <!-- CUSTOM SECTIONS -->
+      { guide?.customSections?.map(sec => (
+        <section class="guide-section" id={sec.id}>
+          <div class="section-head">
+            <span class="section-label">{ sec.label ?? 'Field Manual' }</span>
+            <h2 class="section-title">{ sec.title }</h2>
+          </div>
+          <div class="custom-items">
+            { sec.items.map((item, i) => (
+              <div class="custom-item">
+                { item.title && (
+                  <div class="custom-item-head">
+                    <span class="custom-item-num">{ String(i + 1).padStart(2, '0') }</span>
+                    <span class="custom-item-title">{ item.title }</span>
+                  </div>
+                )}
+                <p class="custom-item-desc">{ item.desc }</p>
+                { item.tip && (
+                  <p class="step-tip"><span class="tip-label">TIP</span> { item.tip }</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+    </div><!-- end .guide-main -->
+
+    <!-- ── RIGHT: Sidebar ── -->
+    <aside class="guide-sidebar">
+
+      <!-- TABLE OF CONTENTS -->
+      <div class="sidebar-card">
+        <span class="card-label">Page Contents</span>
+        <nav class="toc-nav">
+          { tocItems.map(item => (
+            <a href={`#${item.id}`} class="toc-link">
+              <span class="toc-arrow">→</span>
+              <span>{ item.label }</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="sidebar-card">
+        <span class="card-label">Quick Stats</span>
+
+        <div class="stat-row">
+          <span class="stat-name">Setup</span>
+          <div class="pips">
+            { pips(map.setupDifficulty).map(on => (
+              <span class={`pip pip-sm ${on ? 'pip-on' : 'pip-off'}`}></span>
+            ))}
+          </div>
+        </div>
+
+        { map.eeDifficulty && (
+          <div class="stat-row">
+            <span class="stat-name">Quest Diff</span>
+            <div class="pips">
+              { pips(map.eeDifficulty).map(on => (
+                <span class={`pip pip-sm ${on ? 'pip-on pip-ee' : 'pip-off'}`}></span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class="stat-row">
+          <span class="stat-name">Rating</span>
+          <div class="stars">
+            { starTypes(map.communityRating).map(type => (
+              <span class={`star star-sm star-${type}`}>★</span>
+            ))}
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-name">Released</span>
+          <span class="stat-val">{ releaseDate }</span>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-name">Setting</span>
+          <span class="stat-val">{ map.setting }</span>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-name">Timeline</span>
+          <span class="stat-val">{ map.inUniverseDate }</span>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-name">Main Quest</span>
+          <span class={`badge ${map.hasMainQuest ? 'badge-yes' : 'badge-no'}`}>
+            { map.hasMainQuest ? 'YES' : 'NO' }
+          </span>
+        </div>
+      </div>
+
+      <!-- CREW ROSTER -->
+      <div class="sidebar-card">
+        <span class="card-label">Crew Roster</span>
+        <p class="crew-group">{ CREW_GROUPS[map.crewGroup] }</p>
+        <ul class="crew-list">
+          { map.crew.map(member => (
+            <li>{ member }</li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- WONDER WEAPON -->
+      { map.hasWonderWeapon && map.wonderWeapon && (
+        <div class="sidebar-card card-ww">
+          <span class="card-label">Wonder Weapon</span>
+          <p class="ww-card-name">{ map.wonderWeapon }</p>
+        </div>
+      )}
+
+      <!-- RELATED MAPS (same game) -->
+      { relatedMaps.length > 0 && (
+        <div class="sidebar-card">
+          <span class="card-label">{ game.short } — More Maps</span>
+          <ul class="related-list">
+            { relatedMaps.map(r => (
+              <li>
+                <a href={`/maps/${r.id}`} class="related-link">
+                  <span class="related-title">{ r.title }</span>
+                  <span class="related-arrow">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+    </aside><!-- end .guide-sidebar -->
+
+  </div><!-- end .content-grid -->
+
+</OpsLayout>
+
+<style>
+  /* ─────────────────────────────────────── */
+  /* HERO                                    */
+  /* ─────────────────────────────────────── */
+
+  .hero {
+    border: 1px solid #252830;
+    border-top: 3px solid var(--game-color, #e07b2a);
+    background: #13151c;
+    padding: 32px 40px 28px;
+    margin-bottom: 40px;
+  }
+
+  .hero-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .hero-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #3a3d48;
+    text-transform: uppercase;
+  }
+
+  .hero-game-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: #fff;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .hero-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(36px, 4.5vw, 64px);
+    line-height: 0.9;
+    color: #dde1ea;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+
+  .hero-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .meta-dot {
+    margin: 0 10px;
+    color: #3a3d48;
+  }
+
+  .hero-divider {
+    height: 1px;
+    background: linear-gradient(to right, #e07b2a 0%, #252830 60%, transparent 100%);
+    margin: 20px 0;
+    opacity: 0.5;
+  }
+
+  .hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .pill-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+
+  /* Difficulty pips */
+  .pips {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .pip {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid;
+  }
+
+  .pip-on  { background: #e07b2a; border-color: #e07b2a; }
+  .pip-ee.pip-on { background: #3ddc84; border-color: #3ddc84; }
+  .pip-off { background: transparent; border-color: #3a3d48; }
+
+  .pip-sm { width: 8px; height: 8px; }
+
+  /* Stars */
+  .stars {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .star { font-size: 14px; line-height: 1; }
+  .star-sm { font-size: 12px; }
+  .star-full  { color: #e07b2a; }
+  .star-half  { color: #e07b2a; opacity: 0.45; }
+  .star-empty { color: #3a3d48; }
+
+  .rating-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #6b7280;
+    margin-left: 4px;
+  }
+
+  .ww-name, .ee-title-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* CONTENT GRID                            */
+  /* ─────────────────────────────────────── */
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* SECTIONS (left column)                  */
+  /* ─────────────────────────────────────── */
+
+  .guide-section {
+    margin-bottom: 40px;
+  }
+
+  .section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 14px;
+    border-left: 2px solid #e07b2a;
+    margin-bottom: 20px;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 0.08em;
+    color: #dde1ea;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .section-desc {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  /* Lore note */
+  .lore-note {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border: 1px solid #252830;
+    border-left: 2px solid #3ddc84;
+    background: rgba(61, 220, 132, 0.03);
+  }
+
+  .lore-note-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #3ddc84;
+    opacity: 0.7;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .lore-note p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #6b7280;
+    margin: 0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* Setup blocks */
+  .setup-block {
+    margin-bottom: 24px;
+  }
+
+  .setup-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+
+  .setup-location {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #dde1ea;
+    margin: 0;
+    letter-spacing: 0.04em;
+  }
+
+  .step-list {
+    padding-left: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    counter-reset: step-counter;
+  }
+
+  .step-list li {
+    counter-increment: step-counter;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    font-size: 18px;
+    line-height: 1.75;
+    color: #9ca3af;
+  }
+
+  .step-list li::before {
+    content: counter(step-counter, decimal-leading-zero);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #e07b2a;
+    padding-top: 3px;
+    opacity: 0.7;
+  }
+
+  /* Placeholder */
+  .placeholder {
+    padding: 20px 24px;
+    border: 1px dashed #252830;
+    background: rgba(255,255,255,0.01);
+  }
+
+  .ph-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #3a3d48;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .ph-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #3a3d48;
+    margin: 0;
+  }
+
+  /* Buildables */
+  .buildable-card {
+    border: 1px solid #252830;
+    background: #13151c;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .buildable-header {
+    margin-bottom: 8px;
+  }
+
+  .buildable-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    color: #e07b2a;
+    text-transform: uppercase;
+  }
+
+  .buildable-desc {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #6b7280;
+    margin: 0 0 16px;
+  }
+
+  /* Smooth scroll + offset for sticky nav */
+  html { scroll-behavior: smooth; }
+  .guide-section[id] { scroll-margin-top: 80px; }
+
+  /* Parts list */
+  .parts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .part-entry {
+    border-top: 1px solid #1a1d24;
+    padding-top: 16px;
+  }
+
+  .part-entry-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  /* Grid of location cards — one card per spawn */
+  .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .location-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #252830;
+    background: #0b0c0f;
+    overflow: hidden;
+  }
+
+  .loc-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .loc-img-link {
+    display: block;
+  }
+
+  .loc-img-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #13151c;
+    border-bottom: 1px dashed #252830;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #252830;
+    letter-spacing: 0.1em;
+  }
+
+  .loc-name {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #6b7280;
+    padding: 10px 12px;
+    display: block;
+  }
+
+  .location-card-text-only .loc-name {
+    color: #9ca3af;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Step image */
+  .step-img {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #252830;
+    display: block;
+    margin-top: 10px;
+  }
+
+  /* Custom sections */
+  .custom-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .custom-item {
+    padding: 16px 0;
+    border-bottom: 1px solid #1a1d24;
+  }
+
+  .custom-item:last-child { border-bottom: none; }
+
+  .custom-item-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .custom-item-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #e07b2a;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  .custom-item-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.08em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+
+  .custom-item-desc {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  /* ToC nav */
+  .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .toc-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid #1a1d24;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .toc-link:last-child { border-bottom: none; }
+
+  .toc-arrow {
+    font-size: 13px;
+    color: #3a3d48;
+    transition: color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .toc-link span:last-child {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  .toc-link:hover .toc-arrow { color: #e07b2a; transform: translateX(2px); }
+  .toc-link:hover span:last-child { color: #e07b2a; }
+
+  /* EE Steps */
+  .ee-overview {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #9ca3af;
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border-left: 2px solid #3ddc84;
+    background: rgba(61, 220, 132, 0.03);
+  }
+
+  .ee-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ee-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #252830;
+  }
+
+  .ee-step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: #e07b2a;
+    font-weight: 500;
+    padding-top: 2px;
+  }
+
+  .step-body { display: flex; flex-direction: column; gap: 6px; }
+
+  .step-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.08em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+
+  .step-desc {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .step-tip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .tip-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #3ddc84;
+    margin-right: 6px;
+  }
+
+  /* Strategies */
+  .strategy-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .strategy-list li {
+    font-size: 18px;
+    line-height: 1.75;
+    color: #9ca3af;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .strategy-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #e07b2a;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    top: 2px;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* SIDEBAR                                 */
+  /* ─────────────────────────────────────── */
+
+  .guide-sidebar {
+    position: sticky;
+    top: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sidebar-card {
+    border: 1px solid #252830;
+    background: #13151c;
+    padding: 18px 20px;
+  }
+
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    opacity: 0.75;
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid #1a1d24;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: #6b7280;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .stat-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #dde1ea;
+    text-align: right;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 2px 7px;
+  }
+
+  .badge-yes { color: #3ddc84; border: 1px solid rgba(61,220,132,0.3); }
+  .badge-no  { color: #6b7280; border: 1px solid #252830; }
+
+  /* Crew */
+  .crew-group {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+
+  .crew-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .crew-list li {
+    font-size: 15px;
+    color: #9ca3af;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .crew-list li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: #e07b2a;
+  }
+
+  /* Wonder Weapon card */
+  .card-ww { border-color: rgba(224, 123, 42, 0.3); }
+
+  .ww-card-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.06em;
+    color: #e07b2a;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  /* Related maps */
+  .related-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .related-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #1a1d24;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .related-list li:last-child .related-link { border-bottom: none; }
+
+  .related-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  .related-arrow {
+    font-size: 14px;
+    color: #3a3d48;
+    transition: color 0.15s;
+  }
+
+  .related-link:hover .related-title,
+  .related-link:hover .related-arrow {
+    color: #e07b2a;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* RESPONSIVE                              */
+  /* ─────────────────────────────────────── */
+
+  @media (max-width: 900px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .guide-sidebar {
+      position: static;
+    }
+
+    .hero {
+      padding: 24px 24px 20px;
+    }
+
+    .locations-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero-stats { gap: 16px; }
+    .locations-grid { grid-template-columns: 1fr; }
+  }
+</style>
