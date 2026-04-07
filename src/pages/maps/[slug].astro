@@ -23,6 +23,7 @@ const tocItems: Array<{ id: string; label: string }> = [
   ...(guide?.buildables?.map((b, i) => ({ id: `buildable-${i}`, label: b.name })) ?? []),
   ...(map.hasMainQuest       ? [{ id: 'main-quest', label: map.eeTitle ?? 'Main Quest' }] : []),
   { id: 'field-strategies', label: 'Field Strategies' },
+  ...(guide?.specialEnemies?.length ? [{ id: 'special-enemies', label: 'Special Enemies' }] : []),
   ...(guide?.customSections?.map(s => ({ id: s.id, label: s.title })) ?? []),
 ];
 
@@ -224,6 +225,11 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
           <div class="section-head">
             <span class="section-label">Field Manual — Main Quest</span>
             <h2 class="section-title">{ map.eeTitle ?? 'Main Quest' }</h2>
+            { guide?.eeSoloable && (
+              <span class={`solo-badge solo-${guide.eeSoloable}`}>
+                { guide.eeSoloable === 'yes' ? 'SOLO OK' : guide.eeSoloable === 'partial' ? 'PARTIAL SOLO' : 'CO-OP REQUIRED' }
+              </span>
+            )}
           </div>
 
           { guide?.eeOverview && (
@@ -277,6 +283,27 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
           </div>
         )}
       </section>
+
+      <!-- SPECIAL ENEMIES -->
+      { guide?.specialEnemies && guide.specialEnemies.length > 0 && (
+        <section class="guide-section" id="special-enemies">
+          <div class="section-head">
+            <span class="section-label">Field Manual — Threats</span>
+            <h2 class="section-title">Special Enemies</h2>
+          </div>
+          <div class="enemy-list">
+            { guide.specialEnemies.map(enemy => (
+              <div class="enemy-entry">
+                <span class="enemy-name">{ enemy.name }</span>
+                <p class="enemy-desc">{ enemy.desc }</p>
+                { enemy.tip && (
+                  <p class="step-tip"><span class="tip-label">TIP</span> { enemy.tip }</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <!-- CUSTOM SECTIONS -->
       { guide?.customSections?.map(sec => (
@@ -376,7 +403,43 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
             { map.hasMainQuest ? 'YES' : 'NO' }
           </span>
         </div>
+
+        { guide?.eeSoloable && map.hasMainQuest && (
+          <div class="stat-row">
+            <span class="stat-name">EE Solo</span>
+            <span class={`badge badge-solo-${guide.eeSoloable}`}>
+              { guide.eeSoloable === 'yes' ? 'SOLOABLE' : guide.eeSoloable === 'partial' ? 'PARTIAL' : 'CO-OP' }
+            </span>
+          </div>
+        )}
       </div>
+
+      <!-- MYSTERY BOX -->
+      { guide?.mysteryBoxSpawns && guide.mysteryBoxSpawns.length > 0 && (
+        <div class="sidebar-card">
+          <span class="card-label">Mystery Box Spawns</span>
+          <ul class="box-list">
+            { guide.mysteryBoxSpawns.map(loc => (
+              <li>{ loc }</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- PERKS -->
+      { guide?.perks && guide.perks.length > 0 && (
+        <div class="sidebar-card">
+          <span class="card-label">Perk Machines</span>
+          <ul class="perk-list">
+            { guide.perks.map(perk => (
+              <li class="perk-row">
+                <span class="perk-name">{ perk.name }</span>
+                <span class="perk-loc">{ perk.location }</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <!-- CREW ROSTER -->
       <div class="sidebar-card">
@@ -394,6 +457,9 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         <div class="sidebar-card card-ww">
           <span class="card-label">Wonder Weapon</span>
           <p class="ww-card-name">{ map.wonderWeapon }</p>
+          { guide?.wwNote && (
+            <p class="ww-card-note">{ guide.wwNote }</p>
+          )}
         </div>
       )}
 
@@ -741,8 +807,11 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   .buildable-desc {
     font-size: 16px;
     line-height: 1.75;
-    color: #6b7280;
-    margin: 0 0 16px;
+    color: #9ca3af;
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    border-left: 2px solid #252830;
+    background: rgba(255,255,255,0.02);
   }
 
   /* Smooth scroll + offset for sticky nav */
@@ -1113,6 +1182,125 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     color: #e07b2a;
   }
 
+  /* EE Solo badge — in section head and sidebar */
+  .solo-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    padding: 3px 8px;
+    margin-top: 6px;
+    display: inline-block;
+    text-transform: uppercase;
+  }
+  .solo-yes     { color: #3ddc84; border: 1px solid rgba(61,220,132,0.35); }
+  .solo-partial { color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+  .solo-no      { color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+
+  .badge-solo-yes     { color: #3ddc84; border: 1px solid rgba(61,220,132,0.35); }
+  .badge-solo-partial { color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+  .badge-solo-no      { color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+
+  /* Mystery Box spawns */
+  .box-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .box-list li {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #9ca3af;
+    padding: 6px 0;
+    border-bottom: 1px solid #1a1d24;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .box-list li:last-child { border-bottom: none; }
+
+  .box-list li::before {
+    content: '?';
+    position: absolute;
+    left: 0;
+    font-size: 11px;
+    color: #e07b2a;
+    opacity: 0.6;
+  }
+
+  /* Perk list */
+  .perk-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .perk-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 0;
+    border-bottom: 1px solid #1a1d24;
+  }
+
+  .perk-row:last-child { border-bottom: none; }
+
+  .perk-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+
+  .perk-loc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  /* Special Enemies section */
+  .enemy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .enemy-entry {
+    padding: 18px 0;
+    border-bottom: 1px solid #252830;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .enemy-entry:last-child { border-bottom: none; }
+
+  .enemy-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: #f87171;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .enemy-desc {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #9ca3af;
+    margin: 0;
+  }
+
   /* Wonder Weapon card */
   .card-ww { border-color: rgba(224, 123, 42, 0.3); }
 
@@ -1123,7 +1311,16 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     letter-spacing: 0.06em;
     color: #e07b2a;
     text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+
+  .ww-card-note {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #6b7280;
     margin: 0;
+    border-top: 1px solid rgba(224, 123, 42, 0.15);
+    padding-top: 10px;
   }
 
   /* Related maps */
@@ -1168,6 +1365,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   .related-link:hover .related-arrow {
     color: #e07b2a;
   }
+
 
   /* ─────────────────────────────────────── */
   /* RESPONSIVE                              */

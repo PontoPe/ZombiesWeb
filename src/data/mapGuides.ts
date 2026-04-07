@@ -43,6 +43,17 @@ export interface GuideSection {
   items: GuideItem[];
 }
 
+export interface PerkEntry {
+  name: string;
+  location: string;
+}
+
+export interface SpecialEnemy {
+  name: string;
+  desc: string;
+  tip?: string;
+}
+
 export interface MapGuide {
   powerSteps?: string[];
   papLocation?: string;
@@ -50,11 +61,17 @@ export interface MapGuide {
   buildables?: Buildable[];
   eeOverview?: string;
   eeSteps?: EEStep[];
+  /** Whether the main easter egg can be completed solo */
+  eeSoloable?: 'yes' | 'partial' | 'no';
   strategies?: string[];
+  /** Unique/special enemy types on this map — what they do and how to handle them */
+  specialEnemies?: SpecialEnemy[];
   loreNote?: string;
-  /** One or two sentences on how to get/use the wonder weapon — shown in the sidebar card */
   wwNote?: string;
-  /** Extra sections rendered after Strategies — e.g. shield builds, WW upgrades, special mechanics */
+  /** All perk machine locations on this map */
+  perks?: PerkEntry[];
+  /** Possible Mystery Box spawn locations */
+  mysteryBoxSpawns?: string[];
   customSections?: GuideSection[];
 }
 
@@ -102,6 +119,30 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
       'Avoid camping near windows; zombies vault significantly faster here than in earlier maps.',
       'Keep at least one player on the stage side at all times to maintain teleporter links.',
     ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',       location: 'Spawn lobby, bottom of the staircase' },
+      { name: 'Juggernog',          location: 'Dressing rooms corridor' },
+      { name: 'Speed Cola',         location: 'Alley / side street' },
+      { name: 'Double Tap',         location: 'Theater balcony' },
+      { name: 'Stamin-Up',          location: 'Stage area' },
+    ],
+    mysteryBoxSpawns: [
+      'Spawn lobby',
+      'Dressing room corridor',
+      'Alley',
+      'Stage',
+      'Theater balcony',
+    ],
+    specialEnemies: [
+      {
+        name: 'Nova Crawler',
+        desc: 'Spawned in place of regular zombies after every teleporter use. They crawl on walls and ceilings, and explode into a Nova-6 gas cloud on death — the cloud slows movement and blocks vision.',
+        tip: 'Never shoot them at close range. Back away and fire from distance, or knife them just as they stop to swipe to avoid the gas cloud.',
+      },
+    ],
+    wwNote:
+      'The Thundergun is a Mystery Box exclusive. Teleport to the Projector Room to Pack-a-Punch it into the Zeus Cannon — reserve shots for emergency crowd control only, ammo is extremely limited.',
     loreNote:
       "Group 935 repurposed the theater for Nova-6 refinement after Der Riese was compromised. The Nova Crawlers are failed test subjects. The mainframe teleporter is derived from Der Riese technology — Richtofen had planned the crew's arrival here long before they ever stepped on that stage.",
     customSections: [
@@ -378,6 +419,29 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         ],
       },
     ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',        location: 'Citadel Tunnels (lower level)' },
+      { name: 'Juggernog',           location: 'Docks' },
+      { name: 'Speed Cola',          location: "Warden's Office" },
+      { name: 'Double Tap II',       location: 'Citadel Tunnels (upper)' },
+      { name: 'Deadshot Daiquiri',   location: 'Infirmary' },
+      { name: 'Electric Cherry',     location: 'Cell Block (top floor)' },
+    ],
+    mysteryBoxSpawns: [
+      "Warden's Office",
+      'Cafeteria',
+      'Docks',
+      'Infirmary',
+      'Citadel Tunnels',
+    ],
+    specialEnemies: [
+      {
+        name: 'Brutus',
+        desc: 'An armoured warden that appears from round 4 onward. When he reaches a perk machine, Pack-a-Punch, or the Mystery Box he locks it — making it unusable until you kill him. He has very high health and moves steadily toward objectives.',
+        tip: 'Drop everything and prioritise killing Brutus the moment he spawns. Use traps or high-damage weapons. Letting him reach perks will cost you points and time to unlock them.',
+      },
+    ],
     loreNote:
       "The four prisoners exist in a purgatorial loop with no natural end. Weasel has lived and died countless times, always betrayed by his crew. The question at the heart of the Easter Egg is whether redemption is possible when the loop itself is built on betrayal — and whether only one man can ever truly leave.",
   },
@@ -485,6 +549,28 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Keeper escort and boss fight finish',
         desc: 'Charge Keeper at four ritual spots with correct bow element souls, open MPD, defeat corrupted Keeper in boss arena, then place Summoning Key by clock tower to complete quest.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',    location: 'Spawn courtyard (near entrance)' },
+      { name: 'Juggernog',       location: 'Clock tower / workshop area' },
+      { name: 'Speed Cola',      location: 'Near the Pack-a-Punch teleporter pad' },
+      { name: 'Double Tap II',   location: 'Upper castle ramparts' },
+      { name: "Widow's Wine",    location: 'Underground pyramid chamber' },
+      { name: 'Stamin-Up',       location: 'Side castle area near the drawbridge' },
+    ],
+    mysteryBoxSpawns: [
+      'Spawn courtyard',
+      'Near the Wrath of the Ancients altar',
+      'Clock tower area',
+      'Underground catacomb / pyramid',
+    ],
+    specialEnemies: [
+      {
+        name: 'Panzer Soldat',
+        desc: 'Appears from round 9. A heavily armoured soldier with a grabbing claw arm that locks and drags players, plus a flamethrower arm. Extremely high health - much tankier than standard zombies.',
+        tip: 'Focus all firepower the moment he spawns. Traps near his patrol path are the most efficient kill. His grab can be broken by teammates shooting the claw.',
       },
     ],
     strategies: [
@@ -736,6 +822,36 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
     ],
     eeOverview:
       '"Little Lost Girl": activate all Generators, upgrade all four Staffs, complete soul-box and tablet trials, then finish the robot/G-Strike/Maxis finale inside Agartha.',
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',        location: 'Spawn area (French village ruins)' },
+      { name: 'Juggernog',           location: 'Unlocked at Generator 2' },
+      { name: 'Speed Cola',          location: 'Unlocked at Generator 3' },
+      { name: 'Double Tap II',       location: 'Unlocked at Generator 4' },
+      { name: 'Deadshot Daiquiri',   location: 'Unlocked at Generator 5' },
+      { name: 'Stamin-Up',           location: 'Unlocked at Generator 6' },
+      { name: 'PhD Flopper',         location: 'The Crazy Place (underground)' },
+      { name: 'Mule Kick',           location: 'Near the church / excavation site' },
+    ],
+    mysteryBoxSpawns: [
+      'Near Generator 2',
+      'Near the church',
+      'Near Generator 4 / Tank Station',
+      'Near Generator 6',
+      'The Crazy Place',
+    ],
+    specialEnemies: [
+      {
+        name: 'Panzer Soldat',
+        desc: 'Appears from round 8. Armoured enemy with a claw that grabs and immobilises players and a flamethrower arm that deals rapid damage. Requires sustained concentrated fire to kill.',
+        tip: 'Never let him reach a grabbed player - teammates must immediately shoot the claw to free them. He is predictable; traps and Staff charge shots are the fastest kills.',
+      },
+      {
+        name: 'Giant Mech (Riese)',
+        desc: 'Three massive mechs patrol fixed routes across the map. They are not enemies you fight - but stepping in their path causes an instant stomp that can down you. They also crush zombies.',
+        tip: 'Learn the three patrol routes early. Collect mech tokens (dropped by zombies they stomp) to ride a mech and collect distant parts safely.',
+      },
+    ],
     strategies: [
       'Split duties early: one player opens Generator lanes while others collect Shovel, records, and first build parts.',
       'Treat Panzer rounds as hard checkpoints; save high-DPS weapons and clear him immediately before resuming setup.',
@@ -877,6 +993,19 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
 
   'nacht-der-untoten': {
     papLocation: 'No Pack-a-Punch on this map.',
+    eeSoloable: 'no',
+    perks: [],
+    mysteryBoxSpawns: [
+      'Ground floor (near stairs)',
+      'Upstairs (Help room)',
+    ],
+    specialEnemies: [
+      {
+        name: 'Hellhounds',
+        desc: 'Appear in Nacht in later WaW sessions. Fast-moving zombie dogs that charge directly at players with no hesitation.',
+        tip: 'Shoot them early in their charge before they close distance. A shotgun or high-rate weapon is ideal in the tight corridors.',
+      },
+    ],
     strategies: [
       'Early rounds are about pistol point-building and controlled window repairs.',
       'Use the help-room choke when ammo is efficient; rotate before overrun.',
@@ -910,6 +1039,25 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
       'Activate the power switch to enable perks and trap systems.',
     ],
     papLocation: 'No Pack-a-Punch on this map.',
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',   location: 'German side spawn area' },
+      { name: 'Juggernog',      location: 'American side (across the map)' },
+      { name: 'Speed Cola',     location: 'German side' },
+      { name: 'Double Tap',     location: 'American side' },
+    ],
+    mysteryBoxSpawns: [
+      'German side corridor',
+      'American side corridor',
+      'Central intersection area',
+    ],
+    specialEnemies: [
+      {
+        name: 'Crawler Zombies',
+        desc: 'Occasionally zombies will crawl under the electroshock barriers when they are active, entering in a prone state. Easy to miss in the chaos.',
+        tip: 'Keep awareness of the floor around active barriers - crawlers are silent and low.',
+      },
+    ],
     strategies: [
       'Split spawns mean early coordination matters more than pure slaying speed.',
       'Electric traps can stabilize rounds when hallway pressure spikes.',
@@ -942,6 +1090,28 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
       'Power is active by default in WaW/BO1 versions; focus on route opening.',
     ],
     papLocation: 'No Pack-a-Punch in original Shi No Numa.',
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Main spawn hut (fixed)' },
+      { name: 'Juggernog',    location: "Doctor's Quarters hut (random rotation)" },
+      { name: 'Speed Cola',   location: 'Comm Room hut (random rotation)' },
+      { name: 'Double Tap',   location: 'Fishing Hut (random rotation)' },
+      { name: 'Stamin-Up',    location: 'Storage Hut (random rotation)' },
+    ],
+    mysteryBoxSpawns: [
+      'Main spawn hut',
+      "Doctor's Quarters",
+      'Comm Room',
+      'Fishing Hut',
+      'Storage Hut',
+    ],
+    specialEnemies: [
+      {
+        name: 'Hellhounds',
+        desc: 'First introduced here. Fast zombie dogs that appear in dedicated hound rounds. The round ends when the last hound is killed, rewarding a Max Ammo power-up.',
+        tip: "Stay mobile - standing still against hounds in Shi No Numa's swamp terrain is a death sentence. Let them come to you around the hut circuit.",
+      },
+    ],
     strategies: [
       'Use the random-perk hut cycle to adjust your route each game.',
       'Wunderwaffe is strongest for emergency clears and dog-round recovery.',
@@ -979,6 +1149,26 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
       'Power on and activate each side teleporter to link it.',
       'Use the mainframe to teleport and access Pack-a-Punch.',
     ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Mainframe area near spawn' },
+      { name: 'Juggernog',    location: 'Near Teleporter Link Pad A' },
+      { name: 'Speed Cola',   location: 'Near Teleporter Link Pad B' },
+      { name: 'Double Tap',   location: 'Near Teleporter Link Pad C' },
+    ],
+    mysteryBoxSpawns: [
+      'Near Teleporter Link Pad A',
+      'Near Teleporter Link Pad B',
+      'Near Teleporter Link Pad C',
+      'Catwalk / upper yard',
+    ],
+    specialEnemies: [
+      {
+        name: 'Hellhounds',
+        desc: 'Appear in dedicated hound rounds every 4-5 rounds starting from round 5. Fast and aggressive. Killing the last hound rewards a Max Ammo.',
+        tip: 'The catwalk is the safest hound spot - funnel them into a single direction. Avoid the mainframe area during hound rounds as the geometry creates awkward corners.',
+      },
+    ],
     strategies: [
       'Classic catwalk and loop strats both work; pick one and commit as a team.',
       'Use teleporters as panic resets when trap timing is unfavorable.',
@@ -1012,6 +1202,25 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
     papSteps: [
       'Lower DEFCON to 5 by activating all required terminals.',
       'Use the central teleporter to enter Pack-a-Punch room.',
+    ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Starting room (War Room)' },
+      { name: 'Juggernog',    location: 'Lower lab floor' },
+      { name: 'Speed Cola',   location: 'Lower lab floor' },
+      { name: "Winter's Howl", location: 'Mystery Box only' },
+    ],
+    mysteryBoxSpawns: [
+      'War Room (starting area)',
+      'Conference Room',
+      'Lower labs',
+    ],
+    specialEnemies: [
+      {
+        name: 'Pentagon Thief',
+        desc: 'Appears every few rounds wearing a hazmat suit. He steals your currently equipped weapon and runs away with it. He can be killed before he escapes to recover the weapon.',
+        tip: "Switch to a disposable weapon the moment the Thief alarm sounds. Chase and kill him quickly - losing a Pack-a-Punched weapon is devastating. He can be stunned with the Winter's Howl.",
+      },
     ],
     strategies: [
       'Prioritize anti-thief loadouts before Pentagon Thief rounds.',
@@ -1106,6 +1315,28 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Complete the final synchronized interactions once all prior checks are done.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Spawn room (PhD Flopper spawn in BO3)' },
+      { name: 'Juggernog',         location: 'Near the centrifuge / main power area' },
+      { name: 'Speed Cola',        location: 'Near the rocket launch pad' },
+      { name: 'Double Tap',        location: 'Near the lunar lander pad' },
+      { name: 'PhD Flopper',       location: 'Near the other lunar lander / cosmodrome' },
+      { name: 'Stamin-Up',         location: 'Near the Gersch Device altar area' },
+    ],
+    mysteryBoxSpawns: [
+      'Spawn room',
+      'Near centrifuge',
+      'Near rocket pad',
+      'Lunar lander pad areas (3 locations)',
+    ],
+    specialEnemies: [
+      {
+        name: 'Space Monkey',
+        desc: 'Appear in dedicated monkey rounds (every 5 rounds). They target and steal your perk machines - if they reach a machine, you lose that perk. Killing all monkeys before they escape rewards a full powerup.',
+        tip: 'Assign each player a perk to guard during monkey rounds. Quick Revive and Juggernog are highest priority. Pistols work fine - you do not need heavy ammo for monkeys.',
+      },
+    ],
     strategies: [
       'Plan monkey rounds around perk protection priority.',
       'Use wide open training lanes near spawn and central ring.',
@@ -1192,6 +1423,27 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Finalize quest turn-in',
         desc: 'Complete the closing interactions once all required steps and combat checks are satisfied.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive', location: 'Ice shelf near spawn (lighthouse base)' },
+      { name: 'Juggernog',    location: 'Upper ship deck' },
+      { name: 'Speed Cola',   location: 'Lighthouse mid-section' },
+      { name: 'Double Tap',   location: 'Lower ship hull area' },
+      { name: 'PhD Flopper',  location: 'Docks / ice shelf near the ship' },
+    ],
+    mysteryBoxSpawns: [
+      'Ice shelf near spawn',
+      'Upper ship deck',
+      'Lighthouse base',
+      'Dock area',
+    ],
+    specialEnemies: [
+      {
+        name: 'George A. Romero',
+        desc: 'A giant zombie director who patrols the entire map permanently. He walks through walls and water. If you shoot him, he becomes enraged (glowing red eyes) - moving faster and dealing more damage. The V-R11 Wonder Weapon temporarily pacifies him.',
+        tip: 'Do not shoot George unless you are prepared to kite him. Water sources (the sea) and electricity reset his aggro. Coordinate George management as a team priority.',
       },
     ],
     strategies: [
@@ -1282,6 +1534,33 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Finish the last sequence once all prerequisite interactions are validated.',
       },
     ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Spawn area / waterfall entrance' },
+      { name: 'Juggernog',    location: 'Temple interior' },
+      { name: 'Speed Cola',   location: 'Mine tunnel area' },
+      { name: 'Double Tap',   location: 'Waterfall / outdoor cliff area' },
+      { name: 'PhD Flopper',  location: 'Near the Bowie Knife shrine / jungle area' },
+      { name: 'Stamin-Up',    location: 'Near the water slide / slide trap area' },
+    ],
+    mysteryBoxSpawns: [
+      'Spawn area',
+      'Temple interior',
+      'Mine cart tunnel',
+      'Jungle / outdoor cliffs',
+    ],
+    specialEnemies: [
+      {
+        name: 'Napalm Zombie',
+        desc: 'An on-fire zombie that slowly staggers toward players. If it gets close enough to die near you, it explodes with a fire burst. Two Napalm and Shrieker Zombies always appear together.',
+        tip: 'Shoot Napalm Zombies from max range. Never let them reach you. The explosion can instantly down you in close quarters.',
+      },
+      {
+        name: 'Shrieker Zombie',
+        desc: 'Appears alongside the Napalm Zombie. It emits a piercing scream that disorients and slows players and attracts other zombies to your position.',
+        tip: 'Kill the Shrieker first - its scream is the greater tactical threat. It has normal health and dies quickly.',
+      },
+    ],
     strategies: [
       'Space is the real enemy - pre-plan fallback lanes and callouts.',
       'Napalm and Shrieker rounds should be treated as tactical events, not chaos.',
@@ -1369,6 +1648,35 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Execute endgame chain',
         desc: 'Complete the final quest interactions in order once all gates are satisfied.',
+      },
+    ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',      location: 'Area 51 (spawn, before launch)' },
+      { name: 'Juggernog',         location: 'Tunnel 6 / excavation area' },
+      { name: 'Speed Cola',        location: 'Bio-Dome' },
+      { name: 'Double Tap',        location: 'Receiving Bay' },
+      { name: 'PhD Flopper',       location: 'Near Biodome entrance' },
+      { name: 'Stamin-Up',         location: 'Near Tunnel 11' },
+      { name: 'Deadshot Daiquiri', location: 'Excavation Site' },
+    ],
+    mysteryBoxSpawns: [
+      'Area 51 (start)',
+      'Receiving Bay',
+      'Bio-Dome',
+      'Excavation Site',
+      'Tunnel 11',
+    ],
+    specialEnemies: [
+      {
+        name: 'Cosmonaut Zombie',
+        desc: 'A single spacesuit-wearing zombie that appears from round 15 onward. It targets one player and attempts to steal their perk - if it grabs you and completes the grab, you lose a random perk.',
+        tip: 'When the Cosmonaut locks onto someone, all players should shoot it immediately. It has high health - knives and the Wave Gun are the most efficient counters.',
+      },
+      {
+        name: 'Phasing Zombie',
+        desc: 'In zero-gravity sections, zombies can phase through walls and drop from ceilings at unexpected angles.',
+        tip: 'Keep rotating and checking all angles in low-gravity tunnels. Fixed corner camping is suicidal on Moon.',
       },
     ],
     strategies: [
@@ -1511,6 +1819,35 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Finalize synchronized endpoint',
         desc: 'Complete final simultaneous Turbine (Maxis) or EMP-lamp (Richtofen) actions to lock quest completion and achievement pop.',
+      },
+    ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Bus Depot (start area)' },
+      { name: 'Juggernog',    location: 'Town (bar building)' },
+      { name: 'Speed Cola',   location: 'Farm' },
+      { name: 'Double Tap',   location: 'Diner' },
+      { name: 'PhD Flopper',  location: 'Power Station' },
+      { name: 'Stamin-Up',    location: 'Corn Field' },
+    ],
+    mysteryBoxSpawns: [
+      'Bus Depot',
+      'Town',
+      'Farm',
+      'Diner',
+      'Power Station',
+      'Corn Field',
+    ],
+    specialEnemies: [
+      {
+        name: 'Denizen',
+        desc: 'Small imp-like creatures that live in the fog between stops. They leap onto your face and rapidly deal damage if you enter the fog without an active Turbine nearby. Extremely fast.',
+        tip: 'Always have a Turbine running if you need to travel through fog. Knifing Denizens off your face is faster than shooting. Flame Traps at stops kill them passively.',
+      },
+      {
+        name: 'Avogadro',
+        desc: 'An electric entity that spawns after power is activated. It patrols the bus route and deals heavy shock damage on contact. It can also board the bus.',
+        tip: 'EMP grenades stagger Avogadro. He can be killed with sustained fire but is best avoided until you have strong PaP weapons. He drops a Max Ammo on death.',
       },
     ],
     strategies: [
@@ -1708,6 +2045,29 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Use Mahjong direction/order mapping to melee Radio Tower in the correct compass sequence. Successful finish grants 6 perks and locks branch completion.',
       },
     ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',      location: 'Starting skyscraper (lower floor)' },
+      { name: 'Juggernog',         location: 'Second skyscraper mid-section' },
+      { name: 'Speed Cola',        location: 'Near the AN-94 wall-buy building' },
+      { name: 'Double Tap II',     location: 'Dragon room / far skyscraper' },
+      { name: "Who's Who",        location: 'Various floors (random rotation)' },
+      { name: 'Stamin-Up',         location: 'Near the elevator shaft area' },
+      { name: 'Deadshot Daiquiri', location: 'Near the mahjong room' },
+    ],
+    mysteryBoxSpawns: [
+      'Starting skyscraper',
+      'Second skyscraper',
+      'Dragon room',
+      'Near the Sliquifier buildable table',
+    ],
+    specialEnemies: [
+      {
+        name: 'Jumping Jack',
+        desc: 'Monkey-like special zombie that leaps between floors and building gaps unpredictably. Appears mid-round from round 7 onward. They can knock players off ledges if positioned near drops.',
+        tip: 'Keep your back to a wall when Jumping Jacks are active. Do not stand near ledge edges. They die in very few shots - prioritise them over regular zombies.',
+      },
+    ],
     strategies: [
       'Vertical risk is the map\'s hardest mechanic - value safe jumps over speed.',
       'Track elevator states verbally so teams do not waste rounds waiting.',
@@ -1892,6 +2252,36 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Solve maze lever order, command Arthur to break mansion fountain, then complete branch endpoint: Richtofen target test/all-perk payout or Maxis device-finalization sequence if your team committed to that side.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Near spawn (underground town entrance)' },
+      { name: 'Juggernog',         location: 'Saloon building' },
+      { name: 'Speed Cola',        location: 'Near the barn / hay area' },
+      { name: 'Double Tap II',     location: 'Near the church' },
+      { name: 'PhD Flopper',       location: 'Near the candy store' },
+      { name: 'Stamin-Up',         location: 'Near the mansion' },
+      { name: 'Deadshot Daiquiri', location: 'Courtroom building' },
+      { name: "Who's Who",        location: 'Near the tunnels' },
+    ],
+    mysteryBoxSpawns: [
+      'Spawn area',
+      'Saloon',
+      'Near church',
+      'Near mansion',
+      'Barn area',
+    ],
+    specialEnemies: [
+      {
+        name: 'Leroy (Friendly Giant)',
+        desc: 'Not an enemy - a friendly giant prisoner who follows you and assists if given candy from the candy store. He can throw zombies, block doorways, and is central to many Easter Egg steps. He resets between rounds.',
+        tip: 'Stock up on candy early. Leroy blocking a doorway buys enormous time for setup. During high rounds, keep candy stocked so he remains useful.',
+      },
+      {
+        name: 'Ghost',
+        desc: 'A spectre that appears periodically in the mansion area and other locations, dealing damage on contact.',
+        tip: 'Avoid the mansion area in early rounds when you cannot quickly dispatch the ghost. The Paralyzer and upgraded weapons dispatch it efficiently.',
+      },
+    ],
     strategies: [
       'Leroy control is the map\'s skill ceiling - keep resources reserved for key tasks.',
       'Paralyzer movement can bypass risk but also create overextension mistakes.',
@@ -2065,6 +2455,34 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Start boss by activating all keepers in PaP room, break Shadowman shield with Summoning Key throws, and trap him in key at ritual altar. Four-player worm step is required for in-game completion gateworm icon.',
       },
     ],
+    eeSoloable: 'yes',
+    perks: [
+      { name: 'Quick Revive',    location: 'Junction (central hub)' },
+      { name: 'Juggernog',       location: 'Waterfront District' },
+      { name: 'Speed Cola',      location: 'Canal District' },
+      { name: 'Double Tap II',   location: 'Footlight District' },
+      { name: "Widow's Wine",    location: 'Ruby Rabbit bar (Film Noir area)' },
+      { name: 'Stamin-Up',       location: 'Junction / transit area' },
+    ],
+    mysteryBoxSpawns: [
+      'Junction',
+      'Waterfront District',
+      'Canal District',
+      'Footlight District',
+      'Near the Ruby Rabbit',
+    ],
+    specialEnemies: [
+      {
+        name: 'Parasite',
+        desc: 'Flying bug-like creatures that appear mid-round from round 6 onward. They swarm in groups and home in on players, dealing rapid chip damage. They are easy to kill but dangerous in numbers while you are also managing a zombie train.',
+        tip: 'Burst them down quickly before they cluster. An upgraded weapon with splash damage or the Apothicon Servant is extremely effective against Parasite swarms.',
+      },
+      {
+        name: 'Margwa',
+        desc: 'A massive three-headed monster that spawns after you kill 9 ritual zombies (or on later rounds randomly). Each of its three heads has an independent health bar - when a head is glowing, it is vulnerable. When all three are destroyed the Margwa is killed.',
+        tip: 'Circle the Margwa and focus fire on whichever head is currently glowing. The Apothicon Servant can drain all three heads rapidly. Do not run past it - it has a wide swipe.',
+      },
+    ],
     strategies: [
       'Beast-mode route planning saves multiple rounds in early setup.',
       'Civil Protector and sword upgrades reduce revive-risk in late midgame.',
@@ -2144,6 +2562,28 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Claim Annihilator',
         desc: 'Go to furnace room behind VMP path and collect Annihilator pistol reward for all qualified players.',
+      },
+    ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive', location: 'Near spawn (mainframe area)' },
+      { name: 'Juggernog',    location: 'Near Teleporter Link Pad A' },
+      { name: 'Speed Cola',   location: 'Near Teleporter Link Pad B' },
+      { name: 'Double Tap II', location: 'Near Teleporter Link Pad C' },
+      { name: "Widow's Wine", location: 'Catwalk / upper walkway area' },
+      { name: 'Stamin-Up',    location: 'Side yard area' },
+    ],
+    mysteryBoxSpawns: [
+      'Mainframe / spawn area',
+      'Near Teleporter Link Pad A',
+      'Near Teleporter Link Pad B',
+      'Near Teleporter Link Pad C',
+    ],
+    specialEnemies: [
+      {
+        name: 'Hellhounds',
+        desc: 'Appear in dedicated hound rounds every 4-5 rounds. Fast zombie dogs that charge aggressively. Killing the last hound grants Max Ammo.',
+        tip: 'The catwalk loop is your best hound spot - it keeps them funnelled. Shotguns and high-fire-rate weapons end hound rounds fastest.',
       },
     ],
     strategies: [
@@ -2288,6 +2728,33 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Boss and final challenge closeout',
         desc: 'Finish scripted final interaction chain and complete boss phase to resolve quest ending sequence.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',   location: 'Spawn / shore area' },
+      { name: 'Juggernog',      location: 'Lab A' },
+      { name: 'Speed Cola',     location: 'Lab B' },
+      { name: 'Double Tap II',  location: 'Bunker' },
+      { name: "Widow's Wine",   location: 'Greenhouse / docks area' },
+      { name: 'Stamin-Up',      location: 'Near the water / boat wreck area' },
+    ],
+    mysteryBoxSpawns: [
+      'Docks / shore',
+      'Lab A',
+      'Lab B',
+      'Bunker',
+    ],
+    specialEnemies: [
+      {
+        name: 'Spider',
+        desc: 'Giant arachnid creatures that patrol the map alongside regular zombies. Their acid spit can webbing-trap players in place, and their melee attack applies a poison slow. They are faster than standard zombies.',
+        tip: 'Prioritise spiders over regular zombies - being webbed in a zombie horde is almost always fatal. High-fire-rate weapons cut through their health quickly.',
+      },
+      {
+        name: 'Zombie Plant (Bomber)',
+        desc: 'Plant-infused zombies that swell and explode near death, releasing a toxic gas cloud. They glow visibly when close to exploding.',
+        tip: 'When you see one glowing, back away and finish it from range. The KT-4 acid pool synergises well - apply acid, back off, let it die safely.',
       },
     ],
     strategies: [
@@ -2436,6 +2903,34 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Defeat dragon encounter first, then final Nikolai phase to trigger end cutscene and quest completion.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',   location: 'Spawn area / Dragon Command' },
+      { name: 'Juggernog',      location: 'Supply Depot' },
+      { name: 'Speed Cola',     location: 'Operations Bunker' },
+      { name: 'Double Tap II',  location: 'Department Store' },
+      { name: "Widow's Wine",   location: 'Tank Factory' },
+      { name: 'Stamin-Up',      location: 'Infirmary' },
+    ],
+    mysteryBoxSpawns: [
+      'Dragon Command (spawn area)',
+      'Supply Depot',
+      'Department Store',
+      'Operations Bunker',
+      'Tank Factory',
+    ],
+    specialEnemies: [
+      {
+        name: 'Valkyrie Drone',
+        desc: 'A flying mechanical drone that hovers above and attacks players with rockets. It appears mid-round and is one of the most dangerous specials in the game - rockets deal enormous damage and it is highly mobile.',
+        tip: 'The GKZ-45 (upgraded) is the best tool against drones. Otherwise, track it with a high-damage weapon and break aggro by ducking into cover to reset its rocket targeting.',
+      },
+      {
+        name: 'Zombie Dragon',
+        desc: 'Not a traditional enemy - a massive dragon that periodically flies over Stalingrad and breathes fire along rooftop routes. It can be directed using dragon eggs as part of the main quest.',
+        tip: "Learn the dragon's patrol flight path. It telegraphs its attack with a distinct sound cue - duck indoors the moment you hear it.",
+      },
+    ],
     strategies: [
       'GKZ-45 setup plus anti-special-zombie loadout is non-negotiable.',
       'Call out Valkyrie paths early to avoid silent objective failures.',
@@ -2561,6 +3056,39 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Charge Summoning Key at fountains, throw to break Sophia shield, fire Shadowman into Apothicon mouth, then interact with Kronorium to finish.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',   location: 'Nacht fragment (spawn area)' },
+      { name: 'Juggernog',      location: 'Mob of the Dead fragment (Alcatraz bridge area)' },
+      { name: 'Speed Cola',     location: 'Kino der Toten fragment (stage area)' },
+      { name: 'Double Tap II',  location: 'Origins fragment (excavation area)' },
+      { name: "Widow's Wine",   location: 'Verrückt fragment (asylum corridor)' },
+      { name: 'Stamin-Up',      location: 'Der Eisendrache fragment (castle area)' },
+    ],
+    mysteryBoxSpawns: [
+      'Nacht fragment',
+      'Kino fragment',
+      'Mob fragment',
+      'Origins fragment',
+      'Der Eisendrache fragment',
+    ],
+    specialEnemies: [
+      {
+        name: 'Parasites',
+        desc: 'Flying insect enemies from Shadows of Evil that appear regularly throughout Revelations, particularly in the Origins and Shadows fragments.',
+        tip: 'Upgraded weapons with splash damage dispatch them efficiently. The Apothicon Servant clears parasite swarms in a single shot.',
+      },
+      {
+        name: 'Margwa',
+        desc: 'Returns from Shadows of Evil. Three-headed giant that spawns periodically. All three heads must be shot when glowing to kill it.',
+        tip: 'Same tactics as in Shadows of Evil. The Apothicon Servant is highly effective. Avoid being cornered near environmental hazards.',
+      },
+      {
+        name: 'Keeper',
+        desc: 'Ancient Agartha guardians that appear in the Agartha sections and boss fight areas. They are aggressive and move quickly for their size.',
+        tip: 'High-damage weapons and explosive ammo types handle Keepers efficiently. Avoid fighting multiple Keepers simultaneously in tight corridors.',
+      },
+    ],
     strategies: [
       'Apothicon Servant remains your strongest crowd-control anchor.',
       'Memorize jump-pad lanes for safe, no-mud/no-trap rotations.',
@@ -2680,6 +3208,35 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 5,
         title: 'Finish Fury and Wrath',
         desc: 'Enter the red portal and defeat both elephant phases by stripping armor and focusing face damage windows.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Ra Temple entrance' },
+      { name: 'Juggernog',         location: 'Odin Temple entrance' },
+      { name: 'Speed Cola',        location: 'Zeus Temple entrance' },
+      { name: 'Deadshot Daiquiri', location: 'Danu Temple entrance' },
+      { name: 'Stamin-Up',         location: 'The Pit' },
+      { name: 'Death Perception',  location: 'Temple (central structure)' },
+    ],
+    mysteryBoxSpawns: [
+      'Arena floor (colosseum bowl)',
+      'Ra arena entrance',
+      'Zeus arena entrance',
+      'Odin arena entrance',
+      'Danu arena entrance',
+      'The Pit',
+    ],
+    specialEnemies: [
+      {
+        name: 'Catalyst Zombie',
+        desc: 'Come in three variants: Fire (ignites a ground patch on death), Poison (releases toxic cloud on death), and Electric (shocks nearby on death). Identifiable by their glowing colour.',
+        tip: 'Fire Catalysts - back away before finishing them. Poison Catalysts - shoot from range and let the cloud dissipate. Electric - safe to melee finish if you are already up close.',
+      },
+      {
+        name: 'Blightfather',
+        desc: 'A massive heavily-armoured gladiator boss that appears periodically in the arena. Very high health and powerful slams. It drops significant rewards on death.',
+        tip: "Focus all players' fire on Blightfather immediately. The Sentinel Artifact is effective. Avoid standing directly in front of it - its slam has a wide forward arc.",
       },
     ],
     strategies: [
@@ -2803,6 +3360,34 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Execute artifact finale',
         desc: 'Move the Sentinel sequence into final combat and finish the boss encounter with disciplined movement through stair funnels.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Poop Deck (top of ship, near spawn)' },
+      { name: 'Juggernog',         location: 'Cargo Hold' },
+      { name: 'Speed Cola',        location: 'First Class Lounge' },
+      { name: 'Deadshot Daiquiri', location: 'Bridge' },
+      { name: 'Stamin-Up',         location: 'Boiler Room' },
+      { name: 'Death Perception',  location: 'Second Class area' },
+    ],
+    mysteryBoxSpawns: [
+      'Poop Deck (start)',
+      'First Class Lounge',
+      'Cargo Hold',
+      'Bridge',
+      'Boiler Room',
+    ],
+    specialEnemies: [
+      {
+        name: 'Catalyst Zombie',
+        desc: 'Same three variants as IX (Fire, Poison, Electric) - present throughout the Titanic. The tight corridors of the ship make their death effects especially dangerous.',
+        tip: 'The narrow hallways of Voyage make Catalyst death effects far more dangerous than in open maps. Always back up and maintain distance before finishing them.',
+      },
+      {
+        name: 'Stoker',
+        desc: 'A special high-health zombie that charges with increased speed and deals heavy melee damage. Appears mid-round in the lower ship sections.',
+        tip: 'The Sentinel Artifact is the fastest way to handle a Stoker. Otherwise, kite him around large furniture and focus sustained fire.',
       },
     ],
     strategies: [
@@ -2979,6 +3564,29 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 5,
         title: 'Finish final encounter',
         desc: 'Close the final sequence cleanly with shield timing and controlled crowding in narrow prison routes.',
+      },
+    ],
+    eeSoloable: 'no',
+    perks: [
+      { name: 'Quick Revive',      location: 'Michigan Avenue (near spawn)' },
+      { name: 'Juggernog',         location: 'Cell Block (lower level)' },
+      { name: 'Speed Cola',        location: 'Roof' },
+      { name: 'Death Perception',  location: "Warden's Office" },
+      { name: 'Dying Wish',        location: 'Building 64 area' },
+      { name: 'Stamin-Up',         location: 'Citadel Tunnels' },
+    ],
+    mysteryBoxSpawns: [
+      'Cell Block',
+      'Cafeteria',
+      'Docks',
+      'Roof',
+      "Warden's Office",
+    ],
+    specialEnemies: [
+      {
+        name: 'Brutus',
+        desc: 'Returns from Mob of the Dead. Armoured warden that appears from round 4. He locks perk machines, Pack-a-Punch, and the Mystery Box on contact - making them unusable until he is killed. High health.',
+        tip: "Identical priority rule as MoTD - drop everything and kill Brutus immediately. The Spectral Shield's charged shot deals heavy damage to him.",
       },
     ],
     strategies: [
@@ -3193,6 +3801,34 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         title: 'Enter Ruins and finish boss',
         desc: 'Use forest door to enter the arena. Trap the invisible werewolf in green-beam squares during phases 1 and 3, then finish add-heavy phase 2.',
         tip: 'Arena Max Ammo/Carpenter drops respawn by phase only after prior pickups are collected.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Foyer / entrance hall' },
+      { name: 'Juggernog',         location: 'Library' },
+      { name: 'Speed Cola',        location: 'Study' },
+      { name: 'Deadshot Daiquiri', location: 'Master Bedroom area' },
+      { name: 'Stamin-Up',         location: 'Wine Cellar' },
+      { name: 'Death Perception',  location: 'Dining Room' },
+    ],
+    mysteryBoxSpawns: [
+      'Foyer',
+      'Library',
+      'Dining Room',
+      'Wine Cellar',
+      'Outdoor courtyard',
+    ],
+    specialEnemies: [
+      {
+        name: 'Vampire',
+        desc: 'Fast undead that appear alongside regular zombies. They are significantly faster than standard zombies and can teleport short distances. They take reduced damage from conventional bullets.',
+        tip: "The Alistair's Folly revolver deals bonus damage to vampires. Silver Bullet ammo mod is extremely effective. Keep moving - they chase aggressively.",
+      },
+      {
+        name: 'Werewolf',
+        desc: 'Large, heavily built undead that appear in later rounds. They charge and swipe with wide-arc attacks and have high health.',
+        tip: "The Alistair's Folly and upgraded shotguns handle werewolves efficiently. Avoid fighting in narrow corridors where their swipe hitbox is widest.",
       },
     ],
     strategies: [
@@ -3494,6 +4130,33 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Defeat Pegasus phase first, then burn Perseus in Mount Olympus rotations and close with focused damage windows.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: "Apollo's Theatre (spawn area)" },
+      { name: 'Juggernog',         location: 'Lair of the Gods' },
+      { name: 'Speed Cola',        location: 'Near the amphitheatre' },
+      { name: 'Deadshot Daiquiri', location: "Oracle's Crossroads" },
+      { name: 'Stamin-Up',         location: 'Flooded Crypts' },
+      { name: 'Death Perception',  location: "Python's Cave" },
+    ],
+    mysteryBoxSpawns: [
+      "Apollo's Theatre (spawn)",
+      "Oracle's Crossroads",
+      'Lair of the Gods',
+      'Flooded Crypts',
+    ],
+    specialEnemies: [
+      {
+        name: 'Gegenees (Six-Armed Giant)',
+        desc: 'A massive six-armed titan boss that appears periodically. It has an enormous health pool and sweeping attacks that cover wide arcs. It targets the nearest player.',
+        tip: 'Circle the arena away from its arm sweeps. All players should focus fire simultaneously. It drops major power-ups on death, so coordinate the kill for maximum team benefit.',
+      },
+      {
+        name: 'Catalyst Zombie',
+        desc: 'Fire, Poison, and Electric variants present throughout the map. Cave and crypt areas make their death effects especially hazardous.',
+        tip: 'The tight cave passages amplify Catalyst death effects significantly. Maintain extra distance before delivering killing shots in enclosed areas.',
+      },
+    ],
     strategies: [
       'Assign each player one god hand path early so upgrades do not overlap and waste rounds.',
       'Save specialist charge for challenge portals and Olympus damage windows, not mid-round cleanup.',
@@ -3629,6 +4292,33 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Finish Avogadro sequence',
         desc: 'Fill canisters, position Avogadro into APD, and secure final shard interaction.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Town - Transfusion Facility' },
+      { name: 'Juggernog',         location: 'Town - near Powerhouse' },
+      { name: 'Speed Cola',        location: 'Town - Green House area' },
+      { name: 'Deadshot Daiquiri', location: 'Bunker - Brig area' },
+      { name: 'Stamin-Up',         location: 'Bunker - Generators' },
+      { name: 'Death Perception',  location: 'Bunker - Lounge area' },
+    ],
+    mysteryBoxSpawns: [
+      'Town - Powerhouse area',
+      'Town - Yellow House',
+      'Bunker - Operations room',
+      'Bunker - Diner area',
+    ],
+    specialEnemies: [
+      {
+        name: 'Plaguehound',
+        desc: 'Zombie dogs that appear in dedicated hound rounds, similar to Hellhounds but they leave lingering acid puddles where they die. The puddles deal damage on contact.',
+        tip: 'Do not stand where a Plaguehound fell - the acid persists. Move through open areas to avoid stepping in accumulated puddles during the round.',
+      },
+      {
+        name: 'Krasny Soldat',
+        desc: 'Armoured Soviet soldier zombies that appear from mid-round onward. They have significantly higher health than standard zombies and move with purpose.',
+        tip: 'Magmagat (Blundergat upgrade) or high-damage PaP weapons are recommended. Their armour absorbs the first several hits - focus on headshots to bypass.',
       },
     ],
     strategies: [
@@ -3776,6 +4466,34 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         desc: 'Enter Golden PaP transformation and stay inside the moving Seal shield through lava-map pressure until Human Infusion closeout.',
       },
     ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'Docks area (near spawn)' },
+      { name: 'Juggernog',         location: 'Lighthouse (mid-level)' },
+      { name: 'Speed Cola',        location: 'Lighthouse (top area)' },
+      { name: 'Deadshot Daiquiri', location: 'Frozen Coast section' },
+      { name: 'Stamin-Up',         location: 'Ship interior' },
+      { name: 'Death Perception',  location: 'Research lab area' },
+    ],
+    mysteryBoxSpawns: [
+      'Docks / spawn area',
+      'Lighthouse base',
+      'Ship interior',
+      'Research lab',
+      'Frozen Coast',
+    ],
+    specialEnemies: [
+      {
+        name: 'Plaguehound',
+        desc: 'Returns from Alpha Omega. Zombie dogs in hound rounds that leave acid puddles on death. The frozen and narrow terrain of Tag makes puddle management trickier than on open maps.',
+        tip: 'Use the open dock areas for hound rounds - the wider space lets you position away from puddles. The lighthouse spiral is too confined for safe hound clearing.',
+      },
+      {
+        name: 'Krasny Soldat',
+        desc: 'Armoured Soviet soldier zombies that return from Alpha Omega. High health, consistent threat in later rounds.',
+        tip: 'The CRBR-S Wonder Weapon is highly effective against Krasny Soldats. Aim for the head to bypass their armour.',
+      },
+    ],
     strategies: [
       'Tag runs are won by route discipline: pre-call every zipline and flinger before carrying timed items.',
       'Use Tundra Gun for panic clears and escort protection, not routine point rounds.',
@@ -3897,6 +4615,33 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
         num: 4,
         title: 'Reach Round 150 objective',
         desc: 'Maintain disciplined shield/equipment economy and controlled teleporter usage through ultra-late rounds.',
+      },
+    ],
+    eeSoloable: 'partial',
+    perks: [
+      { name: 'Quick Revive',      location: 'War Room (starting area)' },
+      { name: 'Juggernog',         location: 'South Laboratories' },
+      { name: 'Speed Cola',        location: 'North Laboratories' },
+      { name: 'Deadshot Daiquiri', location: 'Teleporter room area' },
+      { name: 'Stamin-Up',         location: 'DEFCON switch corridor' },
+      { name: 'Death Perception',  location: 'Sub-level hallway' },
+    ],
+    mysteryBoxSpawns: [
+      'War Room',
+      'South Lab',
+      'North Lab',
+      'Sub-level / teleporter area',
+    ],
+    specialEnemies: [
+      {
+        name: 'Pentagon Thief (Evolved)',
+        desc: 'Returns from Five. Appears periodically and attempts to steal your currently equipped weapon. In Classified, he has higher health and moves faster than his Five incarnation.',
+        tip: 'Switch to a cheap weapon immediately when the alarm sounds. The teleporter can reposition you to intercept his route. Killing him before escape drops a Max Ammo.',
+      },
+      {
+        name: 'Zombie Soldiers',
+        desc: 'Standard zombies in military uniforms, but Classified introduces periodic armoured variants in later rounds that absorb extra damage.',
+        tip: "Classified's circular teleporter loops are your main combat advantage - use them to reset positions and escape pressure from armoured variants.",
       },
     ],
     strategies: [
