@@ -1,6 +1,6 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { PointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { pickRandomDocuments, type LabDocument } from '../../data/labDocuments';
 import DocumentViewer from './DocumentViewer';
@@ -9,9 +9,45 @@ import DocumentViewer from './DocumentViewer';
 
 const DOC_COUNT = 7;
 const GLOW_RANGE = 3.2;
-const GLOW_IDLE = 0.02;
-const GLOW_NEAR = 0.06;
-const GLOW_HOVER = 0.18;
+const GLOW_IDLE = 0.03;
+const GLOW_NEAR = 0.08;
+const GLOW_TARGET = 0.28;
+
+// FPS controller
+const EYE_HEIGHT = 1.6;
+const MOVE_SPEED = 2.6;
+const PLAYER_RADIUS = 0.3;
+const PICKUP_RANGE = 2.2;
+
+// Room bounds (walls at ±5 on x, ±4 on z)
+const ROOM_MIN_X = -5 + PLAYER_RADIUS;
+const ROOM_MAX_X = 5 - PLAYER_RADIUS;
+const ROOM_MIN_Z = -4 + PLAYER_RADIUS;
+const ROOM_MAX_Z = 4 - PLAYER_RADIUS;
+
+// Furniture AABBs (XZ plane) the player can't walk through
+const OBSTACLES: Array<{ minX: number; maxX: number; minZ: number; maxZ: number }> = [
+  { minX: -1.2, maxX: 1.2, minZ: -2.1, maxZ: -0.9 },      // desk
+  { minX: -4.55, maxX: -3.85, minZ: -3.3, maxZ: -2.7 },   // filing cabinet
+  { minX: 3.15, maxX: 4.85, minZ: -2.7, maxZ: -2.3 },     // shelf
+  { minX: 0.55, maxX: 1.05, minZ: -0.25, maxZ: 0.25 },    // chair
+];
+
+function collidesAt(x: number, z: number): boolean {
+  if (x < ROOM_MIN_X || x > ROOM_MAX_X) return true;
+  if (z < ROOM_MIN_Z || z > ROOM_MAX_Z) return true;
+  for (const o of OBSTACLES) {
+    if (
+      x > o.minX - PLAYER_RADIUS &&
+      x < o.maxX + PLAYER_RADIUS &&
+      z > o.minZ - PLAYER_RADIUS &&
+      z < o.maxZ + PLAYER_RADIUS
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // ── Interactable document mesh ───────────────────────────────
 
@@ -20,38 +56,28 @@ interface DocProps {
   rotation?: [number, number, number];
   scale?: [number, number, number];
   doc: LabDocument;
-  onPick: (doc: LabDocument) => void;
+  isTargeted: boolean;
 }
 
-function DocPaper({ position, rotation = [0, 0, 0], scale = [0.28, 0.38, 1], doc, onPick }: DocProps) {
+function DocPaper({ position, rotation = [0, 0, 0], scale = [0.28, 0.38, 1], doc, isTargeted }: DocProps) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const matRef = useRef<THREE.MeshStandardMaterial>(null!);
-  const [hovered, setHovered] = useState(false);
 
   useFrame(({ camera }) => {
     if (!matRef.current) return;
     const dist = camera.position.distanceTo(new THREE.Vector3(...position));
     const proximity = Math.max(0, 1 - dist / GLOW_RANGE);
-    const target = hovered && proximity > 0.1
-      ? GLOW_HOVER * proximity
+    const target = isTargeted
+      ? GLOW_TARGET
       : proximity > 0.05
         ? GLOW_NEAR * proximity
         : GLOW_IDLE;
     matRef.current.emissiveIntensity = THREE.MathUtils.lerp(
       matRef.current.emissiveIntensity,
       target,
-      0.08,
+      0.12,
     );
   });
-
-  const handleOver = useCallback(() => {
-    setHovered(true);
-    document.body.style.cursor = 'pointer';
-  }, []);
-  const handleOut = useCallback(() => {
-    setHovered(false);
-    document.body.style.cursor = '';
-  }, []);
 
   return (
     <mesh
@@ -59,9 +85,7 @@ function DocPaper({ position, rotation = [0, 0, 0], scale = [0.28, 0.38, 1], doc
       position={position}
       rotation={rotation}
       scale={scale}
-      onPointerOver={handleOver}
-      onPointerOut={handleOut}
-      onClick={() => onPick(doc)}
+      userData={{ docId: doc.id }}
     >
       <planeGeometry args={[1, 1.35]} />
       <meshStandardMaterial
@@ -104,6 +128,10 @@ function Room() {
       </mesh>
       {/* Back wall */}
       <mesh position={[0, 1.6, -4]} material={wallMat}>
+        <planeGeometry args={[10, 3.2]} />
+      </mesh>
+      {/* Front wall (closes the room behind the player) */}
+      <mesh position={[0, 1.6, 4]} rotation={[0, Math.PI, 0]} material={wallMat}>
         <planeGeometry args={[10, 3.2]} />
       </mesh>
       {/* Left wall */}
@@ -229,38 +257,242 @@ function Chair() {
 
 // ── Flickering light ─────────────────────────────────────────
 
-function FlickerLight() {
+interface FlickerLightProps {
+  position: [number, number, number];
+  color?: string;
+  bulbColor?: string;
+  baseIntensity?: number;
+  phase?: number;
+  blinkChance?: number;
+}
+
+function FlickerLight({
+  position,
+  color = '#e8c880',
+  bulbColor = '#ffe0a0',
+  baseIntensity = 0.85,
+  phase = 0,
+  blinkChance = 0,
+}: FlickerLightProps) {
   const lightRef = useRef<THREE.PointLight>(null!);
+  const bulbMatRef = useRef<THREE.MeshStandardMaterial>(null!);
+  const blinkStateRef = useRef({ nextToggle: 0, on: true });
 
   useFrame(({ clock }) => {
     if (!lightRef.current) return;
-    const t = clock.elapsedTime;
-    const flicker = 0.6 + Math.sin(t * 12) * 0.08 + Math.sin(t * 27) * 0.05 + Math.random() * 0.12;
-    lightRef.current.intensity = flicker;
+    const t = clock.elapsedTime + phase;
+
+    // Optional hard on/off blink (for the second light)
+    if (blinkChance > 0) {
+      if (t > blinkStateRef.current.nextToggle) {
+        blinkStateRef.current.on = !blinkStateRef.current.on;
+        // Longer "on" stretches, shorter "off" flickers
+        const dwell = blinkStateRef.current.on
+          ? 0.6 + Math.random() * 2.2
+          : 0.04 + Math.random() * 0.22;
+        blinkStateRef.current.nextToggle = t + dwell;
+      }
+      if (!blinkStateRef.current.on) {
+        lightRef.current.intensity = 0;
+        if (bulbMatRef.current) bulbMatRef.current.emissiveIntensity = 0.15;
+        return;
+      }
+    }
+
+    const flicker =
+      baseIntensity +
+      Math.sin(t * 12) * 0.09 +
+      Math.sin(t * 27) * 0.05 +
+      (Math.random() - 0.5) * 0.14;
+    lightRef.current.intensity = Math.max(0, flicker);
+    if (bulbMatRef.current) {
+      bulbMatRef.current.emissiveIntensity = 1.4 + flicker * 0.8;
+    }
   });
 
   return (
     <>
       <pointLight
         ref={lightRef}
-        position={[0, 3.0, -1.5]}
-        color="#e8c880"
-        intensity={0.7}
-        distance={12}
+        position={position}
+        color={color}
+        intensity={baseIntensity}
+        distance={14}
         decay={2}
         castShadow
       />
       {/* Bulb mesh */}
-      <mesh position={[0, 3.05, -1.5]}>
+      <mesh position={[position[0], position[1] + 0.05, position[2]]}>
         <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial color="#ffe0a0" emissive="#ffe0a0" emissiveIntensity={2} />
+        <meshStandardMaterial
+          ref={bulbMatRef}
+          color={bulbColor}
+          emissive={bulbColor}
+          emissiveIntensity={2}
+        />
       </mesh>
       {/* Wire */}
-      <mesh position={[0, 3.12, -1.5]}>
+      <mesh position={[position[0], position[1] + 0.12, position[2]]}>
         <cylinderGeometry args={[0.005, 0.005, 0.12, 4]} />
         <meshStandardMaterial color="#333" />
       </mesh>
     </>
+  );
+}
+
+// ── FPS Controller ───────────────────────────────────────────
+
+interface FPSControllerProps {
+  docs: LabDocument[];
+  paused: boolean;
+  onLockChange: (locked: boolean) => void;
+  onTargetChange: (id: string | null) => void;
+  onPickDoc: (doc: LabDocument) => void;
+}
+
+function FPSController({
+  docs,
+  paused,
+  onLockChange,
+  onTargetChange,
+  onPickDoc,
+}: FPSControllerProps) {
+  const { camera, scene, gl } = useThree();
+  const controlsRef = useRef<any>(null);
+  const keysRef = useRef<Record<string, boolean>>({});
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const targetIdRef = useRef<string | null>(null);
+  const lockedRef = useRef(false);
+  const docsRef = useRef(docs);
+  const onPickDocRef = useRef(onPickDoc);
+
+  useEffect(() => {
+    docsRef.current = docs;
+  }, [docs]);
+  useEffect(() => {
+    onPickDocRef.current = onPickDoc;
+  }, [onPickDoc]);
+
+  // Unlock the pointer when the app asks us to pause (e.g. doc viewer opens)
+  useEffect(() => {
+    if (paused && controlsRef.current?.isLocked) {
+      controlsRef.current.unlock();
+    }
+  }, [paused]);
+
+  // Attempt pickup on E / F / Mouse1
+  useEffect(() => {
+    const tryPick = () => {
+      if (!lockedRef.current) return;
+      const id = targetIdRef.current;
+      if (!id) return;
+      const doc = docsRef.current.find(d => d.id === id);
+      if (doc) onPickDocRef.current(doc);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      keysRef.current[e.code] = true;
+      if (e.code === 'KeyE' || e.code === 'KeyF') {
+        tryPick();
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      keysRef.current[e.code] = false;
+    };
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button === 0) tryPick();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    const dom = gl.domElement;
+    dom.addEventListener('mousedown', onMouseDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      dom.removeEventListener('mousedown', onMouseDown);
+    };
+  }, [gl]);
+
+  // Fix eye height once on mount so the OrbitControls-era starting position
+  // doesn't leave the player floating.
+  useEffect(() => {
+    camera.position.y = EYE_HEIGHT;
+  }, [camera]);
+
+  const forward = useMemo(() => new THREE.Vector3(), []);
+  const right = useMemo(() => new THREE.Vector3(), []);
+  const move = useMemo(() => new THREE.Vector3(), []);
+  const centerNdc = useMemo(() => new THREE.Vector2(0, 0), []);
+
+  useFrame((_, delta) => {
+    if (paused || !lockedRef.current) {
+      if (targetIdRef.current !== null) {
+        targetIdRef.current = null;
+        onTargetChange(null);
+      }
+      return;
+    }
+
+    // Movement
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    if (forward.lengthSq() > 0) forward.normalize();
+    right.crossVectors(forward, camera.up).normalize();
+
+    move.set(0, 0, 0);
+    const k = keysRef.current;
+    if (k['KeyW'] || k['ArrowUp']) move.add(forward);
+    if (k['KeyS'] || k['ArrowDown']) move.sub(forward);
+    if (k['KeyD'] || k['ArrowRight']) move.add(right);
+    if (k['KeyA'] || k['ArrowLeft']) move.sub(right);
+
+    if (move.lengthSq() > 0) {
+      move.normalize().multiplyScalar(MOVE_SPEED * delta);
+      // Slide along walls: resolve X and Z independently
+      const nextX = camera.position.x + move.x;
+      if (!collidesAt(nextX, camera.position.z)) camera.position.x = nextX;
+      const nextZ = camera.position.z + move.z;
+      if (!collidesAt(camera.position.x, nextZ)) camera.position.z = nextZ;
+    }
+    camera.position.y = EYE_HEIGHT;
+
+    // Raycast from the screen center for pickup targeting
+    raycasterRef.current.setFromCamera(centerNdc, camera);
+    const hits = raycasterRef.current.intersectObjects(scene.children, true);
+    let found: string | null = null;
+    for (const h of hits) {
+      if (h.distance > PICKUP_RANGE) break;
+      const id = (h.object.userData as { docId?: string } | undefined)?.docId;
+      if (id) {
+        found = id;
+        break;
+      }
+      // Non-doc object blocks the ray (wall, furniture) — stop searching
+      break;
+    }
+    if (found !== targetIdRef.current) {
+      targetIdRef.current = found;
+      onTargetChange(found);
+    }
+  });
+
+  return (
+    <PointerLockControls
+      ref={controlsRef}
+      onLock={() => {
+        lockedRef.current = true;
+        onLockChange(true);
+      }}
+      onUnlock={() => {
+        lockedRef.current = false;
+        onLockChange(false);
+        if (targetIdRef.current !== null) {
+          targetIdRef.current = null;
+          onTargetChange(null);
+        }
+      }}
+    />
   );
 }
 
@@ -286,20 +518,40 @@ const DOC_SPAWNS: Array<{
 
 // ── Scene wrapper ────────────────────────────────────────────
 
+interface LabSceneProps {
+  docs: LabDocument[];
+  targetedId: string | null;
+  paused: boolean;
+  onPickDoc: (doc: LabDocument) => void;
+  onLockChange: (locked: boolean) => void;
+  onTargetChange: (id: string | null) => void;
+}
+
 function LabScene({
   docs,
+  targetedId,
+  paused,
   onPickDoc,
-}: {
-  docs: LabDocument[];
-  onPickDoc: (doc: LabDocument) => void;
-}) {
+  onLockChange,
+  onTargetChange,
+}: LabSceneProps) {
   return (
     <>
       {/* Lighting */}
-      <ambientLight intensity={0.04} color="#4a4030" />
-      <FlickerLight />
-      {/* Secondary dim fill from doorway */}
-      <pointLight position={[0, 2, 3.5]} color="#3050a0" intensity={0.08} distance={8} decay={2} />
+      <ambientLight intensity={0.08} color="#4a4030" />
+      {/* Main desk light (steady flicker) */}
+      <FlickerLight position={[0, 3.0, -1.5]} color="#e8c880" bulbColor="#ffe0a0" baseIntensity={0.9} />
+      {/* Second bulb over the entrance/chair side — blinks on and off to fight the dark */}
+      <FlickerLight
+        position={[0, 3.0, 1.8]}
+        color="#d8c090"
+        bulbColor="#ffd890"
+        baseIntensity={0.75}
+        phase={1.7}
+        blinkChance={1}
+      />
+      {/* Cold fill from the corner so deep shadows aren't pitch black */}
+      <pointLight position={[-3.5, 2.2, 2.5]} color="#3050a0" intensity={0.12} distance={9} decay={2} />
 
       {/* Room */}
       <Room />
@@ -320,25 +572,18 @@ function LabScene({
             rotation={spawn.rotation}
             scale={spawn.scale}
             doc={doc}
-            onPick={onPickDoc}
+            isTargeted={targetedId === doc.id}
           />
         );
       })}
 
-      {/* Camera controls */}
-      <OrbitControls
-        target={[0, 1.2, -1.5]}
-        minDistance={1.5}
-        maxDistance={5.5}
-        minPolarAngle={0.4}
-        maxPolarAngle={1.55}
-        minAzimuthAngle={-Math.PI / 2.5}
-        maxAzimuthAngle={Math.PI / 2.5}
-        enableDamping
-        dampingFactor={0.06}
-        enablePan={false}
-        rotateSpeed={0.5}
-        zoomSpeed={0.6}
+      {/* FPS walk + look + raycast pickup */}
+      <FPSController
+        docs={docs}
+        paused={paused}
+        onLockChange={onLockChange}
+        onTargetChange={onTargetChange}
+        onPickDoc={onPickDoc}
       />
     </>
   );
@@ -350,31 +595,115 @@ export default function RichtofensLab() {
   const [docs] = useState(() => pickRandomDocuments(DOC_COUNT));
   const [viewingDoc, setViewingDoc] = useState<LabDocument | null>(null);
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
+  const [locked, setLocked] = useState(false);
+  const [targetedId, setTargetedId] = useState<string | null>(null);
 
   const handlePick = useCallback((doc: LabDocument) => {
     setFoundIds(prev => new Set(prev).add(doc.id));
     setViewingDoc(doc);
-    document.body.style.cursor = '';
   }, []);
 
   const handleClose = useCallback(() => {
     setViewingDoc(null);
   }, []);
 
+  const paused = viewingDoc !== null;
+  const targetedDoc = targetedId ? docs.find(d => d.id === targetedId) : null;
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0a0806' }}>
       {/* 3D Canvas */}
       <Canvas
-        camera={{ position: [0, 1.6, 3.2], fov: 55, near: 0.1, far: 50 }}
+        camera={{ position: [0, EYE_HEIGHT, 2.5], fov: 70, near: 0.1, far: 50 }}
         shadows
         style={{ width: '100%', height: '100%' }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.9 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
       >
-        <fog attach="fog" args={['#0a0806', 3, 12]} />
-        <LabScene docs={docs} onPickDoc={handlePick} />
+        <fog attach="fog" args={['#0a0806', 4, 14]} />
+        <LabScene
+          docs={docs}
+          targetedId={targetedId}
+          paused={paused}
+          onPickDoc={handlePick}
+          onLockChange={setLocked}
+          onTargetChange={setTargetedId}
+        />
       </Canvas>
 
-      {/* HUD overlay — found counter + hint */}
+      {/* Crosshair */}
+      {locked && !paused && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: 4,
+            height: 4,
+            marginLeft: -2,
+            marginTop: -2,
+            borderRadius: '50%',
+            background: targetedDoc ? '#e8c880' : 'rgba(232, 200, 128, 0.55)',
+            boxShadow: targetedDoc ? '0 0 6px #e8c880' : 'none',
+            pointerEvents: 'none',
+            zIndex: 4,
+          }}
+        />
+      )}
+
+      {/* Pickup prompt */}
+      {locked && !paused && targetedDoc && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(50% + 22px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: '0.18em',
+            color: '#e8c880',
+            textTransform: 'uppercase',
+            pointerEvents: 'none',
+            textShadow: '0 0 8px rgba(0,0,0,0.9)',
+            whiteSpace: 'nowrap',
+            zIndex: 4,
+          }}
+        >
+          [ E ] Read document
+        </div>
+      )}
+
+      {/* Click-to-play overlay (shown when pointer is not locked) */}
+      {!locked && !paused && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 14,
+            background: 'rgba(8, 6, 4, 0.55)',
+            color: '#c9a24a',
+            fontFamily: "'IBM Plex Mono', monospace",
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            pointerEvents: 'none',
+            zIndex: 6,
+            textShadow: '0 0 8px rgba(0,0,0,0.9)',
+          }}
+        >
+          <div style={{ fontFamily: "'Cinzel', serif", fontSize: 22, letterSpacing: '0.3em' }}>
+            Click to enter
+          </div>
+          <div style={{ fontSize: 10, color: '#8a7040' }}>
+            WASD · Move &nbsp; · &nbsp; Mouse · Look &nbsp; · &nbsp; E / F / Click · Pick up &nbsp; · &nbsp; Esc · Pause
+          </div>
+        </div>
+      )}
+
+      {/* HUD — found counter */}
       <div
         style={{
           position: 'absolute',
@@ -384,17 +713,17 @@ export default function RichtofensLab() {
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 10,
           letterSpacing: '0.18em',
-          color: '#4a3a22',
+          color: '#6a5028',
           textTransform: 'uppercase',
           pointerEvents: 'none',
           textAlign: 'center',
+          textShadow: '0 0 6px rgba(0,0,0,0.8)',
+          zIndex: 3,
         }}
       >
-        {foundIds.size === 0
-          ? 'Look around the lab. Zoom in to find hidden documents.'
-          : foundIds.size >= DOC_COUNT
-            ? `All ${DOC_COUNT} documents recovered.`
-            : `${foundIds.size} / ${DOC_COUNT} documents found`}
+        {foundIds.size >= DOC_COUNT
+          ? `All ${DOC_COUNT} documents recovered.`
+          : `${foundIds.size} / ${DOC_COUNT} documents found`}
       </div>
 
       {/* Back link */}
@@ -407,10 +736,10 @@ export default function RichtofensLab() {
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 10,
           letterSpacing: '0.18em',
-          color: '#4a3a22',
+          color: '#6a5028',
           textDecoration: 'none',
           textTransform: 'uppercase',
-          zIndex: 5,
+          zIndex: 7,
         }}
       >
         ← Kronorium
@@ -425,9 +754,9 @@ export default function RichtofensLab() {
           fontFamily: "'Cinzel', serif",
           fontSize: 12,
           letterSpacing: '0.25em',
-          color: '#3a2e1e',
+          color: '#5a4628',
           textTransform: 'uppercase',
-          zIndex: 5,
+          zIndex: 3,
         }}
       >
         Richtofen&apos;s Lab
