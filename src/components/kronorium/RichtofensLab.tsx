@@ -383,7 +383,7 @@ function FPSController({
     }
   }, [paused]);
 
-  // Attempt pickup on E / F / Mouse1
+  // Attempt pickup on E / F
   useEffect(() => {
     const tryPick = () => {
       if (!lockedRef.current) return;
@@ -402,20 +402,14 @@ function FPSController({
     const onKeyUp = (e: KeyboardEvent) => {
       keysRef.current[e.code] = false;
     };
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button === 0) tryPick();
-    };
 
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
-    const dom = gl.domElement;
-    dom.addEventListener('mousedown', onMouseDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
-      dom.removeEventListener('mousedown', onMouseDown);
     };
-  }, [gl]);
+  }, []);
 
   // Fix eye height once on mount so the OrbitControls-era starting position
   // doesn't leave the player floating.
@@ -712,7 +706,7 @@ export default function RichtofensLab() {
             Click to enter
           </div>
           <div style={{ fontSize: 10, color: '#8a7040' }}>
-            WASD · Move &nbsp; · &nbsp; Mouse · Look &nbsp; · &nbsp; E / F / Click · Pick up &nbsp; · &nbsp; Esc · Pause
+            WASD · Move &nbsp; · &nbsp; Mouse · Look &nbsp; · &nbsp; E / F · Pick up &nbsp; · &nbsp; Esc · Pause
           </div>
         </div>
       )}
