@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
-  Controls,
   MiniMap,
+  Panel,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeProps,
@@ -146,6 +147,115 @@ function RowLabelNode({ data }: NodeProps) {
 }
 
 const fullNodeTypes = { loreEvent: LoreEventNode, rowLabel: RowLabelNode };
+
+// ── Custom zoom controls (finer steps than default) ─────────
+
+const ZOOM_STEP = 1.25;
+
+function CustomZoomControls() {
+  const { zoomTo, getZoom, fitView } = useReactFlow();
+
+  const btnStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 26,
+    height: 26,
+    background: '#17130d',
+    border: 'none',
+    borderBottom: '1px solid #2e2416',
+    color: '#7a6a50',
+    fontSize: 16,
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
+  };
+
+  return (
+    <Panel position="bottom-left">
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid #2e2416',
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+      >
+        <button
+          style={btnStyle}
+          title="Zoom in"
+          onClick={() => zoomTo(Math.min(getZoom() * ZOOM_STEP, 2), { duration: 200 })}
+        >
+          +
+        </button>
+        <button
+          style={btnStyle}
+          title="Zoom out"
+          onClick={() => zoomTo(Math.max(getZoom() / ZOOM_STEP, 0.15), { duration: 200 })}
+        >
+          −
+        </button>
+        <button
+          style={{ ...btnStyle, borderBottom: 'none', fontSize: 13 }}
+          title="Fit view"
+          onClick={() => fitView({ padding: 0.12, duration: 200 })}
+        >
+          ⊞
+        </button>
+      </div>
+    </Panel>
+  );
+}
+
+// ── Minimap absolute panning (viewport jumps to pointer) ────
+
+function MiniMapAbsolutePan() {
+  const { setCenter, getZoom } = useReactFlow();
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    const svg = document.querySelector('.react-flow__minimap svg') as SVGSVGElement | null;
+    if (!svg) return;
+
+    const panTo = (e: PointerEvent) => {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+      setCenter(pt.x, pt.y, { zoom: getZoom(), duration: 0 });
+    };
+
+    const onDown = (e: PointerEvent) => {
+      e.preventDefault();
+      dragging.current = true;
+      svg.setPointerCapture(e.pointerId);
+      panTo(e);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!dragging.current) return;
+      panTo(e);
+    };
+
+    const onUp = () => {
+      dragging.current = false;
+    };
+
+    svg.addEventListener('pointerdown', onDown);
+    svg.addEventListener('pointermove', onMove);
+    svg.addEventListener('pointerup', onUp);
+    svg.addEventListener('lostpointercapture', onUp);
+
+    return () => {
+      svg.removeEventListener('pointerdown', onDown);
+      svg.removeEventListener('pointermove', onMove);
+      svg.removeEventListener('pointerup', onUp);
+      svg.removeEventListener('lostpointercapture', onUp);
+    };
+  }, [setCenter, getZoom]);
+
+  return null;
+}
 
 // ── Row label nodes (static decorators) ─────────────────────
 
@@ -435,6 +545,7 @@ export default function KronoriumTimeline() {
               >
                 <div>PAN ········· drag canvas</div>
                 <div>ZOOM ········ scroll wheel</div>
+                <div>MINIMAP ····· click to jump</div>
                 <div>SELECT ······ click a node</div>
                 <div>DESELECT ···· click canvas</div>
               </div>
@@ -468,17 +579,11 @@ export default function KronoriumTimeline() {
             color="#1e1810"
           />
 
-          <Controls
-            style={{
-              background: '#17130d',
-              border: '1px solid #2e2416',
-              borderRadius: 2,
-            }}
-          />
+          <CustomZoomControls />
 
           <MiniMap
-            pannable
             zoomable
+            zoomStep={5}
             style={{
               background: '#110e09',
               border: '1px solid #2e2416',
@@ -492,6 +597,8 @@ export default function KronoriumTimeline() {
             }}
             nodeStrokeWidth={0}
           />
+
+          <MiniMapAbsolutePan />
         </ReactFlow>
 
         {/* Legend */}
