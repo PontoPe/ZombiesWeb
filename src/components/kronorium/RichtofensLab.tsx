@@ -1,13 +1,13 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { PointerLockControls } from '@react-three/drei';
+import { PointerLockControls, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { pickRandomDocuments, type LabDocument } from '../../data/labDocuments';
 import DocumentViewer from './DocumentViewer';
 
 // ── Constants ────────────────────────────────────────────────
 
-const DOC_COUNT = 7;
+const DOC_COUNT = 14;
 const GLOW_RANGE = 3.2;
 const GLOW_IDLE = 0.03;
 const GLOW_NEAR = 0.08;
@@ -19,18 +19,21 @@ const MOVE_SPEED = 2.6;
 const PLAYER_RADIUS = 0.3;
 const PICKUP_RANGE = 2.2;
 
-// Room bounds (walls at ±5 on x, ±4 on z)
-const ROOM_MIN_X = -5 + PLAYER_RADIUS;
-const ROOM_MAX_X = 5 - PLAYER_RADIUS;
-const ROOM_MIN_Z = -4 + PLAYER_RADIUS;
-const ROOM_MAX_Z = 4 - PLAYER_RADIUS;
+// Room bounds (walls at ±8 on x, ±6 on z)
+const ROOM_HALF_X = 8;
+const ROOM_HALF_Z = 6;
+const ROOM_MIN_X = -ROOM_HALF_X + PLAYER_RADIUS;
+const ROOM_MAX_X = ROOM_HALF_X - PLAYER_RADIUS;
+const ROOM_MIN_Z = -ROOM_HALF_Z + PLAYER_RADIUS;
+const ROOM_MAX_Z = ROOM_HALF_Z - PLAYER_RADIUS;
 
 // Furniture AABBs (XZ plane) the player can't walk through
 const OBSTACLES: Array<{ minX: number; maxX: number; minZ: number; maxZ: number }> = [
-  { minX: -1.2, maxX: 1.2, minZ: -2.1, maxZ: -0.9 },      // desk
-  { minX: -4.55, maxX: -3.85, minZ: -3.3, maxZ: -2.7 },   // filing cabinet
-  { minX: 3.15, maxX: 4.85, minZ: -2.7, maxZ: -2.3 },     // shelf
-  { minX: 0.55, maxX: 1.05, minZ: -0.25, maxZ: 0.25 },    // chair
+  { minX: -1.2, maxX: 1.2, minZ: -3.2, maxZ: -1.8 },     // desk
+  { minX: -7.6, maxX: -6.4, minZ: -4.5, maxZ: -3.5 },    // filing cabinet
+  { minX: 6.0, maxX: 7.8, minZ: -5.0, maxZ: -3.8 },      // shelf
+  { minX: 6.4, maxX: 7.8, minZ: -2.2, maxZ: -1.2 },      // psx cabinet
+  { minX: 6.5, maxX: 8.0, minZ: 3.0, maxZ: 5.5 },        // barricaded door (planks)
 ];
 
 function collidesAt(x: number, z: number): boolean {
@@ -102,6 +105,10 @@ function DocPaper({ position, rotation = [0, 0, 0], scale = [0.28, 0.38, 1], doc
 
 // ── Room geometry ────────────────────────────────────────────
 
+const ROOM_W = ROOM_HALF_X * 2;
+const ROOM_D = ROOM_HALF_Z * 2;
+const CEIL_H = 3.2;
+
 function Room() {
   const wallMat = useMemo(
     () => new THREE.MeshStandardMaterial({ color: '#2a2820', roughness: 0.92, side: THREE.BackSide }),
@@ -120,27 +127,27 @@ function Room() {
     <group>
       {/* Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} material={floorMat}>
-        <planeGeometry args={[10, 8]} />
+        <planeGeometry args={[ROOM_W, ROOM_D]} />
       </mesh>
       {/* Ceiling */}
-      <mesh position={[0, 3.2, 0]} rotation={[Math.PI / 2, 0, 0]} material={ceilMat}>
-        <planeGeometry args={[10, 8]} />
+      <mesh position={[0, CEIL_H, 0]} rotation={[Math.PI / 2, 0, 0]} material={ceilMat}>
+        <planeGeometry args={[ROOM_W, ROOM_D]} />
       </mesh>
       {/* Back wall */}
-      <mesh position={[0, 1.6, -4]} material={wallMat}>
-        <planeGeometry args={[10, 3.2]} />
+      <mesh position={[0, CEIL_H / 2, -ROOM_HALF_Z]} material={wallMat}>
+        <planeGeometry args={[ROOM_W, CEIL_H]} />
       </mesh>
-      {/* Front wall (closes the room behind the player) */}
-      <mesh position={[0, 1.6, 4]} rotation={[0, Math.PI, 0]} material={wallMat}>
-        <planeGeometry args={[10, 3.2]} />
+      {/* Front wall */}
+      <mesh position={[0, CEIL_H / 2, ROOM_HALF_Z]} rotation={[0, Math.PI, 0]} material={wallMat}>
+        <planeGeometry args={[ROOM_W, CEIL_H]} />
       </mesh>
       {/* Left wall */}
-      <mesh position={[-5, 1.6, 0]} rotation={[0, Math.PI / 2, 0]} material={wallMat}>
-        <planeGeometry args={[8, 3.2]} />
+      <mesh position={[-ROOM_HALF_X, CEIL_H / 2, 0]} rotation={[0, Math.PI / 2, 0]} material={wallMat}>
+        <planeGeometry args={[ROOM_D, CEIL_H]} />
       </mesh>
       {/* Right wall */}
-      <mesh position={[5, 1.6, 0]} rotation={[0, -Math.PI / 2, 0]} material={wallMat}>
-        <planeGeometry args={[8, 3.2]} />
+      <mesh position={[ROOM_HALF_X, CEIL_H / 2, 0]} rotation={[0, -Math.PI / 2, 0]} material={wallMat}>
+        <planeGeometry args={[ROOM_D, CEIL_H]} />
       </mesh>
     </group>
   );
@@ -149,40 +156,61 @@ function Room() {
 // ── Props / furniture ────────────────────────────────────────
 
 function Desk() {
-  const woodMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#3a2a18', roughness: 0.75 }),
-    [],
-  );
+  const { scene } = useGLTF('/3dassets/psx_dining_table.glb');
   return (
-    <group position={[0, 0, -1.5]}>
-      {/* Top */}
-      <mesh position={[0, 0.74, 0]} material={woodMat}>
-        <boxGeometry args={[2.4, 0.06, 1.2]} />
-      </mesh>
-      {/* Legs */}
-      {[[-1.1, 0.37, -0.5], [1.1, 0.37, -0.5], [-1.1, 0.37, 0.5], [1.1, 0.37, 0.5]].map((pos, i) => (
-        <mesh key={i} position={pos as [number, number, number]} material={woodMat}>
-          <boxGeometry args={[0.06, 0.74, 0.06]} />
-        </mesh>
-      ))}
+    <group position={[0, 0, -2.5]}>
+      <primitive object={scene.clone()} />
     </group>
   );
 }
 
 function FilingCabinet() {
-  const metalMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#2e3028', roughness: 0.6, metalness: 0.3 }),
-    [],
-  );
+  const { scene, animations } = useGLTF('/3dassets/filing_cabinet.glb');
+  const groupRef = useRef<THREE.Group>(null!);
+  const { actions } = useAnimations(animations, groupRef);
+  const openRef = useRef<Record<string, boolean>>({});
+
+
+  const handleClick = useCallback(() => {
+    if (!actions) return;
+    const names = Object.keys(actions);
+    for (const name of names) {
+      const action = actions[name];
+      if (!action) continue;
+      const isOpen = openRef.current[name] ?? false;
+      action.paused = false;
+      action.clampWhenFinished = true;
+      action.setLoop(THREE.LoopOnce, 1);
+      if (isOpen) {
+        action.timeScale = -1;
+        if (action.time === 0) action.time = action.getClip().duration;
+        action.play();
+      } else {
+        action.timeScale = 1;
+        action.reset().play();
+      }
+      openRef.current[name] = !isOpen;
+    }
+  }, [actions]);
+
   return (
-    <group position={[-4.2, 0, -3]}>
-      <mesh position={[0, 0.7, 0]} material={metalMat}>
-        <boxGeometry args={[0.6, 1.4, 0.5]} />
-      </mesh>
-      {/* Open drawer */}
-      <mesh position={[0, 1.1, 0.2]} material={metalMat}>
-        <boxGeometry args={[0.52, 0.28, 0.15]} />
-      </mesh>
+    <group
+      ref={groupRef}
+      position={[-7, 0, -5.5]}
+      rotation={[0, Math.PI / 2, 0]}
+      scale={[1.2, 1.2, 1.2]}
+      onClick={handleClick}
+    >
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+function PsxCabinet() {
+  const { scene } = useGLTF('/3dassets/psx_cabinet.glb');
+  return (
+    <group position={[7, 0, -1.7]} rotation={[0, -Math.PI / 2, 0]} scale={[1.1, 1.1, 1.1]}>
+      <primitive object={scene.clone()} />
     </group>
   );
 }
@@ -193,7 +221,7 @@ function Shelf() {
     [],
   );
   return (
-    <group position={[4, 0, -2.5]}>
+    <group position={[7, 0, -4.4]}>
       {/* Shelf boards */}
       <mesh position={[0, 1.6, 0]} material={woodMat}>
         <boxGeometry args={[1.6, 0.04, 0.3]} />
@@ -222,38 +250,161 @@ function Shelf() {
 }
 
 function WallBoard() {
-  const boardMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#4a3a20', roughness: 0.9 }),
-    [],
-  );
+  const { scene } = useGLTF('/3dassets/low_poly_notice_board.glb');
   return (
-    <mesh position={[0, 2.0, -3.95]} material={boardMat}>
-      <boxGeometry args={[2.0, 1.2, 0.04]} />
-    </mesh>
+    <group position={[0, 2.0, -5.93]} rotation={[Math.PI / 2, 0, 0]} scale={[18, 18, 18]}>
+      <primitive object={scene.clone()} />
+    </group>
   );
 }
 
 function Chair() {
-  const mat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#2a2218', roughness: 0.8 }),
+  const { scene } = useGLTF('/3dassets/psx_chair.glb');
+  return (
+    <group position={[0.8, 0.3, -4.7]} rotation={[Math.PI / 2, Math.PI / 2, Math.PI]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function OldComputer() {
+  const { scene } = useGLTF('/3dassets/old_computer.glb');
+  return (
+    <group position={[-0.2, 0.78, -2.55]} rotation={[0, Math.PI / 2 + 0.15, 0]} scale={[1.33, 1.33, 1.33]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function Mauser() {
+  const { scene } = useGLTF('/3dassets/mauser_c-96_psx_ps1_style.glb');
+  return (
+    <group position={[0.85, 0.82, -2.7]} rotation={[0, -0.4, Math.PI / 2]} scale={[0.1, 0.1, 0.1]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function RayGun() {
+  const { scene } = useGLTF('/3dassets/minecraft_raygun.glb');
+  return (
+    <group position={[7.2, 0.685, -2]} rotation={[0, 0.8, Math.PI / 2]} scale={[0.15, 0.15, 0.15]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function OldBook() {
+  const { scene } = useGLTF('/3dassets/psx_old_book.glb');
+  return (
+    <group position={[-1.5, 0.031, -2.74]} rotation={[0, 0.6, 0]} scale={[0.3, 0.3, 0.3]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function BluePen() {
+  const { scene } = useGLTF('/3dassets/low_poly_pen_blue.glb');
+  return (
+    <group position={[-0.2, 0.8, -2.3]} rotation={[0, 1.2, 0]} scale={[0.15, 0.15, 0.15]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+// ── Blood decals ────────────────────────────────────────────
+
+function BloodyDragMark() {
+  const { scene } = useGLTF('/3dassets/bloody_drag_mark_decal_psx.glb');
+  return (
+    <group position={[0.3, 1.01, -6]} rotation={[0, Math.PI / 2, 0]} scale={[0.167, 0.167, 0.167]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function HelpBloodDecal() {
+  const { scene } = useGLTF('/3dassets/help_blood_decal_psx.glb');
+  return (
+    <group position={[-3.5, 1.5, -5.96]} rotation={[0, -Math.PI / 2, 0]} scale={[0.286, 0.286, 0.286]}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+function BloodyHand({ position, rotation, scale }: {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number, number];
+}) {
+  const { scene } = useGLTF('/3dassets/psx_bloody_hand.glb');
+  const cloned = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        const mat = child.material.clone();
+        mat.transparent = true;
+        mat.alphaTest = 0.5;
+        // If the model uses a map (texture), it should have alpha;
+        // otherwise force white parts invisible by treating white as transparent
+        if (!mat.map) {
+          mat.opacity = 0.9;
+        }
+        child.material = mat;
+      }
+    });
+    return c;
+  }, [scene]);
+  return (
+    <group position={position} rotation={rotation ?? [0, 0, 0]} scale={scale ?? [1, 1, 1]}>
+      <primitive object={cloned} />
+    </group>
+  );
+}
+
+// ── Barricaded door (planks nailed across) ──────────────────
+
+function BarricadedDoor() {
+  const woodMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: '#3a2a18', roughness: 0.9 }),
     [],
   );
   return (
-    <group position={[0.8, 0, 0]} rotation={[0.3, 0.5, 0.8]}>
-      <mesh position={[0, 0.22, 0]} material={mat}>
-        <boxGeometry args={[0.4, 0.04, 0.4]} />
+    <group position={[7.9, 0, 4.2]} rotation={[0, -Math.PI / 2, 0]}>
+      {/* Door frame */}
+      <mesh position={[0, 1.2, 0]}>
+        <boxGeometry args={[1.0, 2.4, 0.1]} />
+        <meshStandardMaterial color="#1a1410" roughness={0.95} />
       </mesh>
-      {[[-0.17, 0.11, -0.17], [0.17, 0.11, -0.17], [-0.17, 0.11, 0.17], [0.17, 0.11, 0.17]].map((p, i) => (
-        <mesh key={i} position={p as [number, number, number]} material={mat}>
-          <boxGeometry args={[0.03, 0.22, 0.03]} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.5, -0.18]} material={mat}>
-        <boxGeometry args={[0.4, 0.55, 0.03]} />
+      {/* Planks nailed across */}
+      <mesh position={[0, 1.6, 0.08]} rotation={[0, 0, 0.15]} material={woodMat}>
+        <boxGeometry args={[1.2, 0.12, 0.04]} />
+      </mesh>
+      <mesh position={[0, 1.0, 0.08]} rotation={[0, 0, -0.1]} material={woodMat}>
+        <boxGeometry args={[1.1, 0.12, 0.04]} />
+      </mesh>
+      <mesh position={[0, 0.5, 0.08]} rotation={[0, 0, 0.05]} material={woodMat}>
+        <boxGeometry args={[1.15, 0.12, 0.04]} />
       </mesh>
     </group>
   );
 }
+
+// ── Preload all GLB assets ──────────────────────────────────
+
+useGLTF.preload('/3dassets/psx_dining_table.glb');
+useGLTF.preload('/3dassets/filing_cabinet.glb');
+useGLTF.preload('/3dassets/psx_cabinet.glb');
+useGLTF.preload('/3dassets/low_poly_notice_board.glb');
+useGLTF.preload('/3dassets/psx_chair.glb');
+useGLTF.preload('/3dassets/old_computer.glb');
+useGLTF.preload('/3dassets/mauser_c-96_psx_ps1_style.glb');
+useGLTF.preload('/3dassets/minecraft_raygun.glb');
+useGLTF.preload('/3dassets/psx_old_book.glb');
+useGLTF.preload('/3dassets/low_poly_pen_blue.glb');
+useGLTF.preload('/3dassets/bloody_drag_mark_decal_psx.glb');
+useGLTF.preload('/3dassets/help_blood_decal_psx.glb');
+useGLTF.preload('/3dassets/psx_bloody_hand.glb');
 
 // ── Flickering light ─────────────────────────────────────────
 
@@ -501,16 +652,28 @@ const DOC_SPAWNS: Array<{
   scale?: [number, number, number];
 }> = [
   // Desk papers
-  { position: [-0.6, 0.78, -1.3], rotation: [-Math.PI / 2, 0, 0.12] },
-  { position: [0.4, 0.78, -1.6], rotation: [-Math.PI / 2, 0, -0.08] },
-  { position: [-0.1, 0.785, -1.1], rotation: [-Math.PI / 2, 0, 0.25] },
-  // Wall board
-  { position: [-0.5, 2.15, -3.91], rotation: [0, 0, 0.04] },
-  { position: [0.4, 1.85, -3.91], rotation: [0, 0, -0.06] },
-  // Filing cabinet top
-  { position: [-4.2, 1.42, -2.85], rotation: [-0.3, 0.1, 0.05] },
+  { position: [-1.385, 0.055, -2.59], rotation: [-Math.PI / 2, 0, -0.859], scale: [0.212, 0.2, 0.01] },
+  { position: [0.4, 0.82, -2.5], rotation: [-Math.PI / 2, 0, -0.08] },
+  { position: [0.8, 0.82, -2.4], rotation: [-Math.PI / 2, 0, 0.25] },
+  // Wall board (notice board on back wall)
+  { position: [-0.5, 2.15, -5.89], rotation: [0, 0, 0.04] },
+  { position: [0.4, 1.85, -5.89], rotation: [0, 0, -0.06] },
+  // Floor scattered
+  { position: [3.2, 0.01, 2], rotation: [-Math.PI / 2, 0, 0.4] },
+  { position: [-3.5, 0.01, 3.5], rotation: [-Math.PI / 2, 0, -0.2] },
+  { position: [5, 0.01, 0.5], rotation: [-Math.PI / 2, 0, 1.1] },
   // Shelf
-  { position: [4.3, 2.24, -2.4], rotation: [0, -0.2, 0.03], scale: [0.24, 0.32, 1] },
+  { position: [7.3, 2.24, -4.3], rotation: [Math.PI / 2, 0, 0.03], scale: [0.24, 0.32, 1] },
+  // On/near filing cabinet
+  { position: [-6.7, 1.445, -5.7], rotation: [-Math.PI / 2, 0, 0.15], scale: [0.22, 0.3, 1] },
+  // Near psx cabinet
+  { position: [7.0, 0.67, -1.5], rotation: [-Math.PI / 2, 0, -0.1], scale: [0.24, 0.32, 1] },
+  // Left wall area floor
+  { position: [-5.5, 0.01, -1], rotation: [-Math.PI / 2, 0, 0.7] },
+  // Near barricaded door
+  { position: [5.5, 0.01, 4.5], rotation: [-Math.PI / 2, 0, -0.5] },
+  // Near jug
+  { position: [-6.0, 0.01, 2.5], rotation: [-Math.PI / 2, 0, 0.3] },
 ];
 
 // ── Scene wrapper ────────────────────────────────────────────
@@ -535,20 +698,20 @@ function LabScene({
   return (
     <>
       {/* Lighting */}
-      <ambientLight intensity={0.32} color="#5a4a30" />
+      <ambientLight intensity={0.25} color="#5a4a30" />
       {/* Main desk light — mostly on with occasional quick flickers */}
       <FlickerLight
-        position={[0, 3.0, -1.5]}
+        position={[0, 3.0, -2.5]}
         color="#ffe2a8"
         bulbColor="#ffe8b0"
         baseIntensity={2.2}
-        distance={24}
+        distance={26}
         onDwell={[2.5, 6.0]}
         offDwell={[0.03, 0.1]}
       />
-      {/* Second bulb over the entrance/chair side — snappier blink cadence */}
+      {/* Second bulb over the entrance side — snappier blink cadence */}
       <FlickerLight
-        position={[0, 3.0, 1.8]}
+        position={[0, 3.0, 3.0]}
         color="#ffd890"
         bulbColor="#ffe0a0"
         baseIntensity={1.9}
@@ -557,17 +720,44 @@ function LabScene({
         onDwell={[0.8, 3.0]}
         offDwell={[0.05, 0.2]}
       />
-      {/* Warm fill so the far corners never go pitch black even during a blink */}
-      <pointLight position={[-3.5, 2.2, 2.5]} color="#8a6030" intensity={0.45} distance={12} decay={1.8} />
-      <pointLight position={[3.5, 2.2, 2.5]} color="#8a6030" intensity={0.35} distance={10} decay={1.8} />
+      {/* Third bulb in the back-left corner for the bigger room */}
+      <FlickerLight
+        position={[-5, 3.0, -3.5]}
+        color="#e8c070"
+        bulbColor="#ffd890"
+        baseIntensity={1.4}
+        distance={18}
+        phase={3.2}
+        onDwell={[1.0, 4.0]}
+        offDwell={[0.06, 0.25]}
+      />
+      {/* Warm fill so the far corners never go pitch black */}
+      <pointLight position={[-6, 2.2, 4]} color="#8a6030" intensity={0.45} distance={14} decay={1.8} />
+      <pointLight position={[6, 2.2, 4]} color="#8a6030" intensity={0.35} distance={12} decay={1.8} />
+      <pointLight position={[6, 2.2, -4]} color="#7a5020" intensity={0.3} distance={10} decay={1.8} />
 
-      {/* Room */}
+      {/* Room structure */}
       <Room />
+
+      {/* Furniture */}
       <Desk />
+      <Chair />
       <FilingCabinet />
+      <PsxCabinet />
       <Shelf />
       <WallBoard />
-      <Chair />
+      <BarricadedDoor />
+
+      {/* Props */}
+      <OldComputer />
+      <Mauser />
+      <RayGun />
+      <OldBook />
+      <BluePen />
+
+      {/* Blood decals */}
+      <BloodyDragMark />
+      <HelpBloodDecal />
 
       {/* Interactable documents */}
       {docs.map((doc, i) => {
@@ -622,12 +812,12 @@ export default function RichtofensLab() {
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0a0806' }}>
       {/* 3D Canvas */}
       <Canvas
-        camera={{ position: [0, EYE_HEIGHT, 2.5], fov: 70, near: 0.1, far: 50 }}
+        camera={{ position: [0, EYE_HEIGHT, 4], fov: 70, near: 0.1, far: 50 }}
         shadows
         style={{ width: '100%', height: '100%' }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.35 }}
       >
-        <fog attach="fog" args={['#120d08', 8, 22]} />
+        <fog attach="fog" args={['#120d08', 10, 28]} />
         <LabScene
           docs={docs}
           targetedId={targetedId}
