@@ -9,6 +9,8 @@ interface Props {
 }
 
 export default function DocumentViewer({ doc, onClose, found, total }: Props) {
+  const variant = React.useMemo(() => getDocVariant(doc), [doc.id, doc.template]);
+
   return (
     <div style={styles.backdrop} onClick={onClose}>
       <div style={styles.shell} onClick={e => e.stopPropagation()}>
@@ -23,12 +25,12 @@ export default function DocumentViewer({ doc, onClose, found, total }: Props) {
         </div>
 
         {/* Document card */}
-        <div style={{ ...styles.paper, ...templateBg(doc.template) }}>
+        <div style={{ ...styles.paper, ...templateBg(doc.template), ...variant.paper }}>
           {/* Burned corners overlay */}
-          <div style={styles.burns} />
+          <div style={{ ...styles.burns, ...variant.burns }} />
 
           {/* Stamp */}
-          {doc.stamp && <div style={styles.stamp}>{doc.stamp}</div>}
+          {doc.stamp && <div style={{ ...styles.stamp, ...variant.stamp }}>{doc.stamp}</div>}
 
           {/* Template content */}
           {doc.template === 'autopsy' && <AutopsyLayout doc={doc} />}
@@ -39,13 +41,14 @@ export default function DocumentViewer({ doc, onClose, found, total }: Props) {
 
           {/* Margin notes */}
           {doc.marginNotes && doc.marginNotes.length > 0 && (
-            <div style={styles.marginNotes}>
+            <div style={{ ...styles.marginNotes, ...variant.marginNotes }}>
               {doc.marginNotes.map((note, i) => (
                 <div
                   key={i}
                   style={{
                     ...styles.marginNote,
-                    transform: `rotate(${(Math.random() - 0.5) * 3}deg)`,
+                    ...variant.marginNote,
+                    transform: `rotate(${marginNoteTilt(doc.id, i)}deg)`,
                   }}
                 >
                   {note}
@@ -134,6 +137,157 @@ function ResearchLayout({ doc }: { doc: LabDocument }) {
 }
 
 // ── Template background helpers ──────────────────────────────
+
+interface DocVariant {
+  paper: React.CSSProperties;
+  burns?: React.CSSProperties;
+  stamp?: React.CSSProperties;
+  marginNotes?: React.CSSProperties;
+  marginNote?: React.CSSProperties;
+}
+
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function marginNoteTilt(id: string, index: number): number {
+  const hash = hashString(`${id}-${index}`);
+  return ((hash % 36) - 18) / 10;
+}
+
+function getDocVariant(doc: LabDocument): DocVariant {
+  const key = hashString(doc.id);
+
+  if (doc.template === 'blueprint') {
+    const blueprintVariants: DocVariant[] = [
+      {
+        paper: {
+          boxShadow: '0 10px 42px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(130, 170, 220, 0.2)',
+          transform: 'rotate(-0.35deg)',
+        },
+        stamp: {
+          color: 'rgba(196, 84, 56, 0.24)',
+          border: '3px solid rgba(196, 84, 56, 0.2)',
+          transform: 'translate(-50%, -50%) rotate(-10deg)',
+        },
+      },
+      {
+        paper: {
+          boxShadow: '0 12px 46px rgba(0, 0, 0, 0.58), inset 0 0 0 1px rgba(90, 130, 180, 0.22)',
+          transform: 'rotate(0.4deg)',
+        },
+        stamp: {
+          color: 'rgba(180, 66, 66, 0.23)',
+          border: '3px solid rgba(180, 66, 66, 0.18)',
+          transform: 'translate(-50%, -50%) rotate(-22deg)',
+        },
+      },
+    ];
+
+    return blueprintVariants[key % blueprintVariants.length];
+  }
+
+  const paperVariants: DocVariant[] = [
+    {
+      paper: {
+        background: `
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E"),
+          linear-gradient(155deg, #d8c9a5 0%, #cdb78f 45%, #b59f73 100%)
+        `,
+        boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(90, 65, 35, 0.18)',
+        transform: 'rotate(-0.25deg)',
+      },
+      stamp: {
+        color: 'rgba(155, 28, 28, 0.28)',
+        border: '3px solid rgba(155, 28, 28, 0.22)',
+      },
+    },
+    {
+      paper: {
+        background: `
+          linear-gradient(rgba(110, 80, 30, 0.08) 1px, transparent 1px),
+          linear-gradient(170deg, #e1d6b6 0%, #d3c19b 48%, #bfa781 100%)
+        `,
+        backgroundSize: '100% 26px, 100% 100%',
+        boxShadow: '0 10px 44px rgba(0,0,0,0.48), inset 0 0 0 1px rgba(110, 80, 40, 0.2)',
+        transform: 'rotate(0.5deg)',
+      },
+      burns: {
+        background: `
+          radial-gradient(ellipse at 0% 0%, rgba(55,22,8,0.5) 0%, transparent 32%),
+          radial-gradient(ellipse at 100% 100%, rgba(55,22,8,0.55) 0%, transparent 34%),
+          radial-gradient(circle at 72% 28%, rgba(145, 92, 40, 0.16) 0%, transparent 11%)
+        `,
+      },
+      stamp: {
+        color: 'rgba(118, 36, 20, 0.3)',
+        border: '2px solid rgba(118, 36, 20, 0.25)',
+        transform: 'translate(-50%, -50%) rotate(-11deg)',
+      },
+      marginNote: {
+        color: '#684521',
+      },
+    },
+    {
+      paper: {
+        background: `
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%2366461f' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M0 8h120M0 40h120M0 72h120M0 104h120'/%3E%3C/g%3E%3C/svg%3E"),
+          linear-gradient(140deg, #d1be97 0%, #c4ae86 52%, #b49a72 100%)
+        `,
+        boxShadow: '0 9px 38px rgba(0,0,0,0.53), inset 0 0 0 1px rgba(96, 64, 28, 0.22)',
+        transform: 'rotate(-0.6deg)',
+      },
+      burns: {
+        opacity: 0.82,
+      },
+      stamp: {
+        color: 'rgba(96, 96, 24, 0.28)',
+        border: '3px double rgba(96, 96, 24, 0.23)',
+        transform: 'translate(-50%, -50%) rotate(-16deg)',
+      },
+      marginNotes: {
+        borderTop: '1px dashed rgba(95, 65, 30, 0.4)',
+      },
+      marginNote: {
+        fontSize: 16,
+        opacity: 0.8,
+      },
+    },
+    {
+      paper: {
+        background: `
+          radial-gradient(circle at 18% 12%, rgba(255, 245, 220, 0.25) 0%, transparent 30%),
+          radial-gradient(circle at 86% 85%, rgba(95, 55, 20, 0.12) 0%, transparent 34%),
+          linear-gradient(165deg, #ccb58b 0%, #bea178 50%, #aa8a63 100%)
+        `,
+        boxShadow: '0 11px 46px rgba(0,0,0,0.56), inset 0 0 0 1px rgba(85, 58, 32, 0.2)',
+        transform: 'rotate(0.2deg)',
+      },
+      burns: {
+        background: `
+          radial-gradient(ellipse at 0% 100%, rgba(42,20,8,0.72) 0%, transparent 40%),
+          radial-gradient(ellipse at 100% 0%, rgba(42,20,8,0.65) 0%, transparent 34%),
+          radial-gradient(circle at 35% 18%, rgba(150, 96, 42, 0.16) 0%, transparent 10%)
+        `,
+      },
+      stamp: {
+        color: 'rgba(142, 24, 44, 0.27)',
+        border: '3px solid rgba(142, 24, 44, 0.2)',
+        transform: 'translate(-50%, -50%) rotate(-24deg)',
+      },
+      marginNote: {
+        color: '#603d18',
+      },
+    },
+  ];
+
+  return paperVariants[key % paperVariants.length];
+}
 
 function templateBg(t: DocTemplate): React.CSSProperties {
   if (t === 'blueprint') {
