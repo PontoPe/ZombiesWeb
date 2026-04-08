@@ -426,11 +426,11 @@ interface LabTerminalProps {
 export default function LabTerminal({ onClose }: LabTerminalProps) {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([
-    '╔════════════════════════════════════════╗',
-    '║  GROUP 935 — INTERNAL RESEARCH NETWORK ║',
-    '║  Der Riese Facility · Node 7-Alpha     ║',
-    '║  Clearance: UMBRA · Dr. E. Richtofen   ║',
-    '╚════════════════════════════════════════╝',
+    '╔════════════════════════════════════════════╗',
+    '   GROUP 935 — INTERNAL RESEARCH NETWORK ',
+    '   Der Riese Facility · Node 7-Alpha     ',
+    '   Clearance: UMBRA · Dr. E. Richtofen   ',
+    '╚════════════════════════════════════════════╝',
     '',
     'Type "help" for available commands.',
   ]);
