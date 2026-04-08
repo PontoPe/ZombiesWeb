@@ -477,6 +477,8 @@ export default function KronoriumTimeline() {
           />
 
           <MiniMap
+            pannable
+            zoomable
             style={{
               background: '#110e09',
               border: '1px solid #2e2416',
