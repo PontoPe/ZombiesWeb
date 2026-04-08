@@ -262,17 +262,23 @@ interface FlickerLightProps {
   color?: string;
   bulbColor?: string;
   baseIntensity?: number;
+  distance?: number;
   phase?: number;
-  blinkChance?: number;
+  /** [min, max] seconds the bulb stays lit between flickers */
+  onDwell?: [number, number];
+  /** [min, max] seconds the bulb drops dark during a flicker */
+  offDwell?: [number, number];
 }
 
 function FlickerLight({
   position,
   color = '#e8c880',
   bulbColor = '#ffe0a0',
-  baseIntensity = 0.85,
+  baseIntensity = 1.6,
+  distance = 22,
   phase = 0,
-  blinkChance = 0,
+  onDwell = [0.6, 2.8],
+  offDwell = [0.04, 0.22],
 }: FlickerLightProps) {
   const lightRef = useRef<THREE.PointLight>(null!);
   const bulbMatRef = useRef<THREE.MeshStandardMaterial>(null!);
@@ -282,31 +288,28 @@ function FlickerLight({
     if (!lightRef.current) return;
     const t = clock.elapsedTime + phase;
 
-    // Optional hard on/off blink (for the second light)
-    if (blinkChance > 0) {
-      if (t > blinkStateRef.current.nextToggle) {
-        blinkStateRef.current.on = !blinkStateRef.current.on;
-        // Longer "on" stretches, shorter "off" flickers
-        const dwell = blinkStateRef.current.on
-          ? 0.6 + Math.random() * 2.2
-          : 0.04 + Math.random() * 0.22;
-        blinkStateRef.current.nextToggle = t + dwell;
-      }
-      if (!blinkStateRef.current.on) {
-        lightRef.current.intensity = 0;
-        if (bulbMatRef.current) bulbMatRef.current.emissiveIntensity = 0.15;
-        return;
-      }
+    // Hard on/off flicker — both lights use this, just with different dwell ranges
+    if (t > blinkStateRef.current.nextToggle) {
+      blinkStateRef.current.on = !blinkStateRef.current.on;
+      const range = blinkStateRef.current.on ? onDwell : offDwell;
+      const dwell = range[0] + Math.random() * (range[1] - range[0]);
+      blinkStateRef.current.nextToggle = t + dwell;
+    }
+    if (!blinkStateRef.current.on) {
+      lightRef.current.intensity = 0;
+      if (bulbMatRef.current) bulbMatRef.current.emissiveIntensity = 0.2;
+      return;
     }
 
+    // Continuous subtle flicker while lit
     const flicker =
       baseIntensity +
-      Math.sin(t * 12) * 0.09 +
-      Math.sin(t * 27) * 0.05 +
-      (Math.random() - 0.5) * 0.14;
+      Math.sin(t * 12) * 0.18 +
+      Math.sin(t * 27) * 0.1 +
+      (Math.random() - 0.5) * 0.28;
     lightRef.current.intensity = Math.max(0, flicker);
     if (bulbMatRef.current) {
-      bulbMatRef.current.emissiveIntensity = 1.4 + flicker * 0.8;
+      bulbMatRef.current.emissiveIntensity = 2.2 + flicker * 0.6;
     }
   });
 
@@ -317,18 +320,18 @@ function FlickerLight({
         position={position}
         color={color}
         intensity={baseIntensity}
-        distance={14}
-        decay={2}
+        distance={distance}
+        decay={1.6}
         castShadow
       />
       {/* Bulb mesh */}
       <mesh position={[position[0], position[1] + 0.05, position[2]]}>
-        <sphereGeometry args={[0.06, 8, 8]} />
+        <sphereGeometry args={[0.07, 10, 10]} />
         <meshStandardMaterial
           ref={bulbMatRef}
           color={bulbColor}
           emissive={bulbColor}
-          emissiveIntensity={2}
+          emissiveIntensity={3}
         />
       </mesh>
       {/* Wire */}
@@ -538,20 +541,31 @@ function LabScene({
   return (
     <>
       {/* Lighting */}
-      <ambientLight intensity={0.08} color="#4a4030" />
-      {/* Main desk light (steady flicker) */}
-      <FlickerLight position={[0, 3.0, -1.5]} color="#e8c880" bulbColor="#ffe0a0" baseIntensity={0.9} />
-      {/* Second bulb over the entrance/chair side — blinks on and off to fight the dark */}
+      <ambientLight intensity={0.32} color="#5a4a30" />
+      {/* Main desk light — mostly on with occasional quick flickers */}
+      <FlickerLight
+        position={[0, 3.0, -1.5]}
+        color="#ffe2a8"
+        bulbColor="#ffe8b0"
+        baseIntensity={2.2}
+        distance={24}
+        onDwell={[2.5, 6.0]}
+        offDwell={[0.03, 0.1]}
+      />
+      {/* Second bulb over the entrance/chair side — snappier blink cadence */}
       <FlickerLight
         position={[0, 3.0, 1.8]}
-        color="#d8c090"
-        bulbColor="#ffd890"
-        baseIntensity={0.75}
+        color="#ffd890"
+        bulbColor="#ffe0a0"
+        baseIntensity={1.9}
+        distance={22}
         phase={1.7}
-        blinkChance={1}
+        onDwell={[0.8, 3.0]}
+        offDwell={[0.05, 0.2]}
       />
-      {/* Cold fill from the corner so deep shadows aren't pitch black */}
-      <pointLight position={[-3.5, 2.2, 2.5]} color="#3050a0" intensity={0.12} distance={9} decay={2} />
+      {/* Warm fill so the far corners never go pitch black even during a blink */}
+      <pointLight position={[-3.5, 2.2, 2.5]} color="#8a6030" intensity={0.45} distance={12} decay={1.8} />
+      <pointLight position={[3.5, 2.2, 2.5]} color="#8a6030" intensity={0.35} distance={10} decay={1.8} />
 
       {/* Room */}
       <Room />
@@ -617,9 +631,9 @@ export default function RichtofensLab() {
         camera={{ position: [0, EYE_HEIGHT, 2.5], fov: 70, near: 0.1, far: 50 }}
         shadows
         style={{ width: '100%', height: '100%' }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.35 }}
       >
-        <fog attach="fog" args={['#0a0806', 4, 14]} />
+        <fog attach="fog" args={['#120d08', 8, 22]} />
         <LabScene
           docs={docs}
           targetedId={targetedId}
