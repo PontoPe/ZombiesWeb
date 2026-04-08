@@ -67,6 +67,14 @@ export default function DocumentViewer({ doc, onClose, found, total }: Props) {
 function AutopsyLayout({ doc }: { doc: LabDocument }) {
   return (
     <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={styles.autopsyChrome}>
+        <div style={styles.autopsyTag}>MEDICAL EXAMINATION FORM</div>
+        <div style={styles.autopsyPunchRow}>
+          <span style={styles.autopsyPunch} />
+          <span style={styles.autopsyPunch} />
+          <span style={styles.autopsyPunch} />
+        </div>
+      </div>
       <div style={styles.formHeader}>
         <span style={styles.formLabel}>Examiner: <em style={styles.handField}>{doc.examiner}</em></span>
         <span style={styles.formLabel}>Species: <em style={styles.handField}>{doc.species}</em></span>
@@ -101,10 +109,13 @@ function BlueprintLayout({ doc }: { doc: LabDocument }) {
 function FieldOpsLayout({ doc }: { doc: LabDocument }) {
   return (
     <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={styles.opsCarbonStrip}>CARBON COPY // ARCHIVE CHANNEL</div>
       <div style={styles.opsHeader}>GROUP 935 FIELD OPERATIONS MANUAL</div>
       <div style={styles.opsFileNo}>
         File #{doc.fileNo} ({doc.date})
       </div>
+      <div style={styles.opsPunchLeft} />
+      <div style={styles.opsPunchRight} />
       <div style={styles.divider} />
       <p style={styles.serifBody}>{doc.body}</p>
     </div>
@@ -112,8 +123,14 @@ function FieldOpsLayout({ doc }: { doc: LabDocument }) {
 }
 
 function DossierLayout({ doc }: { doc: LabDocument }) {
+  const redactSeed = hashString(doc.id);
+  const redactionA = 18 + (redactSeed % 26);
+  const redactionB = 52 + (redactSeed % 18);
+
   return (
     <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={{ ...styles.redactionBar, top: `${redactionA}%`, width: '62%' }} />
+      <div style={{ ...styles.redactionBar, top: `${redactionB}%`, width: '48%', left: '44%' }} />
       <div style={styles.dosTitle}>{doc.title}</div>
       <div style={styles.dosFields}>
         {doc.species && <div style={styles.formLabel}>Type: <em style={styles.handField}>{doc.species}</em></div>}
@@ -412,6 +429,31 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   // Form fields (autopsy, dossier)
+  autopsyChrome: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottom: '1px dashed rgba(92, 58, 26, 0.45)',
+  },
+  autopsyTag: {
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontSize: 10,
+    letterSpacing: '0.14em',
+    color: '#5d4423',
+  },
+  autopsyPunchRow: {
+    display: 'flex',
+    gap: 6,
+  },
+  autopsyPunch: {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    background: 'rgba(66, 46, 24, 0.3)',
+    boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.35)',
+  },
   formHeader: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -505,6 +547,19 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative' as const,
     zIndex: 2,
   },
+  opsCarbonStrip: {
+    display: 'inline-block',
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontSize: 9,
+    letterSpacing: '0.14em',
+    color: '#5f4322',
+    border: '1px solid rgba(80, 56, 28, 0.35)',
+    padding: '2px 8px',
+    marginBottom: 10,
+    background: 'rgba(90, 62, 28, 0.08)',
+    position: 'relative' as const,
+    zIndex: 2,
+  },
   opsFileNo: {
     fontFamily: "'IBM Plex Mono', monospace",
     fontSize: 11,
@@ -512,6 +567,28 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center' as const,
     marginBottom: 4,
     position: 'relative' as const,
+    zIndex: 2,
+  },
+  opsPunchLeft: {
+    position: 'absolute' as const,
+    left: -26,
+    top: 60,
+    width: 16,
+    height: 16,
+    borderRadius: '50%',
+    background: 'rgba(58, 40, 18, 0.34)',
+    boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.35)',
+    zIndex: 2,
+  },
+  opsPunchRight: {
+    position: 'absolute' as const,
+    right: -26,
+    top: 60,
+    width: 16,
+    height: 16,
+    borderRadius: '50%',
+    background: 'rgba(58, 40, 18, 0.34)',
+    boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.35)',
     zIndex: 2,
   },
 
@@ -524,6 +601,16 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 10,
     position: 'relative' as const,
     zIndex: 2,
+  },
+  redactionBar: {
+    position: 'absolute' as const,
+    left: 0,
+    height: 9,
+    background: 'rgba(20, 20, 20, 0.28)',
+    borderRadius: 2,
+    transform: 'rotate(-0.6deg)',
+    zIndex: 3,
+    pointerEvents: 'none' as const,
   },
   dosFields: {
     display: 'flex',
