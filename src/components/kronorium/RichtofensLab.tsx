@@ -4,6 +4,7 @@ import { PointerLockControls, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { pickRandomDocuments, type LabDocument } from '../../data/labDocuments';
 import DocumentViewer from './DocumentViewer';
+import LabTerminal from './LabTerminal';
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -30,10 +31,11 @@ const ROOM_MAX_Z = ROOM_HALF_Z - PLAYER_RADIUS;
 // Furniture AABBs (XZ plane) the player can't walk through
 const OBSTACLES: Array<{ minX: number; maxX: number; minZ: number; maxZ: number }> = [
   { minX: -1.2, maxX: 1.2, minZ: -3.2, maxZ: -1.8 },     // desk
-  { minX: -7.6, maxX: -6.4, minZ: -4.5, maxZ: -3.5 },    // filing cabinet
+  { minX: -7.5, maxX: -6.5, minZ: -6.0, maxZ: -5.0 },    // filing cabinet (at [-7, 0, -5.5])
   { minX: 6.0, maxX: 7.8, minZ: -5.0, maxZ: -3.8 },      // shelf
   { minX: 6.4, maxX: 7.8, minZ: -2.2, maxZ: -1.2 },      // psx cabinet
-  { minX: 6.5, maxX: 8.0, minZ: 3.0, maxZ: 5.5 },        // barricaded door (planks)
+  { minX: 0.2, maxX: 1.4, minZ: -5.2, maxZ: -4.2 },      // chair (at [0.8, 0.3, -4.7])
+  { minX: 7.4, maxX: 8.0, minZ: 3.8, maxZ: 4.6 },        // barricaded door (at [7.9, 0, 4.2], narrow)
 ];
 
 function collidesAt(x: number, z: number): boolean {
@@ -269,9 +271,19 @@ function Chair() {
 
 function OldComputer() {
   const { scene } = useGLTF('/3dassets/old_computer.glb');
+  const cloned = useMemo(() => {
+    const c = scene.clone(true);
+    // Tag every mesh so the raycast can identify it as the computer
+    c.traverse((child: any) => {
+      if (child.isMesh) {
+        child.userData = { interactable: 'computer' };
+      }
+    });
+    return c;
+  }, [scene]);
   return (
     <group position={[-0.2, 0.78, -2.55]} rotation={[0, Math.PI / 2 + 0.15, 0]} scale={[1.33, 1.33, 1.33]}>
-      <primitive object={scene.clone()} />
+      <primitive object={cloned} />
     </group>
   );
 }
@@ -499,17 +511,23 @@ function FlickerLight({
 interface FPSControllerProps {
   docs: LabDocument[];
   paused: boolean;
+  terminalOpen: boolean;
   onLockChange: (locked: boolean) => void;
   onTargetChange: (id: string | null) => void;
   onPickDoc: (doc: LabDocument) => void;
+  onInteract: (type: string) => void;
+  onControlsReady?: (controls: { lock: () => void }) => void;
 }
 
 function FPSController({
   docs,
   paused,
+  terminalOpen,
   onLockChange,
   onTargetChange,
   onPickDoc,
+  onInteract,
+  onControlsReady,
 }: FPSControllerProps) {
   const { camera, scene, gl } = useThree();
   const controlsRef = useRef<any>(null);
@@ -519,6 +537,7 @@ function FPSController({
   const lockedRef = useRef(false);
   const docsRef = useRef(docs);
   const onPickDocRef = useRef(onPickDoc);
+  const onInteractRef = useRef(onInteract);
 
   useEffect(() => {
     docsRef.current = docs;
@@ -526,20 +545,48 @@ function FPSController({
   useEffect(() => {
     onPickDocRef.current = onPickDoc;
   }, [onPickDoc]);
-
-  // Unlock the pointer when the app asks us to pause (e.g. doc viewer opens)
   useEffect(() => {
-    if (paused && controlsRef.current?.isLocked) {
-      controlsRef.current.unlock();
-    }
-  }, [paused]);
+    onInteractRef.current = onInteract;
+  }, [onInteract]);
+  useEffect(() => {
+    onControlsReady?.({
+      lock: () => controlsRef.current?.lock(),
+    });
+    return () => onControlsReady?.({ lock: () => {} });
+  }, [onControlsReady]);
 
-  // Attempt pickup on E / F
+  // Track whether we were locked before a pause so we can restore it
+  const wasLockedBeforePause = useRef(false);
+
+  useEffect(() => {
+    if (paused) {
+      // Unlock whenever a modal overlay is open so the cursor can be used.
+      if (controlsRef.current?.isLocked) {
+        wasLockedBeforePause.current = true;
+        controlsRef.current.unlock();
+      }
+    } else if (wasLockedBeforePause.current) {
+      // Unpause: re-lock after a short delay (browsers require a user gesture
+      // gap before re-locking pointer, but the overlay click/keypress counts)
+      wasLockedBeforePause.current = false;
+      const timer = setTimeout(() => {
+        controlsRef.current?.lock();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [paused, terminalOpen]);
+
+  // Attempt pickup / interact on E / F
   useEffect(() => {
     const tryPick = () => {
       if (!lockedRef.current) return;
       const id = targetIdRef.current;
       if (!id) return;
+      // Check if it's an interactable (prefixed with @)
+      if (id.startsWith('@')) {
+        onInteractRef.current(id.slice(1));
+        return;
+      }
       const doc = docsRef.current.find(d => d.id === id);
       if (doc) onPickDocRef.current(doc);
     };
@@ -611,9 +658,13 @@ function FPSController({
     let found: string | null = null;
     for (const h of hits) {
       if (h.distance > PICKUP_RANGE) break;
-      const id = (h.object.userData as { docId?: string } | undefined)?.docId;
-      if (id) {
-        found = id;
+      const ud = h.object.userData as { docId?: string; interactable?: string } | undefined;
+      if (ud?.docId) {
+        found = ud.docId;
+        break;
+      }
+      if (ud?.interactable) {
+        found = `@${ud.interactable}`;
         break;
       }
       // Non-doc object blocks the ray (wall, furniture) — stop searching
@@ -682,18 +733,24 @@ interface LabSceneProps {
   docs: LabDocument[];
   targetedId: string | null;
   paused: boolean;
+  terminalOpen: boolean;
   onPickDoc: (doc: LabDocument) => void;
   onLockChange: (locked: boolean) => void;
   onTargetChange: (id: string | null) => void;
+  onInteract: (type: string) => void;
+  onControlsReady?: (controls: { lock: () => void }) => void;
 }
 
 function LabScene({
   docs,
   targetedId,
   paused,
+  terminalOpen,
   onPickDoc,
   onLockChange,
   onTargetChange,
+  onInteract,
+  onControlsReady,
 }: LabSceneProps) {
   return (
     <>
@@ -779,9 +836,12 @@ function LabScene({
       <FPSController
         docs={docs}
         paused={paused}
+        terminalOpen={terminalOpen}
         onLockChange={onLockChange}
         onTargetChange={onTargetChange}
         onPickDoc={onPickDoc}
+        onInteract={onInteract}
+        onControlsReady={onControlsReady}
       />
     </>
   );
@@ -795,6 +855,8 @@ export default function RichtofensLab() {
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
   const [locked, setLocked] = useState(false);
   const [targetedId, setTargetedId] = useState<string | null>(null);
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const controlsApiRef = useRef<{ lock: () => void } | null>(null);
 
   const handlePick = useCallback((doc: LabDocument) => {
     setFoundIds(prev => new Set(prev).add(doc.id));
@@ -805,8 +867,20 @@ export default function RichtofensLab() {
     setViewingDoc(null);
   }, []);
 
-  const paused = viewingDoc !== null;
-  const targetedDoc = targetedId ? docs.find(d => d.id === targetedId) : null;
+  const handleInteract = useCallback((type: string) => {
+    if (type === 'computer') {
+      setTerminalOpen(true);
+    }
+  }, []);
+
+  const handleTerminalClose = useCallback(() => {
+    setTerminalOpen(false);
+    controlsApiRef.current?.lock();
+  }, []);
+
+  const paused = viewingDoc !== null || terminalOpen;
+  const targetedDoc = targetedId && !targetedId.startsWith('@') ? docs.find(d => d.id === targetedId) : null;
+  const targetedInteractable = targetedId?.startsWith('@') ? targetedId.slice(1) : null;
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0a0806' }}>
@@ -822,9 +896,14 @@ export default function RichtofensLab() {
           docs={docs}
           targetedId={targetedId}
           paused={paused}
+          terminalOpen={terminalOpen}
           onPickDoc={handlePick}
           onLockChange={setLocked}
           onTargetChange={setTargetedId}
+          onInteract={handleInteract}
+          onControlsReady={(controls) => {
+            controlsApiRef.current = controls;
+          }}
         />
       </Canvas>
 
@@ -840,8 +919,8 @@ export default function RichtofensLab() {
             marginLeft: -2,
             marginTop: -2,
             borderRadius: '50%',
-            background: targetedDoc ? '#e8c880' : 'rgba(232, 200, 128, 0.55)',
-            boxShadow: targetedDoc ? '0 0 6px #e8c880' : 'none',
+            background: (targetedDoc || targetedInteractable) ? '#e8c880' : 'rgba(232, 200, 128, 0.55)',
+            boxShadow: (targetedDoc || targetedInteractable) ? '0 0 6px #e8c880' : 'none',
             pointerEvents: 'none',
             zIndex: 4,
           }}
@@ -868,6 +947,29 @@ export default function RichtofensLab() {
           }}
         >
           [ E ] Read document
+        </div>
+      )}
+
+      {/* Computer interact prompt */}
+      {locked && !paused && targetedInteractable === 'computer' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(50% + 22px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: '0.18em',
+            color: '#33cc33',
+            textTransform: 'uppercase',
+            pointerEvents: 'none',
+            textShadow: '0 0 8px rgba(0,0,0,0.9)',
+            whiteSpace: 'nowrap',
+            zIndex: 4,
+          }}
+        >
+          [ E ] Use terminal
         </div>
       )}
 
@@ -969,6 +1071,9 @@ export default function RichtofensLab() {
           total={DOC_COUNT}
         />
       )}
+
+      {/* Terminal overlay */}
+      {terminalOpen && <LabTerminal onClose={handleTerminalClose} />}
     </div>
   );
 }
