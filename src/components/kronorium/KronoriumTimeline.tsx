@@ -419,6 +419,26 @@ export default function KronoriumTimeline() {
             {filterBtn('aether', '◆  Aether Story',  '#c9a24a')}
             {filterBtn('chaos',  '◆  Chaos Story',   '#cc4444')}
           </div>
+
+          <a
+            href="/kronorium/lab"
+            style={{
+              display: 'block',
+              marginTop: 12,
+              padding: '8px 14px',
+              border: '1px solid #2e2416',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              letterSpacing: '0.12em',
+              color: '#5a4a32',
+              textDecoration: 'none',
+              textTransform: 'uppercase',
+              textAlign: 'left',
+              transition: 'all 0.15s',
+            }}
+          >
+            ⚗  Richtofen&apos;s Lab
+          </a>
         </div>
 
         {/* Event detail or instructions */}
