@@ -387,6 +387,23 @@ export default function KronoriumTimeline() {
 
   return (
     <div style={{ display: 'flex', height: '100%', fontFamily: 'sans-serif' }}>
+      <style>{`
+        @keyframes redBlink {
+          0%, 100% {
+            border-color: #cc4444;
+            box-shadow: 0 0 12px rgba(204, 68, 68, 0.6), inset 0 0 8px rgba(204, 68, 68, 0.3);
+            color: #cc4444;
+          }
+          50% {
+            border-color: #8b1a1a;
+            box-shadow: 0 0 6px rgba(204, 68, 68, 0.3), inset 0 0 4px rgba(204, 68, 68, 0.1);
+            color: #5a4a32;
+          }
+        }
+        .lab-link {
+          animation: redBlink 1.2s ease-in-out infinite !important;
+        }
+      `}</style>
 
       {/* ── Left panel ── */}
       <div
@@ -422,6 +439,7 @@ export default function KronoriumTimeline() {
 
           <a
             href="/kronorium/lab"
+            className="lab-link"
             style={{
               display: 'block',
               marginTop: 12,
@@ -435,6 +453,7 @@ export default function KronoriumTimeline() {
               textTransform: 'uppercase',
               textAlign: 'left',
               transition: 'all 0.15s',
+              borderRadius: '2px',
             }}
           >
             ⚗  Richtofen&apos;s Lab
