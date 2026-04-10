@@ -1,4 +1,4 @@
-export type StoryThread = 'aether' | 'chaos';
+export type StoryThread = 'aether' | 'chaos' | 'dark-aether';
 
 export interface LoreEvent {
   id: string;
@@ -276,6 +276,45 @@ export const LORE_EVENTS: LoreEvent[] = [
     mapId: 'gorod-krovi',
     x: 2980, y: 360,
   },
+  {
+    id: 'der-eisendrache',
+    title: 'Der Eisendrache',
+    date: '1945 (alternate timeline)',
+    dateSort: 1945.5,
+    location: 'Austrian Castle, Alps',
+    thread: 'aether',
+    summary:
+      'The Primis crew arrives at a Nazi-occupied Austrian mountain fortress where a prototype MPD has been built around a 115 meteorite. Richtofen uses the Annihilator to release Ultimis Dempsey\'s soul. The Wrath of the Ancients bow weapon is assembled through four elemental upgrade paths — fire, wind, lightning, and void.',
+    mapId: 'der-eisendrache',
+    x: 2080, y: 360,
+  },
+
+  // ── Aether Secondary Branches (y = 520) ──────────────────────
+
+  {
+    id: 'nacht-der-untoten',
+    title: 'Nacht der Untoten',
+    date: '1945',
+    dateSort: 1944.5,
+    location: 'Abandoned bunker, Germany',
+    thread: 'aether',
+    summary:
+      'An anonymous group of soldiers seeks shelter in an abandoned German bunker as the first zombie outbreak erupts. With minimal equipment and no clear objective, they hold the line in total darkness. This is the earliest confirmed zombie encounter and the event that compelled Group 935 to accelerate their Element 115 research.',
+    mapId: 'nacht-der-untoten',
+    x: 820, y: 520,
+  },
+  {
+    id: 'call-of-the-dead',
+    title: 'Call of the Dead',
+    date: '1945 (alternate)',
+    dateSort: 1963.5,
+    location: 'Soviet film studio, Siberia',
+    thread: 'aether',
+    summary:
+      'A film crew shooting in a Soviet research facility accidentally activates a 115 teleporter, unleashing an outbreak — with a zombified George A. Romero among the undead. The trapped O4 crew contacts Richtofen from a sealed control room via radio, transmitting coordinates critical to his Aether plan. The Wunderwaffe DG-2 and VR-11 wonder weapons feature prominently.',
+    mapId: 'call-of-the-dead',
+    x: 1540, y: 520,
+  },
 
   // ════════════════════════════════════════════
   //  CHAOS STORY
@@ -365,6 +404,107 @@ export const LORE_EVENTS: LoreEvent[] = [
     mapId: 'tag-der-toten',
     x: 2260, y: 680,
   },
+
+  // ════════════════════════════════════════════
+  //  DARK AETHER STORY  ·  Row 4  (y = 920)
+  // ════════════════════════════════════════════
+
+  {
+    id: 'die-maschine',
+    title: 'Die Maschine',
+    date: 'November 1984',
+    dateSort: 1984,
+    location: 'Morasko, Poland',
+    thread: 'dark-aether',
+    summary:
+      'Requiem — a CIA-backed task force — investigates a decommissioned Nazi particle collider in Poland that has torn open a Dark Aether rift. Manglers and Plaguehounds pour through. Samantha Maxis is discovered trapped inside the Dark Aether dimension. After shutting down the collider and extracting Maxis, Requiem\'s Cold War arc begins in earnest.',
+    mapId: 'die-maschine',
+    x: 100, y: 920,
+  },
+  {
+    id: 'firebase-z',
+    title: 'Firebase Z',
+    date: 'Early 1985',
+    dateSort: 1985,
+    location: 'Firebase Ripcord, Vietnam',
+    thread: 'dark-aether',
+    summary:
+      'Requiem deploys to a US firebase in Vietnam where Omega Group has been harvesting Dark Aether energy from captive zombie subjects. Peck — a disaffected Omega scientist — assists against his own organization. The crew recovers critical data on Omega\'s plans to weaponize Dark Aether entities and disable a massive Orda creature.',
+    mapId: 'firebase-z',
+    x: 460, y: 920,
+  },
+  {
+    id: 'mauer-der-toten',
+    title: 'Mauer der Toten',
+    date: 'Summer 1985',
+    dateSort: 1985.5,
+    location: 'East Berlin, Germany',
+    thread: 'dark-aether',
+    summary:
+      'A catastrophic zombie outbreak erupts in East Berlin, threatening to expose the Dark Aether to the world. Klaus, a prototype robot soldier, serves as a controllable ally. The divided city — split by the Berlin Wall — creates two interlocking sectors. Requiem recovers an Omega databank before Discordian forces can claim it.',
+    mapId: 'mauer-der-toten',
+    x: 820, y: 920,
+  },
+  {
+    id: 'forsaken',
+    title: 'Forsaken',
+    date: 'October 1985',
+    dateSort: 1985.9,
+    location: 'Outpost 25, Ralston, California',
+    thread: 'dark-aether',
+    summary:
+      'Requiem\'s leadership is betrayed and imprisoned inside the Dark Aether by Cornelius Peck acting on Omega orders. Samantha Maxis sacrifices herself to seal the rift permanently, ending the Cold War crisis. Director Strauss is arrested. The Chrysalax wonder weapon is assembled from Dark Aether crystal shards. This closes the Black Ops Cold War arc.',
+    mapId: 'forsaken',
+    x: 1180, y: 920,
+  },
+  {
+    id: 'liberty-falls',
+    title: 'Liberty Falls',
+    date: '2027',
+    dateSort: 2027,
+    location: 'Liberty Falls, West Virginia',
+    thread: 'dark-aether',
+    summary:
+      'Years after the Cold War crisis, a Dark Aether outbreak consumes the small town of Liberty Falls. Terminus Outcomes — a private successor to Requiem — investigates alongside surviving operatives. The town\'s church hides a critical Sentinel Artifact. Liberty Falls and Terminus are simultaneous launch maps opening the Black Ops 6 Dark Aether arc.',
+    mapId: 'liberty-falls',
+    x: 1540, y: 920,
+  },
+  {
+    id: 'terminus',
+    title: 'Terminus',
+    date: '2027',
+    dateSort: 2027.1,
+    location: 'Terminus Island, Pacific Ocean',
+    thread: 'dark-aether',
+    summary:
+      'A maximum-security Terminus Outcomes research facility on a remote Pacific island is overrun. An Abomination — a titanic Dark Aether entity — threatens to consume the island. Prisoner records reveal connections to Requiem\'s Cold War experiments. Underwater traversal and the Jet Gun wonder weapon define the map\'s mechanics.',
+    mapId: 'terminus',
+    x: 1900, y: 920,
+  },
+  {
+    id: 'citadelle-des-morts',
+    title: 'Citadelle des Morts',
+    date: '2027',
+    dateSort: 2027.2,
+    location: 'Medieval castle, France',
+    thread: 'dark-aether',
+    summary:
+      'A Dark Aether rift has phased a medieval French fortress into temporal stasis. Undead knights and era-blending abominations guard the keep. Records left by an ancient monastic order reveal they first encountered the Dark Aether centuries ago. The Mort Cannon wonder weapon is constructed from century-old Dark Aether-infused components.',
+    mapId: 'citadelle-des-morts',
+    x: 2260, y: 920,
+  },
+  {
+    id: 'the-tomb',
+    title: 'The Tomb',
+    date: '2028',
+    dateSort: 2028,
+    location: 'Antarctic research station',
+    thread: 'dark-aether',
+    summary:
+      'The crew descends into a frozen Antarctic research station to recover a critical containment device. Dark Aether energy has crystallized the entire facility, creating unpredictable spatial rifts. The final chapter of the BO6 narrative brings the ongoing Dark Aether storyline to a decisive confrontation — and ties the new arc back to the Cold War origins of the rift.',
+    mapId: 'the-tomb',
+    x: 2620, y: 920,
+  },
 ];
 
 export const LORE_CONNECTIONS: LoreConnection[] = [
@@ -392,8 +532,24 @@ export const LORE_CONNECTIONS: LoreConnection[] = [
   // Location link (same place, different eras)
   { id: 'a14', source: 'mob-of-the-dead', target: 'blood-of-the-dead', label: 'same island' },
 
+  // Primis arc (new maps)
+  { id: 'p1', source: 'der-riese',        target: 'der-eisendrache' },
+  { id: 'p2', source: 'der-eisendrache',  target: 'zetsubou-no-shima' },
+
+  // Aether secondary branches
+  { id: 'b1', source: 'ascension', target: 'call-of-the-dead' },
+
   // Chaos chain
   { id: 'c1', source: 'voyage-of-despair',  target: 'dead-of-the-night' },
   { id: 'c2', source: 'shadows-of-evil',    target: 'alpha-omega' },
   { id: 'c3', source: 'alpha-omega',        target: 'tag-der-toten' },
+
+  // Dark Aether chain
+  { id: 'd1', source: 'die-maschine',         target: 'firebase-z' },
+  { id: 'd2', source: 'firebase-z',           target: 'mauer-der-toten' },
+  { id: 'd3', source: 'mauer-der-toten',      target: 'forsaken' },
+  { id: 'd4', source: 'forsaken',             target: 'liberty-falls' },
+  { id: 'd5', source: 'liberty-falls',        target: 'terminus' },
+  { id: 'd6', source: 'terminus',             target: 'citadelle-des-morts' },
+  { id: 'd7', source: 'citadelle-des-morts',  target: 'the-tomb' },
 ];

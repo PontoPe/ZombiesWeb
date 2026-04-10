@@ -19,11 +19,13 @@ import { LORE_EVENTS, LORE_CONNECTIONS, type LoreEvent, type StoryThread } from 
 const THREAD_COLOR: Record<StoryThread, string> = {
   aether: '#c9a24a',
   chaos: '#8b1a1a',
+  'dark-aether': '#7755bb',
 };
 
 const THREAD_LABEL: Record<StoryThread, string> = {
   aether: 'Aether Story',
   chaos: 'Chaos Story',
+  'dark-aether': 'Dark Aether Story',
 };
 
 // ── Custom node ──────────────────────────────────────────────
@@ -277,10 +279,26 @@ const ROW_LABELS: Node[] = [
     draggable: false,
   },
   {
+    id: '__label-aether-3',
+    type: 'rowLabel',
+    position: { x: 100, y: 470 },
+    data: { label: 'Aether Story — Secondary Branches', color: '#c9a24a' },
+    selectable: false,
+    draggable: false,
+  },
+  {
     id: '__label-chaos',
     type: 'rowLabel',
     position: { x: 100, y: 630 },
     data: { label: 'Chaos Story', color: '#8b1a1a' },
+    selectable: false,
+    draggable: false,
+  },
+  {
+    id: '__label-dark-aether',
+    type: 'rowLabel',
+    position: { x: 100, y: 870 },
+    data: { label: 'Dark Aether Story', color: '#7755bb' },
     selectable: false,
     draggable: false,
   },
@@ -307,8 +325,9 @@ export default function KronoriumTimeline() {
     const labels = activeThread === 'all'
       ? ROW_LABELS
       : ROW_LABELS.filter(l => {
-          if (activeThread === 'aether') return l.id !== '__label-chaos';
-          return l.id === '__label-chaos';
+          if (activeThread === 'aether') return l.id !== '__label-chaos' && l.id !== '__label-dark-aether';
+          if (activeThread === 'chaos') return l.id === '__label-chaos';
+          return l.id === '__label-dark-aether';
         });
 
     return [...labels, ...eventNodes];
@@ -433,9 +452,10 @@ export default function KronoriumTimeline() {
             Filter by Thread
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {filterBtn('all',    '◈  All Events',    '#ede0c8')}
-            {filterBtn('aether', '◆  Aether Story',  '#c9a24a')}
-            {filterBtn('chaos',  '◆  Chaos Story',   '#cc4444')}
+            {filterBtn('all',         '◈  All Events',         '#ede0c8')}
+            {filterBtn('aether',      '◆  Aether Story',       '#c9a24a')}
+            {filterBtn('chaos',       '◆  Chaos Story',        '#cc4444')}
+            {filterBtn('dark-aether', '◆  Dark Aether Story',  '#7755bb')}
           </div>
 
           <a
@@ -657,7 +677,7 @@ export default function KronoriumTimeline() {
             backdropFilter: 'blur(4px)',
           }}
         >
-          {(['aether', 'chaos'] as StoryThread[]).map(t => (
+          {(['aether', 'chaos', 'dark-aether'] as StoryThread[]).map(t => (
             <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div
                 style={{
