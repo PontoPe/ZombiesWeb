@@ -724,7 +724,6 @@ export default function SpiralTimeline() {
                 strokeWidth={isStretched ? strokeW * 1.5 : strokeW}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeDasharray={section === 'agartha' ? '10 6' : undefined}
                 opacity={lineOpacity}
                 style={{ transition: 'all 0.5s ease-in-out' }}
               />
