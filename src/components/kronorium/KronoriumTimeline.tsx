@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
+  Background,
+  BackgroundVariant,
   MiniMap,
   Panel,
   useReactFlow,
-  MarkerType,
   type Node,
   type Edge,
   type NodeProps,
@@ -15,10 +16,9 @@ import { LORE_EVENTS, LORE_CONNECTIONS, type LoreEvent, type StoryThread } from 
 
 // ── Constants ────────────────────────────────────────────────
 
-// Colors visible on both parchment canvas and the dark detail panel
 const THREAD_COLOR: Record<StoryThread, string> = {
-  aether: '#b83000',  // vermillion — reads on parchment and on dark
-  chaos: '#1a50c4',   // royal blue — reads on parchment and on dark
+  aether: '#c9a24a',
+  chaos: '#8b1a1a',
 };
 
 const THREAD_LABEL: Record<StoryThread, string> = {
@@ -35,16 +35,16 @@ function LoreEventNode({ data, selected }: NodeProps) {
   return (
     <div
       style={{
-        background: selected ? '#c8a870' : '#d6bc8e',
-        border: `1px solid ${accent}60`,
-        borderTop: `3px solid ${accent}`,
-        borderRadius: 1,
-        padding: '8px 12px 10px',
-        width: 190,
+        background: selected ? '#1e1810' : '#17130d',
+        border: `1px solid ${selected ? accent : '#2e2416'}`,
+        borderTop: `2px solid ${accent}`,
+        borderRadius: 2,
+        padding: '10px 14px 12px',
+        width: 240,
         cursor: 'pointer',
         boxShadow: selected
-          ? `0 0 0 1px ${accent}50, 0 4px 16px rgba(0,0,0,0.30)`
-          : '0 1px 5px rgba(0,0,0,0.18)',
+          ? `0 0 0 1px ${accent}50, 0 4px 24px #00000090`
+          : '0 2px 8px #00000060',
         transition: 'box-shadow 0.15s, border-color 0.15s, background 0.15s',
         position: 'relative',
       }}
@@ -57,13 +57,13 @@ function LoreEventNode({ data, selected }: NodeProps) {
 
       <div
         style={{
-          fontSize: 7,
+          fontSize: 8,
           color: accent,
           letterSpacing: '0.18em',
-          marginBottom: 5,
+          marginBottom: 6,
           fontFamily: "'IBM Plex Mono', monospace",
           textTransform: 'uppercase',
-          opacity: 0.85,
+          opacity: 0.8,
         }}
       >
         {THREAD_LABEL[event.thread]}
@@ -71,12 +71,12 @@ function LoreEventNode({ data, selected }: NodeProps) {
 
       <div
         style={{
-          fontSize: 11,
-          color: '#1a0d00',
+          fontSize: 13,
+          color: '#ede0c8',
           fontFamily: "'Cinzel', serif",
-          fontWeight: 700,
-          lineHeight: 1.2,
-          marginBottom: 5,
+          fontWeight: 600,
+          lineHeight: 1.25,
+          marginBottom: 6,
         }}
       >
         {event.title}
@@ -84,10 +84,10 @@ function LoreEventNode({ data, selected }: NodeProps) {
 
       <div
         style={{
-          fontSize: 8,
-          color: '#4a2c0a',
+          fontSize: 9,
+          color: '#7a6a50',
           fontFamily: "'IBM Plex Mono', monospace",
-          letterSpacing: '0.06em',
+          letterSpacing: '0.08em',
           marginBottom: 2,
         }}
       >
@@ -96,10 +96,10 @@ function LoreEventNode({ data, selected }: NodeProps) {
 
       <div
         style={{
-          fontSize: 8,
-          color: '#6a4a1a',
+          fontSize: 9,
+          color: '#4a3a22',
           fontFamily: "'IBM Plex Mono', monospace",
-          letterSpacing: '0.04em',
+          letterSpacing: '0.06em',
         }}
       >
         {event.location}
@@ -125,25 +125,23 @@ function RowLabelNode({ data }: NodeProps) {
         pointerEvents: 'none',
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
         userSelect: 'none',
       }}
     >
-      <div style={{ width: 32, height: 2, background: data.color + 'cc' }} />
+      <div style={{ width: 40, height: 1, background: data.color + '50' }} />
       <span
         style={{
-          fontSize: 8,
-          color: data.color,
+          fontSize: 9,
+          color: data.color + '70',
           fontFamily: "'IBM Plex Mono', monospace",
-          letterSpacing: '0.22em',
+          letterSpacing: '0.25em',
           textTransform: 'uppercase',
-          fontWeight: 700,
-          textShadow: '0 1px 2px rgba(255,255,255,0.4)',
         }}
       >
         {data.label}
       </span>
-      <div style={{ width: 2500, height: 1, background: data.color + '40' }} />
+      <div style={{ width: 2500, height: 1, background: data.color + '18' }} />
     </div>
   );
 }
@@ -163,10 +161,10 @@ function CustomZoomControls() {
     justifyContent: 'center',
     width: 26,
     height: 26,
-    background: 'rgba(212, 188, 142, 0.92)',
+    background: '#17130d',
     border: 'none',
-    borderBottom: '1px solid rgba(100, 60, 20, 0.35)',
-    color: '#3a1a00',
+    borderBottom: '1px solid #2e2416',
+    color: '#7a6a50',
     fontSize: 16,
     cursor: 'pointer',
     padding: 0,
@@ -179,7 +177,7 @@ function CustomZoomControls() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          border: '1px solid rgba(100, 60, 20, 0.5)',
+          border: '1px solid #2e2416',
           borderRadius: 2,
           overflow: 'hidden',
         }}
@@ -266,7 +264,7 @@ const ROW_LABELS: Node[] = [
     id: '__label-aether-1',
     type: 'rowLabel',
     position: { x: 100, y: 30 },
-    data: { label: 'Aether Story — Main Chain', color: '#b83000' },
+    data: { label: 'Aether Story — Main Chain', color: '#c9a24a' },
     selectable: false,
     draggable: false,
   },
@@ -274,7 +272,7 @@ const ROW_LABELS: Node[] = [
     id: '__label-aether-2',
     type: 'rowLabel',
     position: { x: 100, y: 310 },
-    data: { label: 'Aether Story — Branches & Primis', color: '#b83000' },
+    data: { label: 'Aether Story — Branches & Primis', color: '#c9a24a' },
     selectable: false,
     draggable: false,
   },
@@ -282,7 +280,7 @@ const ROW_LABELS: Node[] = [
     id: '__label-chaos',
     type: 'rowLabel',
     position: { x: 100, y: 630 },
-    data: { label: 'Chaos Story', color: '#1a50c4' },
+    data: { label: 'Chaos Story', color: '#8b1a1a' },
     selectable: false,
     draggable: false,
   },
@@ -332,22 +330,17 @@ export default function KronoriumTimeline() {
           id: conn.id,
           source: conn.source,
           target: conn.target,
+          type: 'smoothstep',
           ...(conn.label ? { label: conn.label } : {}),
           animated: false,
-          style: { stroke: accent, strokeWidth: 2.2, strokeOpacity: 0.80 },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            width: 14,
-            height: 14,
-            color: accent,
-          },
+          style: { stroke: accent, strokeWidth: 1.5, strokeOpacity: 0.45 },
           labelStyle: {
-            fill: '#2a1200',
+            fill: '#7a6a50',
             fontFamily: 'IBM Plex Mono',
             fontSize: 9,
             letterSpacing: '0.08em',
           },
-          labelBgStyle: { fill: '#d4bb8a', fillOpacity: 0.92 },
+          labelBgStyle: { fill: '#0e0b07', fillOpacity: 0.9 },
           labelBgPadding: [4, 6] as [number, number],
         };
       });
@@ -441,8 +434,8 @@ export default function KronoriumTimeline() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {filterBtn('all',    '◈  All Events',    '#ede0c8')}
-            {filterBtn('aether', '◆  Aether Story',  '#b83000')}
-            {filterBtn('chaos',  '◆  Chaos Story',   '#1a50c4')}
+            {filterBtn('aether', '◆  Aether Story',  '#c9a24a')}
+            {filterBtn('chaos',  '◆  Chaos Story',   '#cc4444')}
           </div>
 
           <a
@@ -602,16 +595,7 @@ export default function KronoriumTimeline() {
       </div>
 
       {/* ── Canvas ── */}
-      <div
-        style={{
-          flex: 1,
-          position: 'relative',
-          backgroundImage: 'url("/images/kronorium-timeline.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          border: '2px solid #6b3d1a',
-        }}
-      >
+      <div style={{ flex: 1, position: 'relative' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -625,24 +609,31 @@ export default function KronoriumTimeline() {
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={true}
-          style={{ background: 'rgba(210, 185, 140, 0.30)' }}
+          style={{ background: '#0e0b07' }}
           proOptions={{ hideAttribution: true }}
         >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={36}
+            size={1}
+            color="#1e1810"
+          />
+
           <CustomZoomControls />
 
           <MiniMap
             zoomable
             zoomStep={5}
             style={{
-              background: '#d6bc8e',
-              border: '1px solid rgba(100, 60, 20, 0.5)',
+              background: '#110e09',
+              border: '1px solid #2e2416',
               borderRadius: 2,
             }}
-            maskColor="rgba(200, 170, 110, 0.75)"
+            maskColor="rgba(14,11,7,0.85)"
             nodeColor={(node: Node) => {
               if (node.type === 'rowLabel') return 'transparent';
               const event = LORE_EVENTS.find(e => e.id === node.id);
-              return event ? THREAD_COLOR[event.thread] : '#7a1a00';
+              return event ? THREAD_COLOR[event.thread] : '#c9a24a';
             }}
             nodeStrokeWidth={0}
           />
@@ -659,9 +650,9 @@ export default function KronoriumTimeline() {
             pointerEvents: 'none',
             display: 'flex',
             flexDirection: 'column',
-            gap: 7,
-            background: 'rgba(212, 188, 142, 0.92)',
-            border: '1px solid rgba(100, 60, 20, 0.55)',
+            gap: 6,
+            background: '#110e09cc',
+            border: '1px solid #2e2416',
             padding: '10px 14px',
             backdropFilter: 'blur(4px)',
           }}
@@ -670,20 +661,20 @@ export default function KronoriumTimeline() {
             <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div
                 style={{
-                  width: 20,
-                  height: 2.5,
+                  width: 16,
+                  height: 2,
                   background: THREAD_COLOR[t],
                   borderRadius: 1,
+                  opacity: 0.7,
                 }}
               />
               <span
                 style={{
                   fontSize: 9,
-                  color: THREAD_COLOR[t],
+                  color: THREAD_COLOR[t] + '90',
                   fontFamily: "'IBM Plex Mono', monospace",
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  fontWeight: 700,
                 }}
               >
                 {THREAD_LABEL[t]}
