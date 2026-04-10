@@ -63,34 +63,37 @@ function generateSpiralLayout(): {
   const allNodes: SpiralNode[] = [];
   const allPaths: { section: ChronicleSection; points: { x: number; y: number }[] }[] = [];
 
-  // Layout parameters per section — each section gets a different spiral arm
-  // The main timeline is the largest spiral going from inside out.
-  // Branching sections are shorter spirals that diverge at specific angles.
+  // Layout parameters per section.
+  // The canvas is 1920×1320, center (960, 660).
+  // Four distinct spatial clusters matching the reference image:
+  //   Red   (center)      → main
+  //   Green (upper-left)  → agartha
+  //   Blue  (right)       → dim63
+  //   Yellow(lower-left)  → fractures (deceptio / proditone / agonia / broken / darkAether)
   const sectionLayout: {
     id: ChronicleSection;
-    startAngle: number; // radians — where this section's spiral begins
-    totalSweep: number; // total angular sweep in radians
+    startAngle: number;
+    totalSweep: number;
     startRadius: number;
     endRadius: number;
-    offsetX: number; // center offset
+    offsetX: number; // from canvas center (960, 660)
     offsetY: number;
   }[] = [
-    // Main timeline: full spiral from inner to outer, ~4.5 revolutions
-    { id: 'main', startAngle: Math.PI * 0.5, totalSweep: Math.PI * 9, startRadius: 40, endRadius: 540, offsetX: 0, offsetY: 0 },
-    // Dimension 63: branches off to upper-right area
-    { id: 'dim63', startAngle: Math.PI * 1.2, totalSweep: Math.PI * 3.5, startRadius: 60, endRadius: 380, offsetX: 120, offsetY: -60 },
-    // Agartha: inner ring, almost circular
-    { id: 'agartha', startAngle: Math.PI * 0.1, totalSweep: Math.PI * 2.5, startRadius: 30, endRadius: 180, offsetX: -30, offsetY: 20 },
-    // Deceptio: short branch upper-left
-    { id: 'deceptio', startAngle: Math.PI * 2.8, totalSweep: Math.PI * 1.5, startRadius: 280, endRadius: 400, offsetX: -80, offsetY: -40 },
-    // Proditone: short branch lower area
-    { id: 'proditone', startAngle: Math.PI * 3.5, totalSweep: Math.PI * 1.2, startRadius: 300, endRadius: 400, offsetX: -40, offsetY: 60 },
-    // Agonia: branch to right
-    { id: 'agonia', startAngle: Math.PI * 4.2, totalSweep: Math.PI * 2, startRadius: 320, endRadius: 460, offsetX: 80, offsetY: 30 },
-    // Broken Cycle: outer ring connecting multiple areas
-    { id: 'broken', startAngle: Math.PI * 5.5, totalSweep: Math.PI * 2.8, startRadius: 380, endRadius: 540, offsetX: 0, offsetY: -20 },
-    // Dark Aether: small distant cluster
-    { id: 'darkAether', startAngle: Math.PI * 7, totalSweep: Math.PI * 0.8, startRadius: 480, endRadius: 540, offsetX: 140, offsetY: 100 },
+    // ── CLUSTER 1 · Main Timeline — large center spiral ──────────────────
+    { id: 'main',      startAngle: Math.PI * 0.5, totalSweep: Math.PI * 9,   startRadius: 40,  endRadius: 460, offsetX:    0, offsetY:    0 },
+
+    // ── CLUSTER 2 · Agartha — small upper-left spiral ────────────────────
+    { id: 'agartha',   startAngle: Math.PI * 0.3, totalSweep: Math.PI * 3.5, startRadius: 18,  endRadius: 148, offsetX: -565, offsetY: -275 },
+
+    // ── CLUSTER 3 · Dimension 63 — medium right-side spiral ──────────────
+    { id: 'dim63',     startAngle: Math.PI * 0.5, totalSweep: Math.PI * 5.5, startRadius: 28,  endRadius: 290, offsetX:  548, offsetY: -105 },
+
+    // ── CLUSTER 4 · Fractures — small lower-left cluster (all share center)
+    { id: 'deceptio',  startAngle: Math.PI * 0.5, totalSweep: Math.PI * 1.5, startRadius: 18,  endRadius:  90, offsetX: -535, offsetY:  325 },
+    { id: 'proditone', startAngle: Math.PI * 1.3, totalSweep: Math.PI * 2.0, startRadius: 35,  endRadius: 125, offsetX: -535, offsetY:  325 },
+    { id: 'agonia',    startAngle: Math.PI * 2.6, totalSweep: Math.PI * 1.5, startRadius: 58,  endRadius: 162, offsetX: -535, offsetY:  325 },
+    { id: 'broken',    startAngle: Math.PI * 3.6, totalSweep: Math.PI * 1.8, startRadius: 88,  endRadius: 198, offsetX: -535, offsetY:  325 },
+    { id: 'darkAether',startAngle: Math.PI * 5.0, totalSweep: Math.PI * 0.6, startRadius: 182, endRadius: 215, offsetX: -535, offsetY:  325 },
   ];
 
   for (const layout of sectionLayout) {
