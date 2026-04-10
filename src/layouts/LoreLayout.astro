@@ -26,7 +26,7 @@ const { title = 'The Kronorium' } = Astro.props;
 
       <div class="header-center">
         <span class="header-omega">Ω</span>
-        <span class="header-title">THE KRONORIUM</span>
+        <span class="header-title">{title === "Richtofen's Lab" ? "RICHTOFEN'S LAB" : 'THE KRONORIUM'}</span>
         <span class="header-omega">Ω</span>
       </div>
 
