@@ -1,5 +1,39 @@
 export type StoryThread = 'aether' | 'chaos' | 'dark-aether';
 
+export type TimelineNodeType =
+  | 'title'
+  | 'event'
+  | 'dimension'
+  | 'branchReason'
+  | 'fracture'
+  | 'endState';
+
+export interface TimelineNode {
+  id: string;
+  nodeType: TimelineNodeType;
+  label: string;
+  x: number;
+  y: number;
+  /** Accent colour override — red/green for fractures & end-states, #7aa991 for branch reasons */
+  color?: string;
+  /* Only populated for 'event' nodes (clickable map cards) */
+  summary?: string;
+  date?: string;
+  location?: string;
+  mapId?: string;
+}
+
+export interface TimelineEdge {
+  id: string;
+  source: string;
+  target: string;
+  /** Override source handle position: 'right' (default), 'bottom', 'top' */
+  sourceHandle?: 'right' | 'bottom' | 'top';
+  /** Override target handle position: 'left' (default), 'top', 'bottom' */
+  targetHandle?: 'left' | 'top' | 'bottom';
+}
+
+/* Legacy — kept so other pages still compile */
 export interface LoreEvent {
   id: string;
   title: string;
@@ -20,536 +54,383 @@ export interface LoreConnection {
   label?: string;
 }
 
-// ── X column stops (360px per slot) ──────────────────────────
-// col 0=100, 1=460, 2=820, 3=1180, 4=1540, 5=1900, 6=2260, 7=2620, 8=2980
+// ══════════════════════════════════════════════════════════════
+//  HORIZONTAL FLOWCHART DATA  (matches Aether timeline diagram)
+// ══════════════════════════════════════════════════════════════
 
-// ── Y row stops ───────────────────────────────────────────────
-// Aether main   y = 80
-// Aether branch y = 360
-// Chaos         y = 680
+// Card dimensions
+const EW = 240;   // event card width
+const DW = 180;   // dimension header width
+const FW = 160;   // fracture label width
+const BW = 200;   // branch-reason width
+const TW = 320;   // title width
+const SW = 160;   // end-state width
 
-export const LORE_EVENTS: LoreEvent[] = [
+// Centre a node of width w at horizontal position p
+const cx = (p: number, w: number) => p - w / 2;
 
-  // ════════════════════════════════════════════
-  //  AETHER STORY  ·  Row 1  (main chain)
-  // ════════════════════════════════════════════
+// ── Row centres (y-axis) — vertical lanes ───────────────────
+const ROW_DECEPTIO  = 0;
+const ROW_OD        = 230;
+const ROW_PRODITONE = 460;
+const ROW_CYCLE     = 740;
+const ROW_D63       = 940;
+const ROW_BROKEN    = 1140;
+const ROW_AGARTHA   = 1420;
+const ROW_EMPTY     = 1650;
+const ROW_GW        = 800;   // Great War — roughly centred
 
-  {
-    id: 'pre-history',
-    title: 'The Keepers & Apothicons',
-    date: 'Before recorded history',
-    dateSort: -99999,
-    location: 'Agartha / The Aether',
-    thread: 'aether',
-    summary:
-      'The Keepers — ancient cosmic beings — inhabit Agartha and protect the universe. A faction of Keepers is corrupted by Element 115 and transformed into the monstrous Apothicons, banished to the Dark Aether. The war between order and corruption begins. Dr. Monty presides over Agartha as its guardian.',
-    x: -620, y: 80,
-  },
-  {
-    id: 'great-war',
-    title: 'The Great War',
-    date: '~1300 AD',
-    dateSort: 1300,
-    location: 'Earth / Agartha borderlands',
-    thread: 'aether',
-    summary:
-      'The Apothicons breach reality and invade Earth. The Keepers recruit four human champions — ancestors of Dempsey, Nikolai, Takeo, and Richtofen — and arm them with four Elemental Staffs forged from 115 meteorites. After a long war, the Apothicons are repelled and the Staffs are buried beneath what will become the Somme in France. This directly sets up the Origins excavation centuries later.',
-    x: -260, y: 80,
-  },
-  {
-    id: 'origins',
-    title: 'Origins',
-    date: 'September 1917',
-    dateSort: 1917,
-    location: 'Excavation Site 64, France',
-    thread: 'aether',
-    summary:
-      'During WWI, Group 935 discovers buried Element 115 meteorites beneath the Somme. Richtofen, Dempsey, Nikolai, and Takeo work the dig under Dr. Maxis. Ancient Panzer robots awaken. Richtofen first makes contact with the Aether entities.',
-    mapId: 'origins',
-    x: 100, y: 80,
-  },
-  {
-    id: 'shi-no-numa',
-    title: 'Shi No Numa',
-    date: 'July 1943',
-    dateSort: 1943,
-    location: 'Shi No Numa Facility, Japan',
-    thread: 'aether',
-    summary:
-      'Group 935 runs a 115-fueled research station in a Japanese swamp. Richtofen retrieves the Golden Rod artifact. First confirmed appearance of Hellhounds. The O4 crew teleports here during their initial jump from Der Riese.',
-    mapId: 'shi-no-numa',
-    x: 460, y: 80,
-  },
-  {
-    id: 'der-riese',
-    title: 'Der Riese / The Giant',
-    date: '1945',
-    dateSort: 1945,
-    location: 'Der Riese Facility, Poland',
-    thread: 'aether',
-    summary:
-      'Richtofen completes the Matter Transference Device teleporter network. During a test, Maxis and daughter Samantha are trapped inside an MTD and a dog teleports in their place. Samantha is launched into the Aether, bonds with the MPD, and becomes the controller of the undead.',
-    mapId: 'the-giant',
-    x: 820, y: 80,
-  },
-  {
-    id: 'kino-der-toten',
-    title: 'Kino der Toten',
-    date: '1963',
-    dateSort: 1963,
-    location: 'Group 935 Theater, Berlin',
-    thread: 'aether',
-    summary:
-      'The O4 crew emerges from teleportation in an abandoned Group 935 theater. The facility was used to test Nova 6 gas and subliminal mind-control films on zombie subjects. A functional teleporter links two sections of the building.',
-    mapId: 'kino-der-toten',
-    x: 1180, y: 80,
-  },
-  {
-    id: 'ascension',
-    title: 'Ascension',
-    date: '1963',
-    dateSort: 1963,
-    location: 'Baikonur Cosmodrome, Soviet USSR',
-    thread: 'aether',
-    summary:
-      'A Group 935 / Soviet cosmodrome houses MPD research and luna lander systems. The O4 crew frees Gersh from the Casimir Mechanism. Space monkeys steal perks between rounds. Cosmonaut zombies roam the site.',
-    mapId: 'ascension',
-    x: 1540, y: 80,
-  },
-  {
-    id: 'moon',
-    title: 'Moon',
-    date: '1969',
-    dateSort: 1969,
-    location: 'Griffin Station, The Moon',
-    thread: 'aether',
-    summary:
-      'The O4 crew reaches Griffin Station on the lunar surface. Richtofen swaps souls with Samantha using the MPD — claiming control of all zombies. He then fires the Hanford rockets at Earth\'s surface, destroying civilization. The Aether war truly begins.',
-    mapId: 'moon',
-    x: 1900, y: 80,
-  },
-  {
-    id: 'tranzit',
-    title: 'TranZit / Green Run',
-    date: '2035',
-    dateSort: 2035,
-    location: 'Hanford, Washington',
-    thread: 'aether',
-    summary:
-      'Post-nuclear Earth. Survivors board a looping bus through a radioactive wasteland. Maxis (embedded in the power grid) and Richtofen (transmitted from space) battle through the N4 crew for control of the Hanford power pylon. The winner gains a foothold in the Aether.',
-    mapId: 'tranzit',
-    x: 2260, y: 80,
-  },
-  {
-    id: 'buried',
-    title: 'Buried',
-    date: '2035',
-    dateSort: 2035,
-    location: 'Gideon, Nevada (underground)',
-    thread: 'aether',
-    summary:
-      'An underground 19th-century ghost town is uncovered beneath post-nuclear Nevada. The N4 crew activates the final Pylon. Whichever side wins the Maxis vs. Richtofen contest now controls the Aether — the war\'s first chapter is decided.',
-    mapId: 'buried',
-    x: 2620, y: 80,
-  },
-  {
-    id: 'revelations',
-    title: 'Revelations',
-    date: '2025+',
-    dateSort: 2026,
-    location: 'The Aether — all dimensions combined',
-    thread: 'aether',
-    summary:
-      'The Shadow Man fuses all previous map environments into one fractured reality. The Primis crew — now armed with the full history of the Aether conflict — confronts the Apothicon God. After defeating him, the cycle is sealed and the original Aether storyline comes to a close.',
-    mapId: 'revelations',
-    x: 2980, y: 80,
+// ── Column centres (x-axis) — flow direction ────────────────
+const STEP = 340;
+const X = (n: number) => n * STEP + 200;
+
+// Col  0 = Title
+// Col  1 = Great War
+// Col  2 = Branch reasons → dimensions
+// Col  3 = Dimension headers
+// Col  4 = Sub-branches / D63 Origins / AG Revelations / EE Zero
+// Col  5 = Fracture labels / D63 MOTD / AG Children
+// Col  6 = Map 1 (Gorod, Zetsubou) / D63 br-cycle/br-broken
+// Col  7 = Map 2 (Five) / D63 tl-cycle/tl-broken
+// Col  8 = Nacht merge / D63 lab, blood
+// Col  9 = Verrückt / D63 SoE
+// Col 10 = Branch reasons at Verrückt / D63 destroyed
+// Col 11 = Deceptio/True TL labels
+// Col 12–14 = Deceptio maps (Giant, Schatten, Eisendrache)
+// Col 12–26 = True Timeline maps (Shi No Numa → Destroyed)
+
+export const TIMELINE_NODES: TimelineNode[] = [
+
+  // ─── Title ────────────────────────────────────────────────
+  { id: 'title', nodeType: 'title', label: 'THE BEGINNING OF TIME',
+    x: cx(X(0), TW), y: ROW_GW },
+
+  // ─── Root ─────────────────────────────────────────────────
+  { id: 'great-war', nodeType: 'event', label: 'THE GREAT WAR',
+    x: cx(X(1), EW), y: ROW_GW,
+    date: '~1300 AD', location: 'Earth / Agartha borderlands',
+    summary: 'The Apothicons breach reality and invade Earth. The Keepers recruit four human champions.',
   },
 
-  // ════════════════════════════════════════════
-  //  AETHER STORY  ·  Row 2  (branches & Primis)
-  // ════════════════════════════════════════════
+  // ─── Branch reasons → Dimensions (col 2) ─────────────────
+  { id: 'br-pablo-no',  nodeType: 'branchReason', label: 'PABLO DOESNT WRITE HIS JOURNAL',
+    x: cx(X(2), BW), y: ROW_OD, color: '#7aa991' },
+  { id: 'br-pablo-yes', nodeType: 'branchReason', label: 'PABLO WRITES HIS JOURNAL',
+    x: cx(X(2), BW), y: ROW_D63, color: '#7aa991' },
+  { id: 'br-no-life',   nodeType: 'branchReason', label: 'LIFE NEVER DEVELOPS ON EARTH',
+    x: cx(X(2), BW), y: ROW_EMPTY, color: '#7aa991' },
 
-  {
-    id: 'origins-ending',
-    title: 'Origins — True Ending',
-    date: 'Revealed in Black Ops III (2015)',
-    dateSort: 2015,
-    location: 'A child\'s bedroom',
-    thread: 'aether',
-    summary:
-      'After the Primis crew destroys the Aether connection, the scene cuts to a child\'s bedroom. Young Samantha and Eddie play with toy zombie figures. Their father calls them to dinner. The implication: the entire Aether saga was a story born from a child\'s grief. Eddie is revealed to be the young Richtofen.',
-    x: 100, y: 360,
+  // ─── Dimension headers (col 3) ────────────────────────────
+  { id: 'dim-od',       nodeType: 'dimension', label: 'THE ORIGINAL DIMENSION',
+    x: cx(X(3), DW), y: ROW_OD, color: '#00e5ff' },
+  { id: 'dim-63',       nodeType: 'dimension', label: 'DIMENSION 63',
+    x: cx(X(3), DW), y: ROW_D63, color: '#00e5ff' },
+  { id: 'dim-agartha',  nodeType: 'dimension', label: 'AGARTHA',
+    x: cx(X(3), DW), y: ROW_AGARTHA, color: '#00e5ff' },
+  { id: 'dim-empty',    nodeType: 'dimension', label: 'EMPTY EARTH',
+    x: cx(X(3), DW), y: ROW_EMPTY, color: '#00e5ff' },
+
+  // ═══ THE ORIGINAL DIMENSION ═══════════════════════════════
+
+  // Sub-branch reasons (col 4)
+  { id: 'br-gruber',      nodeType: 'branchReason', label: 'GRUBER 8 CREATES DRAGONS',
+    x: cx(X(4), BW), y: ROW_DECEPTIO, color: '#7aa991' },
+  { id: 'br-shi-overrun', nodeType: 'branchReason', label: 'SHI NO NUMA IS OVERRUN',
+    x: cx(X(4), BW), y: ROW_PRODITONE, color: '#7aa991' },
+
+  // Fracture labels (col 5)
+  { id: 'frac-agonia',    nodeType: 'fracture', label: 'AGONIA FRACTURE',
+    x: cx(X(5), FW), y: ROW_DECEPTIO, color: '#cc2222' },
+  { id: 'frac-proditone', nodeType: 'fracture', label: 'PRODITONE FRACTURE',
+    x: cx(X(5), FW), y: ROW_PRODITONE, color: '#cc2222' },
+
+  // Agonia path (cols 6–7)
+  { id: 'gorod-krovi', nodeType: 'event', label: 'GOROD KROVI',
+    x: cx(X(6), EW), y: ROW_DECEPTIO,
+    date: '1943 (alternate)', location: 'Stalingrad, Soviet Union', mapId: 'gorod-krovi',
+    summary: 'An alternate-universe Stalingrad where dragons battle zombies. The Primis crew retrieves Nikolai\'s soul fragment.',
   },
-  {
-    id: 'mob-of-the-dead',
-    title: 'Mob of the Dead',
-    date: '1934 (endless loop)',
-    dateSort: 1934,
-    location: 'Alcatraz Island, USA',
-    thread: 'aether',
-    summary:
-      'Four mobsters — Sal, Billy, Weasel (Albert Arlington), and Finn — attempt to escape Alcatraz on New Year\'s Eve. They are trapped in a purgatory loop by the undead Warden, fueled by Element 115. Each death resets the cycle. Weasel is the only innocent.',
-    mapId: 'mob-of-the-dead',
-    x: 460, y: 360,
-  },
-  {
-    id: 'verruckt',
-    title: 'Verrückt',
-    date: '1945',
-    dateSort: 1945,
-    location: 'Wittenau Sanatorium, Berlin',
-    thread: 'aether',
-    summary:
-      'A Group 935 sanatorium becomes overrun. An extraction team sent in is never heard from again. The facility was used for classified teleporter experiments and early zombie containment studies, including the first Nova 6 gas field tests.',
-    mapId: 'verruckt',
-    x: 820, y: 360,
-  },
-  {
-    id: 'five',
-    title: 'Five',
-    date: 'October 1963',
-    dateSort: 1963,
-    location: 'The Pentagon, USA',
-    thread: 'aether',
-    summary:
-      'During JFK\'s meeting on the Cuban Missile Crisis, an outbreak erupts at the Pentagon. Kennedy, Nixon, Castro, and McNamara fight for survival in the war room. The Pentagon Thief — a zombie janitor — drains weapons from living players.',
-    mapId: 'five',
-    x: 1180, y: 360,
-  },
-  {
-    id: 'shangri-la',
-    title: 'Shangri-La',
-    date: 'Unknown (time loop)',
-    dateSort: 1960,
-    location: 'Ancient ruins, Himalayas',
-    thread: 'aether',
-    summary:
-      'A mythical city hidden in the Himalayas, corrupted by 115. The O4 crew is trapped in a time loop. Explorers Brock and Gary have been cursed to repeat the same cycle for years — their journal entries appear throughout the map.',
-    mapId: 'shangri-la',
-    x: 1540, y: 360,
-  },
-  {
-    id: 'die-rise',
-    title: 'Die Rise',
-    date: '2035',
-    dateSort: 2035,
-    location: 'Collapsed skyscrapers, China',
-    thread: 'aether',
-    summary:
-      'Survivors navigate crumbling skyscrapers in a Chinese city. The N4 crew activates an Annihilator Pylon. Maxis and Richtofen continue their tug-of-war. A grief-fueled side story between two survivors — Samuel and Marlton — plays in the background.',
-    mapId: 'die-rise',
-    x: 1900, y: 360,
-  },
-  {
-    id: 'zetsubou-no-shima',
-    title: 'Zetsubou No Shima',
-    date: '2025',
-    dateSort: 2025,
-    location: 'Pacific research island',
-    thread: 'aether',
-    summary:
-      'The Primis crew is captured on a zombie-infested Japanese WWII island. Plant spores, flooded underground tunnels, and a spider boss guard 115 research. The crew retrieves Takeo\'s soul fragment from the Gauntlet of Siegfried.',
-    mapId: 'zetsubou-no-shima',
-    x: 2260, y: 360,
-  },
-  {
-    id: 'blood-of-the-dead',
-    title: 'Blood of the Dead',
-    date: '2035',
-    dateSort: 2035,
-    location: 'Alcatraz Island, USA',
-    thread: 'aether',
-    summary:
-      'Post-apocalyptic Alcatraz is ruled by a zombified Warden. Primis arrives to free Ultimis Richtofen\'s soul, trapped on the island. The Spectral Shield allows interaction with the spirit world. The Golden Gate Bridge looms over a corrupted bay.',
-    mapId: 'blood-of-the-dead',
-    x: 2620, y: 360,
-  },
-  {
-    id: 'gorod-krovi',
-    title: 'Gorod Krovi',
-    date: '1943 (alternate)',
-    dateSort: 2025,
-    location: 'Stalingrad, Soviet Union',
-    thread: 'aether',
-    summary:
-      'An alternate-universe Stalingrad where dragons battle zombies and German forces in the ruins. The Primis crew retrieves Nikolai\'s soul fragment. The Dragon Command acts as a central hub for routing the dragon to different objectives.',
-    mapId: 'gorod-krovi',
-    x: 2980, y: 360,
-  },
-  {
-    id: 'der-eisendrache',
-    title: 'Der Eisendrache',
-    date: '1945 (alternate timeline)',
-    dateSort: 1945.5,
-    location: 'Austrian Castle, Alps',
-    thread: 'aether',
-    summary:
-      'The Primis crew arrives at a Nazi-occupied Austrian mountain fortress where a prototype MPD has been built around a 115 meteorite. Richtofen uses the Annihilator to release Ultimis Dempsey\'s soul. The Wrath of the Ancients bow weapon is assembled through four elemental upgrade paths — fire, wind, lightning, and void.',
-    mapId: 'der-eisendrache',
-    x: 2080, y: 360,
+  { id: 'five-agonia', nodeType: 'event', label: 'FIVE',
+    x: cx(X(7), EW), y: ROW_DECEPTIO,
+    date: 'October 1963', location: 'The Pentagon, USA', mapId: 'five',
+    summary: 'During JFK\'s meeting on the Cuban Missile Crisis, an outbreak erupts at the Pentagon. Kennedy, Nixon, Castro, and McNamara fight for survival.',
   },
 
-  // ── Aether Secondary Branches (y = 520) ──────────────────────
-
-  {
-    id: 'nacht-der-untoten',
-    title: 'Nacht der Untoten',
-    date: '1945',
-    dateSort: 1944.5,
-    location: 'Abandoned bunker, Germany',
-    thread: 'aether',
-    summary:
-      'An anonymous group of soldiers seeks shelter in an abandoned German bunker as the first zombie outbreak erupts. With minimal equipment and no clear objective, they hold the line in total darkness. This is the earliest confirmed zombie encounter and the event that compelled Group 935 to accelerate their Element 115 research.',
-    mapId: 'nacht-der-untoten',
-    x: 820, y: 520,
-  },
-  {
-    id: 'call-of-the-dead',
-    title: 'Call of the Dead',
-    date: '1945 (alternate)',
-    dateSort: 1963.5,
-    location: 'Soviet film studio, Siberia',
-    thread: 'aether',
-    summary:
-      'A film crew shooting in a Soviet research facility accidentally activates a 115 teleporter, unleashing an outbreak — with a zombified George A. Romero among the undead. The trapped O4 crew contacts Richtofen from a sealed control room via radio, transmitting coordinates critical to his Aether plan. The Wunderwaffe DG-2 and VR-11 wonder weapons feature prominently.',
-    mapId: 'call-of-the-dead',
-    x: 1540, y: 520,
+  // Proditone path (col 6)
+  { id: 'zetsubou', nodeType: 'event', label: 'ZETSUBOU NO SHIMA',
+    x: cx(X(6), EW), y: ROW_PRODITONE,
+    date: '2025', location: 'Pacific research island', mapId: 'zetsubou-no-shima',
+    summary: 'The Primis crew is captured on a zombie-infested Japanese WWII island. Plant spores, flooded tunnels, and a spider boss guard 115 research.',
   },
 
-  // ════════════════════════════════════════════
-  //  CHAOS STORY
-  // ════════════════════════════════════════════
-
-  {
-    id: 'ix',
-    title: 'IX',
-    date: '52 AD',
-    dateSort: 52,
-    location: 'Roman Coliseum',
-    thread: 'chaos',
-    summary:
-      'The four Chaos crew — Bruno, Scarlett, Diego, and Stanton — are transported to a Roman arena hosting zombie gladiator games in honor of the gods. IX introduces the Chaos storyline, the Artifact mechanic, and the Sentinel Artifact system that powers each map\'s setup.',
-    mapId: 'ix',
-    x: 100, y: 680,
+  // Merge → Nacht, Verrückt (cols 8–9)
+  { id: 'nacht', nodeType: 'event', label: 'NACHT DER UNTOTEN',
+    x: cx(X(8), EW), y: ROW_OD,
+    date: '1945', location: 'Abandoned bunker, Germany', mapId: 'nacht-der-untoten',
+    summary: 'Anonymous soldiers seek shelter in an abandoned German bunker as the first zombie outbreak erupts. The earliest confirmed zombie encounter.',
   },
-  {
-    id: 'ancient-evil',
-    title: 'Ancient Evil',
-    date: '400 BC',
-    dateSort: -400,
-    location: 'Delphi, Greece',
-    thread: 'chaos',
-    summary:
-      'The crew reaches the Oracle of Delphi where Perseus pursues godhood through 115 Artifacts. God-hand upgrades, eagle cage rituals, and an Amphitheater trial sequence gate the final confrontation. The underworld is accessible via Pegasus flight.',
-    mapId: 'ancient-evil',
-    x: 460, y: 680,
-  },
-  {
-    id: 'voyage-of-despair',
-    title: 'Voyage of Despair',
-    date: 'April 1912',
-    dateSort: 1912,
-    location: 'RMS Titanic',
-    thread: 'chaos',
-    summary:
-      'The Chaos crew arrives aboard the Titanic as it sinks. A Sentinel Artifact aboard the ship caused the outbreak. The crew races through flooding decks to contain the spread before the ship goes under. The sinking itself is a timed structural hazard.',
-    mapId: 'voyage-of-despair',
-    x: 820, y: 680,
-  },
-  {
-    id: 'dead-of-the-night',
-    title: 'Dead of the Night',
-    date: 'October 1912',
-    dateSort: 1912,
-    location: 'Crimson Manor, England',
-    thread: 'chaos',
-    summary:
-      'An English manor hosts a secret society meeting. Vampires, werewolves, and a zombie outbreak erupt. Alistair Rhodes\' collection — including another Artifact — is at stake. Silver Bullets, Alistair\'s Folly wonder weapon, and werewolf escort define the quest.',
-    mapId: 'dead-of-the-night',
-    x: 1180, y: 680,
-  },
-  {
-    id: 'shadows-of-evil',
-    title: 'Shadows of Evil',
-    date: '1940',
-    dateSort: 1940,
-    location: 'Morg City, USA',
-    thread: 'chaos',
-    summary:
-      'Four criminals in a 1940s noir city are manipulated by the Shadow Man into awakening a Rift. Each character transforms into a "Beast" to open barriers and power ritual sites. The Shadow Man\'s masters — the Apothicons — are being summoned from beyond.',
-    mapId: 'shadows-of-evil',
-    x: 1540, y: 680,
-  },
-  {
-    id: 'alpha-omega',
-    title: 'Alpha Omega',
-    date: '2025',
-    dateSort: 2025,
-    location: 'Nuketown Bunker, Nevada',
-    thread: 'chaos',
-    summary:
-      'The Chaos crew reaches a bunker beneath the Nuketown test site. Rushmore — an AI controlling the facility — and a trapped Avogadro threaten to destabilize everything. Ray Gun Mark II variants are assembled here. The Chaos storyline accelerates toward its end.',
-    mapId: 'alpha-omega',
-    x: 1900, y: 680,
-  },
-  {
-    id: 'tag-der-toten',
-    title: 'Tag der Toten',
-    date: '2035',
-    dateSort: 2035,
-    location: 'Arctic research station',
-    thread: 'chaos',
-    summary:
-      'The final chapter of the Chaos story. The crew reaches an arctic facility where Nikolai uses the Agarthan Device to destroy the entire multiverse — erasing Element 115, Agartha, and Dr. Monty from existence. The Aether cycle ends permanently. Zipline traversal, lighthouse beam-routing, and a moving Seal of Duality finale close the arc.',
-    mapId: 'tag-der-toten',
-    x: 2260, y: 680,
+  { id: 'verruckt', nodeType: 'event', label: 'VERRÜCKT',
+    x: cx(X(9), EW), y: ROW_OD,
+    date: '1945', location: 'Wittenau Sanatorium, Berlin', mapId: 'verruckt',
+    summary: 'A Group 935 sanatorium becomes overrun. The facility was used for classified teleporter experiments and early zombie containment studies.',
   },
 
-  // ════════════════════════════════════════════
-  //  DARK AETHER STORY  ·  Row 4  (y = 920)
-  // ════════════════════════════════════════════
+  // Branch reasons at Verrückt (col 10)
+  { id: 'br-richtofen-kills', nodeType: 'branchReason', label: 'RICHTOFEN KILLS MAXIS',
+    x: cx(X(10), BW), y: ROW_DECEPTIO, color: '#7aa991' },
+  { id: 'br-ultimis',         nodeType: 'branchReason', label: 'ULTIMIS IS FORMED',
+    x: cx(X(10), BW), y: ROW_PRODITONE, color: '#7aa991' },
 
-  {
-    id: 'die-maschine',
-    title: 'Die Maschine',
-    date: 'November 1984',
-    dateSort: 1984,
-    location: 'Morasko, Poland',
-    thread: 'dark-aether',
-    summary:
-      'Requiem — a CIA-backed task force — investigates a decommissioned Nazi particle collider in Poland that has torn open a Dark Aether rift. Manglers and Plaguehounds pour through. Samantha Maxis is discovered trapped inside the Dark Aether dimension. After shutting down the collider and extracting Maxis, Requiem\'s Cold War arc begins in earnest.',
-    mapId: 'die-maschine',
-    x: 100, y: 920,
+  // Fracture / TL labels (col 11)
+  { id: 'frac-deceptio', nodeType: 'fracture', label: 'DECEPTIO FRACTURE',
+    x: cx(X(11), FW), y: ROW_DECEPTIO, color: '#cc2222' },
+  { id: 'tl-true',       nodeType: 'fracture', label: 'THE TRUE TIMELINE',
+    x: cx(X(11), FW), y: ROW_PRODITONE, color: '#22cc44' },
+
+  // ─── Deceptio path (cols 12–14) ───────────────────────────
+  { id: 'the-giant', nodeType: 'event', label: 'THE GIANT',
+    x: cx(X(12), EW), y: ROW_DECEPTIO,
+    date: '1945', location: 'Der Riese Facility, Poland', mapId: 'the-giant',
+    summary: 'Richtofen completes the Matter Transference Device. Maxis and Samantha are trapped inside an MTD. Samantha bonds with the MPD and becomes the controller of the undead.',
   },
-  {
-    id: 'firebase-z',
-    title: 'Firebase Z',
-    date: 'Early 1985',
-    dateSort: 1985,
-    location: 'Firebase Ripcord, Vietnam',
-    thread: 'dark-aether',
-    summary:
-      'Requiem deploys to a US firebase in Vietnam where Omega Group has been harvesting Dark Aether energy from captive zombie subjects. Peck — a disaffected Omega scientist — assists against his own organization. The crew recovers critical data on Omega\'s plans to weaponize Dark Aether entities and disable a massive Orda creature.',
-    mapId: 'firebase-z',
-    x: 460, y: 920,
+  { id: 'der-schatten', nodeType: 'event', label: 'DER SCHATTEN',
+    x: cx(X(13), EW), y: ROW_DECEPTIO,
+    date: '1945 (alternate)', location: 'Shadows realm',
+    summary: 'An alternate shadow dimension pulled from the fracture.',
   },
-  {
-    id: 'mauer-der-toten',
-    title: 'Mauer der Toten',
-    date: 'Summer 1985',
-    dateSort: 1985.5,
-    location: 'East Berlin, Germany',
-    thread: 'dark-aether',
-    summary:
-      'A catastrophic zombie outbreak erupts in East Berlin, threatening to expose the Dark Aether to the world. Klaus, a prototype robot soldier, serves as a controllable ally. The divided city — split by the Berlin Wall — creates two interlocking sectors. Requiem recovers an Omega databank before Discordian forces can claim it.',
-    mapId: 'mauer-der-toten',
-    x: 820, y: 920,
+  { id: 'der-eisendrache', nodeType: 'event', label: 'DER EISENDRACHE',
+    x: cx(X(14), EW), y: ROW_DECEPTIO,
+    date: '1945 (alternate)', location: 'Austrian Castle, Alps', mapId: 'der-eisendrache',
+    summary: 'The Primis crew arrives at a Nazi-occupied Austrian mountain fortress. Richtofen releases Ultimis Dempsey\'s soul. The Wrath of the Ancients bow is assembled.',
   },
-  {
-    id: 'forsaken',
-    title: 'Forsaken',
-    date: 'October 1985',
-    dateSort: 1985.9,
-    location: 'Outpost 25, Ralston, California',
-    thread: 'dark-aether',
-    summary:
-      'Requiem\'s leadership is betrayed and imprisoned inside the Dark Aether by Cornelius Peck acting on Omega orders. Samantha Maxis sacrifices herself to seal the rift permanently, ending the Cold War crisis. Director Strauss is arrested. The Chrysalax wonder weapon is assembled from Dark Aether crystal shards. This closes the Black Ops Cold War arc.',
-    mapId: 'forsaken',
-    x: 1180, y: 920,
+
+  // ─── True Timeline path (cols 12–26) ─────────────────────
+  { id: 'tt-shi-no-numa', nodeType: 'event', label: 'SHI NO NUMA',
+    x: cx(X(12), EW), y: ROW_PRODITONE,
+    date: 'July 1943', location: 'Shi No Numa Facility, Japan', mapId: 'shi-no-numa',
+    summary: 'Group 935 runs a 115-fueled research station in a Japanese swamp. Richtofen retrieves the Golden Rod artifact.',
   },
-  {
-    id: 'liberty-falls',
-    title: 'Liberty Falls',
-    date: '2027',
-    dateSort: 2027,
-    location: 'Liberty Falls, West Virginia',
-    thread: 'dark-aether',
-    summary:
-      'Years after the Cold War crisis, a Dark Aether outbreak consumes the small town of Liberty Falls. Terminus Outcomes — a private successor to Requiem — investigates alongside surviving operatives. The town\'s church hides a critical Sentinel Artifact. Liberty Falls and Terminus are simultaneous launch maps opening the Black Ops 6 Dark Aether arc.',
-    mapId: 'liberty-falls',
-    x: 1540, y: 920,
+  { id: 'tt-der-riese', nodeType: 'event', label: 'DER RIESE',
+    x: cx(X(13), EW), y: ROW_PRODITONE,
+    date: '1945', location: 'Der Riese Facility, Poland', mapId: 'der-riese',
+    summary: 'Richtofen completes the teleporter network. Maxis and Samantha are trapped. Samantha bonds with the MPD.',
   },
-  {
-    id: 'terminus',
-    title: 'Terminus',
-    date: '2027',
-    dateSort: 2027.1,
-    location: 'Terminus Island, Pacific Ocean',
-    thread: 'dark-aether',
-    summary:
-      'A maximum-security Terminus Outcomes research facility on a remote Pacific island is overrun. An Abomination — a titanic Dark Aether entity — threatens to consume the island. Prisoner records reveal connections to Requiem\'s Cold War experiments. Underwater traversal and the Jet Gun wonder weapon define the map\'s mechanics.',
-    mapId: 'terminus',
-    x: 1900, y: 920,
+  { id: 'tt-shangri-la', nodeType: 'event', label: 'SHANGRI-LA',
+    x: cx(X(14), EW), y: ROW_PRODITONE,
+    date: 'Unknown (time loop)', location: 'Ancient ruins, Himalayas', mapId: 'shangri-la',
+    summary: 'A mythical city hidden in the Himalayas, corrupted by 115. The O4 crew is trapped in a time loop.',
   },
-  {
-    id: 'citadelle-des-morts',
-    title: 'Citadelle des Morts',
-    date: '2027',
-    dateSort: 2027.2,
-    location: 'Medieval castle, France',
-    thread: 'dark-aether',
-    summary:
-      'A Dark Aether rift has phased a medieval French fortress into temporal stasis. Undead knights and era-blending abominations guard the keep. Records left by an ancient monastic order reveal they first encountered the Dark Aether centuries ago. The Mort Cannon wonder weapon is constructed from century-old Dark Aether-infused components.',
-    mapId: 'citadelle-des-morts',
-    x: 2260, y: 920,
+  { id: 'tt-kino', nodeType: 'event', label: 'KINO DER TOTEN',
+    x: cx(X(15), EW), y: ROW_PRODITONE,
+    date: '1963', location: 'Group 935 Theater, Berlin', mapId: 'kino-der-toten',
+    summary: 'The O4 crew emerges in an abandoned Group 935 theater used for mind-control experiments on zombie subjects.',
   },
-  {
-    id: 'the-tomb',
-    title: 'The Tomb',
-    date: '2028',
-    dateSort: 2028,
-    location: 'Antarctic research station',
-    thread: 'dark-aether',
-    summary:
-      'The crew descends into a frozen Antarctic research station to recover a critical containment device. Dark Aether energy has crystallized the entire facility, creating unpredictable spatial rifts. The final chapter of the BO6 narrative brings the ongoing Dark Aether storyline to a decisive confrontation — and ties the new arc back to the Cold War origins of the rift.',
-    mapId: 'the-tomb',
-    x: 2620, y: 920,
+  { id: 'tt-classified', nodeType: 'event', label: 'CLASSIFIED',
+    x: cx(X(16), EW), y: ROW_PRODITONE,
+    date: '1963', location: 'The Pentagon, USA',
+    summary: 'Classified documents reveal the Pentagon\'s connection to Group 935 and the Broken Arrow program.',
+  },
+  { id: 'tt-ascension', nodeType: 'event', label: 'ASCENSION/FIVE',
+    x: cx(X(17), EW), y: ROW_PRODITONE,
+    date: '1963', location: 'Baikonur Cosmodrome, Soviet USSR', mapId: 'ascension',
+    summary: 'A Group 935/Soviet cosmodrome houses MPD research. The O4 crew frees Gersh from the Casimir Mechanism.',
+  },
+  { id: 'tt-broken-arrow', nodeType: 'event', label: 'BROKEN ARROW LAB',
+    x: cx(X(18), EW), y: ROW_PRODITONE,
+    date: '1963', location: 'Broken Arrow Facility, USA',
+    summary: 'The US Broken Arrow program attempts to weaponise Element 115 independently of Group 935.',
+  },
+  { id: 'tt-call-dead', nodeType: 'event', label: 'CALL OF THE DEAD',
+    x: cx(X(19), EW), y: ROW_PRODITONE,
+    date: '1963', location: 'Soviet film studio, Siberia', mapId: 'call-of-the-dead',
+    summary: 'A film crew accidentally activates a 115 teleporter. The trapped O4 crew contacts Richtofen from a sealed control room.',
+  },
+  { id: 'tt-alpha-omega', nodeType: 'event', label: 'ALPHA OMEGA',
+    x: cx(X(20), EW), y: ROW_PRODITONE,
+    date: '2025', location: 'Nuketown Bunker, Nevada', mapId: 'alpha-omega',
+    summary: 'The crew reaches a bunker beneath the Nuketown test site. Rushmore AI and the trapped Avogadro threaten to destabilise everything.',
+  },
+  { id: 'tt-moon', nodeType: 'event', label: 'MOON/NUKETOWN',
+    x: cx(X(21), EW), y: ROW_PRODITONE,
+    date: '1969', location: 'Griffin Station, The Moon', mapId: 'moon',
+    summary: 'The O4 crew reaches Griffin Station. Richtofen swaps souls with Samantha and fires the rockets at Earth, destroying civilisation.',
+  },
+  { id: 'tt-tranzit', nodeType: 'event', label: 'TRANZIT',
+    x: cx(X(22), EW), y: ROW_PRODITONE,
+    date: '2035', location: 'Hanford, Washington', mapId: 'tranzit',
+    summary: 'Post-nuclear Earth. Survivors board a looping bus through a radioactive wasteland. Maxis and Richtofen battle for control of the Hanford pylon.',
+  },
+  { id: 'tt-die-rise', nodeType: 'event', label: 'DIE RISE',
+    x: cx(X(23), EW), y: ROW_PRODITONE,
+    date: '2035', location: 'Collapsed skyscrapers, China', mapId: 'die-rise',
+    summary: 'Survivors navigate crumbling skyscrapers. The N4 crew activates an Annihilator Pylon.',
+  },
+  { id: 'tt-buried', nodeType: 'event', label: 'BURIED',
+    x: cx(X(24), EW), y: ROW_PRODITONE,
+    date: '2035', location: 'Gideon, Nevada (underground)', mapId: 'buried',
+    summary: 'An underground ghost town is uncovered beneath Nevada. The N4 crew activates the final Pylon.',
+  },
+  { id: 'tt-victis', nodeType: 'event', label: 'VICTIS HIDEOUT',
+    x: cx(X(25), EW), y: ROW_PRODITONE,
+    date: '2035', location: 'Undisclosed',
+    summary: 'The Victis crew retreats to a hidden safe-house after the events of Buried. Their fate hangs in the balance.',
+  },
+  { id: 'tt-destroyed', nodeType: 'endState', label: 'UNIVERSE DESTROYED',
+    x: cx(X(26), SW), y: ROW_PRODITONE, color: '#cc2222' },
+
+  // ═══ DIMENSION 63 ═════════════════════════════════════════
+
+  { id: 'd63-origins', nodeType: 'event', label: 'ORIGINS',
+    x: cx(X(4), EW), y: ROW_D63,
+    date: 'September 1917', location: 'Excavation Site 64, France', mapId: 'origins',
+    summary: 'During WWI, Group 935 discovers buried Element 115 meteorites beneath the Somme. Ancient Panzer robots awaken. Richtofen first contacts the Aether entities.',
+  },
+  { id: 'd63-motd', nodeType: 'event', label: 'MOTD',
+    x: cx(X(5), EW), y: ROW_D63,
+    date: '1934 (endless loop)', location: 'Alcatraz Island, USA', mapId: 'mob-of-the-dead',
+    summary: 'Four mobsters attempt to escape Alcatraz on New Year\'s Eve. They are trapped in a purgatory loop by the undead Warden.',
+  },
+
+  // Branch reasons (col 6)
+  { id: 'br-cycle',  nodeType: 'branchReason', label: 'MONSTERS NEVER BREAK THE CYCLE',
+    x: cx(X(6), BW), y: ROW_CYCLE, color: '#7aa991' },
+  { id: 'br-broken', nodeType: 'branchReason', label: 'MONSTERS BREAK THE CYCLE',
+    x: cx(X(6), BW), y: ROW_BROKEN, color: '#7aa991' },
+
+  // Timeline labels (col 7)
+  { id: 'tl-cycle',  nodeType: 'fracture', label: 'CYCLE TIMELINE',
+    x: cx(X(7), FW), y: ROW_CYCLE, color: '#cc2222' },
+  { id: 'tl-broken', nodeType: 'fracture', label: 'BROKEN TIMELINE',
+    x: cx(X(7), FW), y: ROW_BROKEN, color: '#22cc44' },
+
+  // Cycle path (cols 8–10)
+  { id: 'd63-lab', nodeType: 'event', label: 'RICHTOFENS LAB',
+    x: cx(X(8), EW), y: ROW_CYCLE,
+    date: '1940s', location: 'Richtofen\'s hidden laboratory',
+    summary: 'Richtofen\'s personal laboratory where Element 115 experiments are conducted in secret.',
+  },
+  { id: 'd63-soe', nodeType: 'event', label: 'SHADOWS OF EVIL',
+    x: cx(X(9), EW), y: ROW_CYCLE,
+    date: '1940', location: 'Morg City, USA', mapId: 'shadows-of-evil',
+    summary: 'Four criminals in a 1940s noir city are manipulated by the Shadow Man into awakening a Rift. The Apothicons are being summoned.',
+  },
+  { id: 'd63-destroyed', nodeType: 'endState', label: 'UNIVERSE DESTROYED',
+    x: cx(X(10), SW), y: ROW_CYCLE, color: '#cc2222' },
+
+  // Broken path (col 8)
+  { id: 'd63-blood', nodeType: 'event', label: 'BLOOD OF THE DEAD',
+    x: cx(X(8), EW), y: ROW_BROKEN,
+    date: '2035', location: 'Alcatraz Island, USA', mapId: 'blood-of-the-dead',
+    summary: 'Post-apocalyptic Alcatraz ruled by a zombified Warden. Primis arrives to free Ultimis Richtofen\'s soul.',
+  },
+
+  // ═══ AGARTHA ══════════════════════════════════════════════
+
+  { id: 'ag-revelations', nodeType: 'event', label: 'REVELATIONS',
+    x: cx(X(4), EW), y: ROW_AGARTHA,
+    date: '2025+', location: 'The Aether — all dimensions combined', mapId: 'revelations',
+    summary: 'The Shadow Man fuses all previous map environments into one fractured reality. The Primis crew confronts the Apothicon God.',
+  },
+  { id: 'ag-children', nodeType: 'endState', label: 'CHILDREN ARE SAFE',
+    x: cx(X(5), SW), y: ROW_AGARTHA, color: '#22cc44' },
+
+  // ═══ EMPTY EARTH ══════════════════════════════════════════
+
+  { id: 'ee-zero-base', nodeType: 'event', label: 'ZERO BASE',
+    x: cx(X(4), EW), y: ROW_EMPTY,
+    date: 'Unknown', location: 'Empty Earth',
+    summary: 'A barren version of Earth where life never developed. Used as a safe staging ground by certain factions.',
   },
 ];
 
-export const LORE_CONNECTIONS: LoreConnection[] = [
-  // Aether main chain
-  { id: 'a0a', source: 'pre-history', target: 'great-war' },
-  { id: 'a0b', source: 'great-war',   target: 'origins' },
-  { id: 'a1', source: 'origins',        target: 'shi-no-numa' },
-  { id: 'a2', source: 'shi-no-numa',    target: 'der-riese' },
-  { id: 'a3', source: 'der-riese',      target: 'kino-der-toten' },
-  { id: 'a4', source: 'kino-der-toten', target: 'ascension' },
-  { id: 'a5', source: 'ascension',      target: 'moon' },
-  { id: 'a6', source: 'moon',           target: 'tranzit' },
-  { id: 'a7', source: 'tranzit',        target: 'buried' },
-  { id: 'a8', source: 'buried',         target: 'revelations' },
+// ── Edges ────────────────────────────────────────────────────
 
-  // Aether converge on Revelations
-  { id: 'a9',  source: 'blood-of-the-dead', target: 'revelations' },
-  { id: 'a10', source: 'gorod-krovi',        target: 'revelations' },
+export const TIMELINE_EDGES: TimelineEdge[] = [
+  // Root
+  { id: 'e-title',         source: 'title',        target: 'great-war' },
 
-  // Aether side branches
-  { id: 'a11', source: 'tranzit',          target: 'die-rise' },
-  { id: 'a12', source: 'die-rise',         target: 'buried' },
-  { id: 'a13', source: 'zetsubou-no-shima', target: 'gorod-krovi' },
+  // Great War → dimension branches
+  { id: 'e-gw-od',         source: 'great-war',    target: 'br-pablo-no' },
+  { id: 'e-gw-63',         source: 'great-war',    target: 'br-pablo-yes' },
+  { id: 'e-gw-ag',         source: 'great-war',    target: 'dim-agartha' },
+  { id: 'e-gw-ee',         source: 'great-war',    target: 'br-no-life' },
 
-  // Location link (same place, different eras)
-  { id: 'a14', source: 'mob-of-the-dead', target: 'blood-of-the-dead', label: 'same island' },
+  { id: 'e-br-od',         source: 'br-pablo-no',  target: 'dim-od' },
+  { id: 'e-br-63',         source: 'br-pablo-yes', target: 'dim-63' },
+  { id: 'e-br-ee',         source: 'br-no-life',   target: 'dim-empty' },
 
-  // Primis arc (new maps)
-  { id: 'p1', source: 'der-riese',        target: 'der-eisendrache' },
-  { id: 'p2', source: 'der-eisendrache',  target: 'zetsubou-no-shima' },
+  // ── Original Dimension ──────────────────────────────────
+  { id: 'e-od-gruber',     source: 'dim-od',       target: 'br-gruber' },
+  { id: 'e-od-shi',        source: 'dim-od',       target: 'br-shi-overrun' },
+  { id: 'e-gruber-ag',     source: 'br-gruber',    target: 'frac-agonia' },
+  { id: 'e-shi-pro',       source: 'br-shi-overrun', target: 'frac-proditone' },
 
-  // Aether secondary branches
-  { id: 'b1', source: 'ascension', target: 'call-of-the-dead' },
+  // Agonia path
+  { id: 'e-ag-gk',         source: 'frac-agonia',   target: 'gorod-krovi' },
+  { id: 'e-gk-five',       source: 'gorod-krovi',   target: 'five-agonia' },
+  { id: 'e-five-nacht',    source: 'five-agonia',   target: 'nacht' },
 
-  // Chaos chain
-  { id: 'c1', source: 'voyage-of-despair',  target: 'dead-of-the-night' },
-  { id: 'c2', source: 'shadows-of-evil',    target: 'alpha-omega' },
-  { id: 'c3', source: 'alpha-omega',        target: 'tag-der-toten' },
+  // Proditone path
+  { id: 'e-pro-zet',       source: 'frac-proditone', target: 'zetsubou' },
+  { id: 'e-zet-nacht',     source: 'zetsubou',       target: 'nacht' },
 
-  // Dark Aether chain
-  { id: 'd1', source: 'die-maschine',         target: 'firebase-z' },
-  { id: 'd2', source: 'firebase-z',           target: 'mauer-der-toten' },
-  { id: 'd3', source: 'mauer-der-toten',      target: 'forsaken' },
-  { id: 'd4', source: 'forsaken',             target: 'liberty-falls' },
-  { id: 'd5', source: 'liberty-falls',        target: 'terminus' },
-  { id: 'd6', source: 'terminus',             target: 'citadelle-des-morts' },
-  { id: 'd7', source: 'citadelle-des-morts',  target: 'the-tomb' },
+  // Merge → Verrückt
+  { id: 'e-nacht-ver',     source: 'nacht',         target: 'verruckt' },
+
+  // Verrückt → branch reasons
+  { id: 'e-ver-richtofen', source: 'verruckt',      target: 'br-richtofen-kills' },
+  { id: 'e-ver-ultimis',   source: 'verruckt',      target: 'br-ultimis' },
+  { id: 'e-br-dec',        source: 'br-richtofen-kills', target: 'frac-deceptio' },
+  { id: 'e-br-tt',         source: 'br-ultimis',    target: 'tl-true' },
+
+  // Deceptio path
+  { id: 'e-dec-giant',     source: 'frac-deceptio', target: 'the-giant' },
+  { id: 'e-giant-sch',     source: 'the-giant',     target: 'der-schatten' },
+  { id: 'e-sch-eis',       source: 'der-schatten',  target: 'der-eisendrache' },
+
+  // True Timeline path
+  { id: 'e-tt-1',  source: 'tl-true',          target: 'tt-shi-no-numa' },
+  { id: 'e-tt-2',  source: 'tt-shi-no-numa',   target: 'tt-der-riese' },
+  { id: 'e-tt-3',  source: 'tt-der-riese',     target: 'tt-shangri-la' },
+  { id: 'e-tt-4',  source: 'tt-shangri-la',    target: 'tt-kino' },
+  { id: 'e-tt-5',  source: 'tt-kino',          target: 'tt-classified' },
+  { id: 'e-tt-6',  source: 'tt-classified',    target: 'tt-ascension' },
+  { id: 'e-tt-7',  source: 'tt-ascension',     target: 'tt-broken-arrow' },
+  { id: 'e-tt-8',  source: 'tt-broken-arrow',  target: 'tt-call-dead' },
+  { id: 'e-tt-9',  source: 'tt-call-dead',     target: 'tt-alpha-omega' },
+  { id: 'e-tt-10', source: 'tt-alpha-omega',   target: 'tt-moon' },
+  { id: 'e-tt-11', source: 'tt-moon',          target: 'tt-tranzit' },
+  { id: 'e-tt-12', source: 'tt-tranzit',       target: 'tt-die-rise' },
+  { id: 'e-tt-13', source: 'tt-die-rise',      target: 'tt-buried' },
+  { id: 'e-tt-14', source: 'tt-buried',        target: 'tt-victis' },
+  { id: 'e-tt-15', source: 'tt-victis',        target: 'tt-destroyed' },
+
+  // ── Dimension 63 ───────────────────────────────────────
+  { id: 'e-63-origins',    source: 'dim-63',       target: 'd63-origins' },
+  { id: 'e-63-motd',       source: 'd63-origins',  target: 'd63-motd' },
+
+  // Cycle / Broken branches
+  { id: 'e-motd-cycle',    source: 'd63-motd',     target: 'br-cycle' },
+  { id: 'e-motd-broken',   source: 'd63-motd',     target: 'br-broken' },
+  { id: 'e-br-cycle',      source: 'br-cycle',     target: 'tl-cycle' },
+  { id: 'e-br-broken',     source: 'br-broken',    target: 'tl-broken' },
+
+  // Cycle path
+  { id: 'e-cyc-lab',       source: 'tl-cycle',     target: 'd63-lab' },
+  { id: 'e-lab-soe',       source: 'd63-lab',      target: 'd63-soe' },
+  { id: 'e-soe-dest',      source: 'd63-soe',      target: 'd63-destroyed' },
+
+  // Broken path
+  { id: 'e-brk-blood',     source: 'tl-broken',    target: 'd63-blood' },
+
+  // ── Agartha ────────────────────────────────────────────
+  { id: 'e-ag-rev',        source: 'dim-agartha',  target: 'ag-revelations' },
+  { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },
+
+  // ── Empty Earth ────────────────────────────────────────
+  { id: 'e-ee-zero',       source: 'dim-empty',    target: 'ee-zero-base' },
 ];
+
+// ── Legacy exports (keep other pages compiling) ─────────────
+export const LORE_EVENTS: LoreEvent[] = [];
+export const LORE_CONNECTIONS: LoreConnection[] = [];
