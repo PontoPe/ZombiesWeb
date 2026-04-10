@@ -412,6 +412,7 @@ function SectionLegend({
 
 export default function SpiralTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasDragged = useRef(false);
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: CANVAS_W, h: CANVAS_H });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -520,6 +521,7 @@ export default function SpiralTimeline() {
       if (target.closest('.spiral-node')) return;
 
       setIsDragging(true);
+      hasDragged.current = false;
       setDragStart({ x: e.clientX, y: e.clientY });
       (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     },
@@ -529,6 +531,7 @@ export default function SpiralTimeline() {
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!isDragging) return;
+      hasDragged.current = true;
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
@@ -575,8 +578,12 @@ export default function SpiralTimeline() {
     [selectedEntry]
   );
 
-  // Close panel on background click
+  // Close panel on background click — but not when the click is the tail of a pan drag
   const handleBgClick = useCallback(() => {
+    if (hasDragged.current) {
+      hasDragged.current = false;
+      return;
+    }
     setSelectedEntry(null);
     setStretchedSection(null);
   }, []);
