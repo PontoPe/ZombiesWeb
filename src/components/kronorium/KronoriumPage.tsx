@@ -8,7 +8,7 @@ type ChronicleView = 'spiral' | 'list';
 
 const TAB_META: { value: Tab; label: string }[] = [
   { value: 'map',       label: 'Map Timeline' },
-  { value: 'chronicle', label: 'Story Chronicle' },
+  { value: 'chronicle', label: 'Chronicles Timeline' },
 ];
 
 export default function KronoriumPage() {

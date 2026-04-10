@@ -21,6 +21,8 @@ export interface TimelineNode {
   date?: string;
   location?: string;
   mapId?: string;
+  /** Crew that plays this map (used for crew highlight filter) */
+  crew?: string;
 }
 
 export interface TimelineEdge {
@@ -31,6 +33,8 @@ export interface TimelineEdge {
   sourceHandle?: 'right' | 'bottom' | 'top';
   /** Override target handle position: 'left' (default), 'top', 'bottom' */
   targetHandle?: 'left' | 'top' | 'bottom';
+  /** Optional label displayed on the edge */
+  label?: string;
 }
 
 /* Legacy — kept so other pages still compile */
@@ -70,15 +74,17 @@ const SW = 160;   // end-state width
 const cx = (p: number, w: number) => p - w / 2;
 
 // ── Row centres (y-axis) — vertical lanes ───────────────────
-const ROW_DECEPTIO  = 0;
-const ROW_OD        = 230;
-const ROW_PRODITONE = 460;
-const ROW_CYCLE     = 740;
-const ROW_D63       = 940;
-const ROW_BROKEN    = 1140;
-const ROW_AGARTHA   = 1420;
-const ROW_EMPTY     = 1650;
-const ROW_GW        = 800;   // Great War — roughly centred
+const ROW_AGONIA      = -80;   // Agonia fracture sub-branch
+const ROW_DECEPTIO    = 100;
+const ROW_OD          = 280;   // Shared OD maps (Nacht, Verrückt)
+const ROW_PRODITONE_F = 420;   // Proditone fracture sub-branch
+const ROW_TRUE_TL     = 560;   // True Timeline
+const ROW_CYCLE       = 800;
+const ROW_D63         = 1000;
+const ROW_BROKEN      = 1200;
+const ROW_AGARTHA     = 1500;
+const ROW_EMPTY       = 1750;
+const ROW_GW          = 900;   // Great War — roughly centred
 
 // ── Column centres (x-axis) — flow direction ────────────────
 const STEP = 340;
@@ -88,16 +94,19 @@ const X = (n: number) => n * STEP + 200;
 // Col  1 = Great War
 // Col  2 = Branch reasons → dimensions
 // Col  3 = Dimension headers
-// Col  4 = Sub-branches / D63 Origins / AG Revelations / EE Zero
-// Col  5 = Fracture labels / D63 MOTD / AG Children
-// Col  6 = Map 1 (Gorod, Zetsubou) / D63 br-cycle/br-broken
-// Col  7 = Map 2 (Five) / D63 tl-cycle/tl-broken
-// Col  8 = Nacht merge / D63 lab, blood
-// Col  9 = Verrückt / D63 SoE
-// Col 10 = Branch reasons at Verrückt / D63 destroyed
-// Col 11 = Deceptio/True TL labels
-// Col 12–14 = Deceptio maps (Giant, Schatten, Eisendrache)
-// Col 12–26 = True Timeline maps (Shi No Numa → Destroyed)
+// Col  4 = Nacht / D63 Origins / AG Revelations / EE Zero
+// Col  5 = Verrückt / D63 MOTD / AG Children
+// Col  6 = Branch reasons from Verrückt / D63 br-cycle/br-broken
+// Col  7 = Fracture & TL labels / D63 tl-cycle/tl-broken
+// Col  8 = Giant, Gorod+Five (parallel), Zetsubou, Shi No Numa / D63 lab, blood
+// Col  9 = Eisendrache, Der Riese / D63 SoE
+// Col 10 = Shangri-La / D63 destroyed
+// Col 11 = Kino
+// Col 12 = Classified
+// Col 13 = Ascension
+// Col 14 = Call of the Dead
+// Col 15 = Moon + Nuketown + Alpha Omega (parallel)
+// Col 16–20 = TranZit → Buried → Tag → Destroyed
 
 export const TIMELINE_NODES: TimelineNode[] = [
 
@@ -126,175 +135,194 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'dim-63',       nodeType: 'dimension', label: 'DIMENSION 63',
     x: cx(X(3), DW), y: ROW_D63, color: '#00e5ff' },
   { id: 'dim-agartha',  nodeType: 'dimension', label: 'AGARTHA',
-    x: cx(X(3), DW), y: ROW_AGARTHA, color: '#00e5ff' },
+    x: cx(X(7), DW), y: ROW_AGARTHA, color: '#00e5ff' },
   { id: 'dim-empty',    nodeType: 'dimension', label: 'EMPTY EARTH',
     x: cx(X(3), DW), y: ROW_EMPTY, color: '#00e5ff' },
 
   // ═══ THE ORIGINAL DIMENSION ═══════════════════════════════
 
-  // Sub-branch reasons (col 4)
-  { id: 'br-gruber',      nodeType: 'branchReason', label: 'GRUBER 8 CREATES DRAGONS',
-    x: cx(X(4), BW), y: ROW_DECEPTIO, color: '#7aa991' },
-  { id: 'br-shi-overrun', nodeType: 'branchReason', label: 'SHI NO NUMA IS OVERRUN',
-    x: cx(X(4), BW), y: ROW_PRODITONE, color: '#7aa991' },
-
-  // Fracture labels (col 5)
-  { id: 'frac-agonia',    nodeType: 'fracture', label: 'AGONIA FRACTURE',
-    x: cx(X(5), FW), y: ROW_DECEPTIO, color: '#cc2222' },
-  { id: 'frac-proditone', nodeType: 'fracture', label: 'PRODITONE FRACTURE',
-    x: cx(X(5), FW), y: ROW_PRODITONE, color: '#cc2222' },
-
-  // Agonia path (cols 6–7)
-  { id: 'gorod-krovi', nodeType: 'event', label: 'GOROD KROVI',
-    x: cx(X(6), EW), y: ROW_DECEPTIO,
-    date: '1943 (alternate)', location: 'Stalingrad, Soviet Union', mapId: 'gorod-krovi',
-    summary: 'An alternate-universe Stalingrad where dragons battle zombies. The Primis crew retrieves Nikolai\'s soul fragment.',
-  },
-  { id: 'five-agonia', nodeType: 'event', label: 'FIVE',
-    x: cx(X(7), EW), y: ROW_DECEPTIO,
-    date: 'October 1963', location: 'The Pentagon, USA', mapId: 'five',
-    summary: 'During JFK\'s meeting on the Cuban Missile Crisis, an outbreak erupts at the Pentagon. Kennedy, Nixon, Castro, and McNamara fight for survival.',
-  },
-
-  // Proditone path (col 6)
-  { id: 'zetsubou', nodeType: 'event', label: 'ZETSUBOU NO SHIMA',
-    x: cx(X(6), EW), y: ROW_PRODITONE,
-    date: '2025', location: 'Pacific research island', mapId: 'zetsubou-no-shima',
-    summary: 'The Primis crew is captured on a zombie-infested Japanese WWII island. Plant spores, flooded tunnels, and a spider boss guard 115 research.',
-  },
-
-  // Merge → Nacht, Verrückt (cols 8–9)
+  // Shared maps: Nacht (col 4), Verrückt (col 5) ────────────
   { id: 'nacht', nodeType: 'event', label: 'NACHT DER UNTOTEN',
-    x: cx(X(8), EW), y: ROW_OD,
-    date: '1945', location: 'Abandoned bunker, Germany', mapId: 'nacht-der-untoten',
+    x: cx(X(4), EW), y: ROW_OD,
+    date: 'June 4th, 1945', location: 'Abandoned bunker, Germany', mapId: 'nacht-der-untoten',
     summary: 'Anonymous soldiers seek shelter in an abandoned German bunker as the first zombie outbreak erupts. The earliest confirmed zombie encounter.',
+    crew: 'Marines',
   },
   { id: 'verruckt', nodeType: 'event', label: 'VERRÜCKT',
-    x: cx(X(9), EW), y: ROW_OD,
-    date: '1945', location: 'Wittenau Sanatorium, Berlin', mapId: 'verruckt',
+    x: cx(X(5), EW), y: ROW_OD,
+    date: 'September 6th, 1945', location: 'Wittenau Sanatorium, Berlin', mapId: 'verruckt',
     summary: 'A Group 935 sanatorium becomes overrun. The facility was used for classified teleporter experiments and early zombie containment studies.',
+    crew: 'Marines',
   },
 
-  // Branch reasons at Verrückt (col 10)
+  // Branch reasons from Verrückt (col 6) ─────────────────────
+  { id: 'br-gruber',          nodeType: 'branchReason', label: 'GRUBER 8 CREATES DRAGONS',
+    x: cx(X(6), BW), y: ROW_AGONIA, color: '#7aa991' },
   { id: 'br-richtofen-kills', nodeType: 'branchReason', label: 'RICHTOFEN KILLS MAXIS',
-    x: cx(X(10), BW), y: ROW_DECEPTIO, color: '#7aa991' },
+    x: cx(X(6), BW), y: ROW_DECEPTIO, color: '#7aa991' },
+  { id: 'br-shi-overrun',     nodeType: 'branchReason', label: 'SHI NO NUMA IS OVERRUN',
+    x: cx(X(6), BW), y: ROW_PRODITONE_F, color: '#7aa991' },
   { id: 'br-ultimis',         nodeType: 'branchReason', label: 'ULTIMIS IS FORMED',
-    x: cx(X(10), BW), y: ROW_PRODITONE, color: '#7aa991' },
+    x: cx(X(6), BW), y: ROW_TRUE_TL, color: '#7aa991' },
 
-  // Fracture / TL labels (col 11)
-  { id: 'frac-deceptio', nodeType: 'fracture', label: 'DECEPTIO FRACTURE',
-    x: cx(X(11), FW), y: ROW_DECEPTIO, color: '#cc2222' },
-  { id: 'tl-true',       nodeType: 'fracture', label: 'THE TRUE TIMELINE',
-    x: cx(X(11), FW), y: ROW_PRODITONE, color: '#22cc44' },
+  // Fracture & timeline labels (col 7) ───────────────────────
+  { id: 'frac-agonia',    nodeType: 'fracture', label: 'AGONIA FRACTURE',
+    x: cx(X(7), FW), y: ROW_AGONIA, color: '#cc2222' },
+  { id: 'frac-deceptio',  nodeType: 'fracture', label: 'DECEPTIO FRACTURE',
+    x: cx(X(7), FW), y: ROW_DECEPTIO, color: '#cc2222' },
+  { id: 'frac-proditone', nodeType: 'fracture', label: 'PRODITONE FRACTURE',
+    x: cx(X(7), FW), y: ROW_PRODITONE_F, color: '#cc2222' },
+  { id: 'tl-true',        nodeType: 'fracture', label: 'THE TRUE TIMELINE',
+    x: cx(X(7), FW), y: ROW_TRUE_TL, color: '#22cc44' },
 
-  // ─── Deceptio path (cols 12–14) ───────────────────────────
-  { id: 'the-giant', nodeType: 'event', label: 'THE GIANT',
-    x: cx(X(12), EW), y: ROW_DECEPTIO,
-    date: '1945', location: 'Der Riese Facility, Poland', mapId: 'the-giant',
-    summary: 'Richtofen completes the Matter Transference Device. Maxis and Samantha are trapped inside an MTD. Samantha bonds with the MPD and becomes the controller of the undead.',
+  // ─── Agonia fracture path (sequential: G -> F) ───────
+  { id: 'gorod-krovi', nodeType: 'event', label: 'GOROD KROVI',
+    x: cx(X(8), EW), y: ROW_AGONIA,
+    date: 'November 6th, 1945', location: 'Stalingrad, Soviet Union', mapId: 'gorod-krovi',
+    summary: 'An alternate-universe Stalingrad where dragons battle zombies. The Primis crew retrieves Nikolai\'s soul fragment.',
+    crew: 'Primis',
   },
-  { id: 'der-schatten', nodeType: 'event', label: 'DER SCHATTEN',
-    x: cx(X(13), EW), y: ROW_DECEPTIO,
-    date: '1945 (alternate)', location: 'Shadows realm',
-    summary: 'An alternate shadow dimension pulled from the fracture.',
+  { id: 'five-agonia', nodeType: 'event', label: 'FIVE',
+    x: cx(X(9), EW), y: ROW_AGONIA,
+    date: 'November 6th, 1963', location: 'The Pentagon, USA', mapId: 'five',
+    summary: 'During JFK\'s meeting on the Cuban Missile Crisis, an outbreak erupts at the Pentagon. Kennedy, Nixon, Castro, and McNamara fight for survival.',
+    crew: 'Celebrities',
+  },
+  
+
+  // ─── Deceptio fracture path (cols 8–9) ────────────────────
+  { id: 'the-giant', nodeType: 'event', label: 'THE GIANT',
+    x: cx(X(8), EW), y: ROW_DECEPTIO,
+    date: 'October 13th, 1945', location: 'Der Riese Facility, Poland', mapId: 'the-giant',
+    summary: 'Primis Richtofen arrives through a teleporter and kills his Ultimis self, triggering fractures across space and time. Primis fights the undead and sends a beacon to Maxis.',
+    crew: 'Primis',
   },
   { id: 'der-eisendrache', nodeType: 'event', label: 'DER EISENDRACHE',
-    x: cx(X(14), EW), y: ROW_DECEPTIO,
-    date: '1945 (alternate)', location: 'Austrian Castle, Alps', mapId: 'der-eisendrache',
+    x: cx(X(9), EW), y: ROW_DECEPTIO,
+    date: 'November 5th, 1945', location: 'Austrian Castle, Alps', mapId: 'der-eisendrache',
     summary: 'The Primis crew arrives at a Nazi-occupied Austrian mountain fortress. Richtofen releases Ultimis Dempsey\'s soul. The Wrath of the Ancients bow is assembled.',
+    crew: 'Primis',
   },
 
-  // ─── True Timeline path (cols 12–26) ─────────────────────
+  // ─── Proditone fracture path (col 8) ──────────────────────
+  { id: 'zetsubou', nodeType: 'event', label: 'ZETSUBOU NO SHIMA',
+    x: cx(X(8), EW), y: ROW_PRODITONE_F,
+    date: 'October 1st, 1945', location: 'Pohnpei Island, Pacific', mapId: 'zetsubou-no-shima',
+    summary: 'The Primis crew is captured on a zombie-infested Japanese WWII island. Plant spores, flooded tunnels, and a spider boss guard 115 research.',
+    crew: 'Primis',
+  },
+
+  // ─── True Timeline path (cols 8–20) ───────────────────────
   { id: 'tt-shi-no-numa', nodeType: 'event', label: 'SHI NO NUMA',
-    x: cx(X(12), EW), y: ROW_PRODITONE,
-    date: 'July 1943', location: 'Shi No Numa Facility, Japan', mapId: 'shi-no-numa',
+    x: cx(X(8), EW), y: ROW_TRUE_TL,
+    date: 'October 21st, 1945', location: 'Shi No Numa Facility, Japan', mapId: 'shi-no-numa',
     summary: 'Group 935 runs a 115-fueled research station in a Japanese swamp. Richtofen retrieves the Golden Rod artifact.',
+    crew: 'Ultimis',
   },
   { id: 'tt-der-riese', nodeType: 'event', label: 'DER RIESE',
-    x: cx(X(13), EW), y: ROW_PRODITONE,
-    date: '1945', location: 'Der Riese Facility, Poland', mapId: 'der-riese',
+    x: cx(X(9), EW), y: ROW_TRUE_TL,
+    date: 'October 28th, 1945', location: 'Der Riese Facility, Poland', mapId: 'der-riese',
     summary: 'Richtofen completes the teleporter network. Maxis and Samantha are trapped. Samantha bonds with the MPD.',
+    crew: 'Ultimis',
   },
   { id: 'tt-shangri-la', nodeType: 'event', label: 'SHANGRI-LA',
-    x: cx(X(14), EW), y: ROW_PRODITONE,
-    date: 'Unknown (time loop)', location: 'Ancient ruins, Himalayas', mapId: 'shangri-la',
-    summary: 'A mythical city hidden in the Himalayas, corrupted by 115. The O4 crew is trapped in a time loop.',
+    x: cx(X(10), EW), y: ROW_TRUE_TL,
+    date: 'April 23rd, 1956', location: 'Ancient ruins, Himalayas', mapId: 'shangri-la',
+    summary: 'A mythical city hidden in the Himalayas, corrupted by 115. The O4 crew acquires the Focusing Stone while trapped in a time loop.',
+    crew: 'Ultimis',
   },
   { id: 'tt-kino', nodeType: 'event', label: 'KINO DER TOTEN',
-    x: cx(X(15), EW), y: ROW_PRODITONE,
-    date: '1963', location: 'Group 935 Theater, Berlin', mapId: 'kino-der-toten',
+    x: cx(X(11), EW), y: ROW_TRUE_TL,
+    date: 'October 28th, 1963', location: 'Group 935 Theater, Berlin', mapId: 'kino-der-toten',
     summary: 'The O4 crew emerges in an abandoned Group 935 theater used for mind-control experiments on zombie subjects.',
+    crew: 'Ultimis',
   },
   { id: 'tt-classified', nodeType: 'event', label: 'CLASSIFIED',
-    x: cx(X(16), EW), y: ROW_PRODITONE,
-    date: '1963', location: 'The Pentagon, USA',
+    x: cx(X(12), EW), y: ROW_TRUE_TL,
+    date: 'November 5th, 1963', location: 'The Pentagon, USA',
     summary: 'Classified documents reveal the Pentagon\'s connection to Group 935 and the Broken Arrow program.',
+    crew: 'Ultimis',
   },
-  { id: 'tt-ascension', nodeType: 'event', label: 'ASCENSION/FIVE',
-    x: cx(X(17), EW), y: ROW_PRODITONE,
-    date: '1963', location: 'Baikonur Cosmodrome, Soviet USSR', mapId: 'ascension',
+  { id: 'tt-ascension', nodeType: 'event', label: 'ASCENSION',
+    x: cx(X(13), EW), y: ROW_TRUE_TL,
+    date: 'November 6th, 1963', location: 'Baikonur Cosmodrome, Soviet USSR', mapId: 'ascension',
     summary: 'A Group 935/Soviet cosmodrome houses MPD research. The O4 crew frees Gersh from the Casimir Mechanism.',
-  },
-  { id: 'tt-broken-arrow', nodeType: 'event', label: 'BROKEN ARROW LAB',
-    x: cx(X(18), EW), y: ROW_PRODITONE,
-    date: '1963', location: 'Broken Arrow Facility, USA',
-    summary: 'The US Broken Arrow program attempts to weaponise Element 115 independently of Group 935.',
+    crew: 'Ultimis',
   },
   { id: 'tt-call-dead', nodeType: 'event', label: 'CALL OF THE DEAD',
-    x: cx(X(19), EW), y: ROW_PRODITONE,
-    date: '1963', location: 'Soviet film studio, Siberia', mapId: 'call-of-the-dead',
-    summary: 'A film crew accidentally activates a 115 teleporter. The trapped O4 crew contacts Richtofen from a sealed control room.',
+    x: cx(X(14), EW), y: ROW_TRUE_TL,
+    date: 'March 17th, 2011', location: 'Siberian Facility, Russia', mapId: 'call-of-the-dead',
+    summary: 'A film crew accidentally activates a 115 teleporter. The trapped O4 crew contacts Richtofen from a sealed control room to recover the Vril Device.',
+    crew: 'Ultimis',
   },
+
+  // ─── Oct 13 2025 — parallel trio (col 15) ─────────────────
   { id: 'tt-alpha-omega', nodeType: 'event', label: 'ALPHA OMEGA',
-    x: cx(X(20), EW), y: ROW_PRODITONE,
-    date: '2025', location: 'Nuketown Bunker, Nevada', mapId: 'alpha-omega',
-    summary: 'The crew reaches a bunker beneath the Nuketown test site. Rushmore AI and the trapped Avogadro threaten to destabilise everything.',
+    x: cx(X(15), EW), y: ROW_TRUE_TL - 120,
+    date: 'October 13th, 2025', location: 'Camp Edward, Nevada', mapId: 'alpha-omega',
+    summary: 'Primis and Ultimis travel to Camp Edward to retrieve the Elemental Shard. After gaining Rushmore\'s trust and defeating Avogadro, they escape with the Shard.',
+    crew: 'Primis & Ultimis',
   },
-  { id: 'tt-moon', nodeType: 'event', label: 'MOON/NUKETOWN',
-    x: cx(X(21), EW), y: ROW_PRODITONE,
-    date: '1969', location: 'Griffin Station, The Moon', mapId: 'moon',
-    summary: 'The O4 crew reaches Griffin Station. Richtofen swaps souls with Samantha and fires the rockets at Earth, destroying civilisation.',
+  { id: 'tt-moon', nodeType: 'event', label: 'MOON',
+    x: cx(X(15), EW), y: ROW_TRUE_TL,
+    date: 'October 13th, 2025', location: 'Griffin Station, The Moon', mapId: 'moon',
+    summary: 'Richtofen swaps souls with Samantha in the MPD, gaining control of the zombies. Maxis convinces the others to fire the rockets at Earth, fracturing it.',
+    crew: 'Ultimis',
   },
+  { id: 'tt-nuketown', nodeType: 'event', label: 'NUKETOWN',
+    x: cx(X(15), EW), y: ROW_TRUE_TL + 120,
+    date: 'October 13th, 2025', location: 'Nuketown, Nevada',
+    summary: 'As the Moon rockets impact Earth, a nuclear test town in Nevada is overrun by zombies. Survivors fight waves while Richtofen and Maxis battle for control of the undead. Perks rain from the sky via artillery drops.',
+    crew: 'CIA/CDC',
+  },
+
+  // ─── Post-2025 continuation ───────────────────────────────
   { id: 'tt-tranzit', nodeType: 'event', label: 'TRANZIT',
-    x: cx(X(22), EW), y: ROW_PRODITONE,
-    date: '2035', location: 'Hanford, Washington', mapId: 'tranzit',
+    x: cx(X(16), EW), y: ROW_TRUE_TL,
+    date: 'October 21st, 2035', location: 'Hanford, Washington', mapId: 'tranzit',
     summary: 'Post-nuclear Earth. Survivors board a looping bus through a radioactive wasteland. Maxis and Richtofen battle for control of the Hanford pylon.',
+    crew: 'Victis',
   },
   { id: 'tt-die-rise', nodeType: 'event', label: 'DIE RISE',
-    x: cx(X(23), EW), y: ROW_PRODITONE,
-    date: '2035', location: 'Collapsed skyscrapers, China', mapId: 'die-rise',
+    x: cx(X(17), EW), y: ROW_TRUE_TL,
+    date: 'October 22nd, 2035', location: 'Collapsed skyscrapers, China', mapId: 'die-rise',
     summary: 'Survivors navigate crumbling skyscrapers. The N4 crew activates an Annihilator Pylon.',
+    crew: 'Victis',
   },
   { id: 'tt-buried', nodeType: 'event', label: 'BURIED',
-    x: cx(X(24), EW), y: ROW_PRODITONE,
-    date: '2035', location: 'Gideon, Nevada (underground)', mapId: 'buried',
-    summary: 'An underground ghost town is uncovered beneath Nevada. The N4 crew activates the final Pylon.',
+    x: cx(X(18), EW), y: ROW_TRUE_TL,
+    date: 'December 31st, 2035', location: 'Purgatory Point, Angola', mapId: 'buried',
+    summary: 'An underground ghost town is uncovered beneath a mining facility. The N4 crew activates the final Pylon. Maxis destroys the Earth to open a gateway to Agartha.',
+    crew: 'Victis',
   },
-  { id: 'tt-victis', nodeType: 'event', label: 'VICTIS HIDEOUT',
-    x: cx(X(25), EW), y: ROW_PRODITONE,
-    date: '2035', location: 'Undisclosed',
-    summary: 'The Victis crew retreats to a hidden safe-house after the events of Buried. Their fate hangs in the balance.',
+  { id: 'tt-tag', nodeType: 'event', label: 'TAG DER TOTEN',
+    x: cx(X(19), EW), y: ROW_TRUE_TL,
+    date: '1965 (Pocket Dimension)', location: 'Siberian Facility',
+    summary: 'The final battle. Primis Nikolai poisons both crews, Samantha kills him with a Welling, and she and Eddie exit the Dark Aether into a new universe. The multiverse is destroyed.',
+    crew: 'Primis & Ultimis',
   },
-  { id: 'tt-destroyed', nodeType: 'endState', label: 'UNIVERSE DESTROYED',
-    x: cx(X(26), SW), y: ROW_PRODITONE, color: '#cc2222' },
+  { id: 'tt-destroyed', nodeType: 'endState', label: 'MULTIVERSE DESTROYED',
+    x: cx(X(20), SW), y: ROW_TRUE_TL, color: '#cc2222' },
 
   // ═══ DIMENSION 63 ═════════════════════════════════════════
 
   { id: 'd63-origins', nodeType: 'event', label: 'ORIGINS',
     x: cx(X(4), EW), y: ROW_D63,
-    date: 'September 1917', location: 'Excavation Site 64, France', mapId: 'origins',
+    date: 'June 4th, 1918', location: 'Excavation Site 64, France', mapId: 'origins',
     summary: 'During WWI, Group 935 discovers buried Element 115 meteorites beneath the Somme. Ancient Panzer robots awaken. Richtofen first contacts the Aether entities.',
+    crew: 'Primis',
   },
   { id: 'd63-motd', nodeType: 'event', label: 'MOTD',
     x: cx(X(5), EW), y: ROW_D63,
-    date: '1934 (endless loop)', location: 'Alcatraz Island, USA', mapId: 'mob-of-the-dead',
+    date: 'December 31st, 1933', location: 'Alcatraz Island, USA', mapId: 'mob-of-the-dead',
     summary: 'Four mobsters attempt to escape Alcatraz on New Year\'s Eve. They are trapped in a purgatory loop by the undead Warden.',
+    crew: 'Mob Crew',
   },
 
   // Branch reasons (col 6)
-  { id: 'br-cycle',  nodeType: 'branchReason', label: 'MONSTERS NEVER BREAK THE CYCLE',
+  { id: 'br-cycle',  nodeType: 'branchReason', label: 'MOBSTERS NEVER BREAK THE CYCLE',
     x: cx(X(6), BW), y: ROW_CYCLE, color: '#7aa991' },
-  { id: 'br-broken', nodeType: 'branchReason', label: 'MONSTERS BREAK THE CYCLE',
+  { id: 'br-broken', nodeType: 'branchReason', label: 'MOBSTERS BREAK THE CYCLE',
     x: cx(X(6), BW), y: ROW_BROKEN, color: '#7aa991' },
 
   // Timeline labels (col 7)
@@ -311,8 +339,9 @@ export const TIMELINE_NODES: TimelineNode[] = [
   },
   { id: 'd63-soe', nodeType: 'event', label: 'SHADOWS OF EVIL',
     x: cx(X(9), EW), y: ROW_CYCLE,
-    date: '1940', location: 'Morg City, USA', mapId: 'shadows-of-evil',
+    date: 'April 25th, 1944', location: 'Morg City, USA', mapId: 'shadows-of-evil',
     summary: 'Four criminals in a 1940s noir city are manipulated by the Shadow Man into awakening a Rift. The Apothicons are being summoned.',
+    crew: 'SoE Crew',
   },
   { id: 'd63-destroyed', nodeType: 'endState', label: 'UNIVERSE DESTROYED',
     x: cx(X(10), SW), y: ROW_CYCLE, color: '#cc2222' },
@@ -320,19 +349,21 @@ export const TIMELINE_NODES: TimelineNode[] = [
   // Broken path (col 8)
   { id: 'd63-blood', nodeType: 'event', label: 'BLOOD OF THE DEAD',
     x: cx(X(8), EW), y: ROW_BROKEN,
-    date: '2035', location: 'Alcatraz Island, USA', mapId: 'blood-of-the-dead',
-    summary: 'Post-apocalyptic Alcatraz ruled by a zombified Warden. Primis arrives to free Ultimis Richtofen\'s soul.',
+    date: 'July 4th, 1941', location: 'Alcatraz Island, USA', mapId: 'blood-of-the-dead',
+    summary: 'Primis arrives at the Alcatraz pocket dimension. The Warden traps them in a cycle. Primis Richtofen is replaced by a post-Revelations version who breaks the cycle.',
+    crew: 'Primis',
   },
 
   // ═══ AGARTHA ══════════════════════════════════════════════
 
   { id: 'ag-revelations', nodeType: 'event', label: 'REVELATIONS',
-    x: cx(X(4), EW), y: ROW_AGARTHA,
+    x: cx(X(19), EW), y: ROW_AGARTHA,
     date: '2025+', location: 'The Aether — all dimensions combined', mapId: 'revelations',
     summary: 'The Shadow Man fuses all previous map environments into one fractured reality. The Primis crew confronts the Apothicon God.',
+    crew: 'Primis',
   },
   { id: 'ag-children', nodeType: 'endState', label: 'CHILDREN ARE SAFE',
-    x: cx(X(5), SW), y: ROW_AGARTHA, color: '#22cc44' },
+    x: cx(X(10 ), SW), y: ROW_AGARTHA, color: '#22cc44' },
 
   // ═══ EMPTY EARTH ══════════════════════════════════════════
 
@@ -360,33 +391,31 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   { id: 'e-br-ee',         source: 'br-no-life',   target: 'dim-empty' },
 
   // ── Original Dimension ──────────────────────────────────
-  { id: 'e-od-gruber',     source: 'dim-od',       target: 'br-gruber' },
-  { id: 'e-od-shi',        source: 'dim-od',       target: 'br-shi-overrun' },
-  { id: 'e-gruber-ag',     source: 'br-gruber',    target: 'frac-agonia' },
-  { id: 'e-shi-pro',       source: 'br-shi-overrun', target: 'frac-proditone' },
-
-  // Agonia path
-  { id: 'e-ag-gk',         source: 'frac-agonia',   target: 'gorod-krovi' },
-  { id: 'e-gk-five',       source: 'gorod-krovi',   target: 'five-agonia' },
-  { id: 'e-five-nacht',    source: 'five-agonia',   target: 'nacht' },
-
-  // Proditone path
-  { id: 'e-pro-zet',       source: 'frac-proditone', target: 'zetsubou' },
-  { id: 'e-zet-nacht',     source: 'zetsubou',       target: 'nacht' },
-
-  // Merge → Verrückt
+  { id: 'e-od-nacht',      source: 'dim-od',        target: 'nacht' },
   { id: 'e-nacht-ver',     source: 'nacht',         target: 'verruckt' },
 
-  // Verrückt → branch reasons
-  { id: 'e-ver-richtofen', source: 'verruckt',      target: 'br-richtofen-kills' },
-  { id: 'e-ver-ultimis',   source: 'verruckt',      target: 'br-ultimis' },
+  // Verrückt → four branch reasons
+  { id: 'e-ver-gruber',    source: 'verruckt',      target: 'br-gruber',          sourceHandle: 'top' },
+  { id: 'e-ver-richtofen', source: 'verruckt',      target: 'br-richtofen-kills', sourceHandle: 'top' },
+  { id: 'e-ver-shi',       source: 'verruckt',      target: 'br-shi-overrun',     sourceHandle: 'bottom' },
+  { id: 'e-ver-ultimis',   source: 'verruckt',      target: 'br-ultimis',         sourceHandle: 'bottom' },
+
+  // Branch reasons → fracture / TL labels
+  { id: 'e-gruber-ag',     source: 'br-gruber',          target: 'frac-agonia' },
   { id: 'e-br-dec',        source: 'br-richtofen-kills', target: 'frac-deceptio' },
-  { id: 'e-br-tt',         source: 'br-ultimis',    target: 'tl-true' },
+  { id: 'e-shi-pro',       source: 'br-shi-overrun',     target: 'frac-proditone' },
+  { id: 'e-br-tt',         source: 'br-ultimis',         target: 'tl-true' },
+
+  // Agonia path (sequential: Gorod → Five)
+  { id: 'e-ag-gk',         source: 'frac-agonia',   target: 'gorod-krovi' },
+  { id: 'e-gk-five',       source: 'gorod-krovi',   target: 'five-agonia' },
 
   // Deceptio path
   { id: 'e-dec-giant',     source: 'frac-deceptio', target: 'the-giant' },
-  { id: 'e-giant-sch',     source: 'the-giant',     target: 'der-schatten' },
-  { id: 'e-sch-eis',       source: 'der-schatten',  target: 'der-eisendrache' },
+  { id: 'e-giant-eis',     source: 'the-giant',     target: 'der-eisendrache' },
+
+  // Proditone path
+  { id: 'e-pro-zet',       source: 'frac-proditone', target: 'zetsubou' },
 
   // True Timeline path
   { id: 'e-tt-1',  source: 'tl-true',          target: 'tt-shi-no-numa' },
@@ -395,15 +424,19 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   { id: 'e-tt-4',  source: 'tt-shangri-la',    target: 'tt-kino' },
   { id: 'e-tt-5',  source: 'tt-kino',          target: 'tt-classified' },
   { id: 'e-tt-6',  source: 'tt-classified',    target: 'tt-ascension' },
-  { id: 'e-tt-7',  source: 'tt-ascension',     target: 'tt-broken-arrow' },
-  { id: 'e-tt-8',  source: 'tt-broken-arrow',  target: 'tt-call-dead' },
-  { id: 'e-tt-9',  source: 'tt-call-dead',     target: 'tt-alpha-omega' },
-  { id: 'e-tt-10', source: 'tt-alpha-omega',   target: 'tt-moon' },
-  { id: 'e-tt-11', source: 'tt-moon',          target: 'tt-tranzit' },
-  { id: 'e-tt-12', source: 'tt-tranzit',       target: 'tt-die-rise' },
-  { id: 'e-tt-13', source: 'tt-die-rise',      target: 'tt-buried' },
-  { id: 'e-tt-14', source: 'tt-buried',        target: 'tt-victis' },
-  { id: 'e-tt-15', source: 'tt-victis',        target: 'tt-destroyed' },
+  { id: 'e-tt-7',  source: 'tt-ascension',     target: 'tt-call-dead' },
+  // Oct 13 2025 parallel fan-out
+  { id: 'e-tt-8',  source: 'tt-call-dead',     target: 'tt-moon' },
+  { id: 'e-tt-8b', source: 'tt-call-dead',     target: 'tt-nuketown',     sourceHandle: 'bottom' },
+  { id: 'e-tt-8c', source: 'tt-call-dead',     target: 'tt-alpha-omega',  sourceHandle: 'top' },
+  // Main chain continues — all three parallel nodes converge on TranZit
+  { id: 'e-tt-9',  source: 'tt-moon',          target: 'tt-tranzit' },
+  { id: 'e-tt-9b', source: 'tt-nuketown',      target: 'tt-tranzit',      sourceHandle: 'bottom' },
+  { id: 'e-tt-9c', source: 'tt-alpha-omega',   target: 'tt-tranzit',      sourceHandle: 'bottom' },
+  { id: 'e-tt-10', source: 'tt-tranzit',       target: 'tt-die-rise' },
+  { id: 'e-tt-11', source: 'tt-die-rise',      target: 'tt-buried' },
+  { id: 'e-tt-12', source: 'tt-buried',        target: 'tt-tag' },
+  { id: 'e-tt-13', source: 'tt-tag',           target: 'tt-destroyed' },
 
   // ── Dimension 63 ───────────────────────────────────────
   { id: 'e-63-origins',    source: 'dim-63',       target: 'd63-origins' },
@@ -425,8 +458,8 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
 
   // ── Agartha ────────────────────────────────────────────
   { id: 'e-ag-rev',        source: 'dim-agartha',  target: 'ag-revelations' },
-  { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },
-
+  { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },  // The Cycle: Monty sends Primis back to the Great War
+  { id: 'e-cycle',         source: 'ag-revelations', target: 'great-war', sourceHandle: 'bottom', targetHandle: 'bottom', label: 'THE CYCLE' },
   // ── Empty Earth ────────────────────────────────────────
   { id: 'e-ee-zero',       source: 'dim-empty',    target: 'ee-zero-base' },
 ];

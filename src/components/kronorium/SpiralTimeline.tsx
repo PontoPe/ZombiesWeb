@@ -354,8 +354,8 @@ function SectionLegend({
         onClick={() => onToggle(null)}
         style={{
           background: activeSection === null ? '#c9a24a18' : 'transparent',
-          border: `1px solid ${activeSection === null ? '#c9a24a' : '#2e2416'}`,
-          color: activeSection === null ? '#c9a24a' : '#4a3a22',
+          border: `1px solid ${activeSection === null ? '#c9a24a' : '#5a4a32'}`,
+          color: activeSection === null ? '#c9a24a' : '#8a7a5a',
           padding: '3px 10px',
           fontFamily: FONTS.mono,
           fontSize: 8,
@@ -376,8 +376,8 @@ function SectionLegend({
             onClick={() => onToggle(active ? null : sec.id)}
             style={{
               background: active ? color + '18' : 'transparent',
-              border: `1px solid ${active ? color : '#2e2416'}`,
-              color: active ? color : '#4a3a22',
+              border: `1px solid ${active ? color : '#5a4a32'}`,
+              color: active ? color : '#8a7a5a',
               padding: '3px 10px',
               fontFamily: FONTS.mono,
               fontSize: 8,
