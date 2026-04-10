@@ -815,7 +815,7 @@ export default function SpiralTimeline() {
                   y={pos.y - r - 6}
                   textAnchor={isStretched ? 'start' : 'middle'}
                   fill={isHovered || isSelected ? '#ede0c8' : color}
-                  fontSize={isHovered || isSelected ? 11 : 9}
+                  fontSize={isStretched ? 14 : isHovered || isSelected ? 11 : 9}
                   fontFamily={FONTS.title}
                   fontWeight="600"
                   letterSpacing="0.05em"
@@ -839,7 +839,7 @@ export default function SpiralTimeline() {
                   y={pos.y + r + 14}
                   textAnchor="middle"
                   fill="#7a6a50"
-                  fontSize={8}
+                  fontSize={10}
                   fontFamily={FONTS.mono}
                   letterSpacing="0.04em"
                   style={{ pointerEvents: 'none', transition: 'all 0.5s ease-in-out' }}
