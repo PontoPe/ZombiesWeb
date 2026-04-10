@@ -6,7 +6,8 @@ export type TimelineNodeType =
   | 'dimension'
   | 'branchReason'
   | 'fracture'
-  | 'endState';
+  | 'endState'
+  | 'waypoint';
 
 export interface TimelineNode {
   id: string;
@@ -29,10 +30,10 @@ export interface TimelineEdge {
   id: string;
   source: string;
   target: string;
-  /** Override source handle position: 'right' (default), 'bottom', 'top' */
-  sourceHandle?: 'right' | 'bottom' | 'top';
-  /** Override target handle position: 'left' (default), 'top', 'bottom' */
-  targetHandle?: 'left' | 'top' | 'bottom';
+  /** Override source handle position: 'right' (default), 'bottom', 'top', 'left' */
+  sourceHandle?: 'right' | 'bottom' | 'top' | 'left';
+  /** Override target handle position: 'left' (default), 'top', 'bottom', 'right' */
+  targetHandle?: 'left' | 'top' | 'bottom' | 'right';
   /** Optional label displayed on the edge */
   label?: string;
 }
@@ -167,13 +168,21 @@ export const TIMELINE_NODES: TimelineNode[] = [
 
   // Fracture & timeline labels (col 7) ───────────────────────
   { id: 'frac-agonia',    nodeType: 'fracture', label: 'AGONIA FRACTURE',
-    x: cx(X(7), FW), y: ROW_AGONIA, color: '#cc2222' },
+    x: cx(X(7), FW), y: ROW_AGONIA, color: '#cc2222',
+    summary: 'A fractured timeline where the Battle of Stalingrad never ends. Group 935 deploys dragons on the Eastern Front, and WWII rages indefinitely. Stalingrad becomes a three-way war between dragons, machines, and the undead.',
+  },
   { id: 'frac-deceptio',  nodeType: 'fracture', label: 'DECEPTIO FRACTURE',
-    x: cx(X(7), FW), y: ROW_DECEPTIO, color: '#cc2222' },
+    x: cx(X(7), FW), y: ROW_DECEPTIO, color: '#cc2222',
+    summary: 'A fractured timeline created when Primis Richtofen kills his Ultimis self at Der Riese. The act of deception triggers fractures across space and time as Primis begins collecting souls to set things right.',
+  },
   { id: 'frac-proditone', nodeType: 'fracture', label: 'PRODITONE FRACTURE',
-    x: cx(X(7), FW), y: ROW_PRODITONE_F, color: '#cc2222' },
+    x: cx(X(7), FW), y: ROW_PRODITONE_F, color: '#cc2222',
+    summary: 'A fractured timeline where the Rising Sun Facility is overrun by the undead. Division 9 builds a new island facility and continues experiments with plant-based organisms, prisoners of war, and arachnids.',
+  },
   { id: 'tl-true',        nodeType: 'fracture', label: 'THE TRUE TIMELINE',
-    x: cx(X(7), FW), y: ROW_TRUE_TL, color: '#22cc44' },
+    x: cx(X(7), FW), y: ROW_TRUE_TL, color: '#22cc44',
+    summary: 'The original, unbroken sequence of events. Ultimis is formed and embarks on a globe-spanning journey from Shi No Numa to the Moon, culminating in Richtofen\'s Grand Scheme and the fracturing of Earth.',
+  },
 
   // ─── Agonia fracture path (sequential: G -> F) ───────
   { id: 'gorod-krovi', nodeType: 'event', label: 'GOROD KROVI',
@@ -183,7 +192,7 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Primis',
   },
   { id: 'five-agonia', nodeType: 'event', label: 'FIVE',
-    x: cx(X(9), EW), y: ROW_AGONIA,
+    x: cx(X(9), EW), y: ROW_AGONIA - 120,
     date: 'November 6th, 1963', location: 'The Pentagon, USA', mapId: 'five',
     summary: 'During JFK\'s meeting on the Cuban Missile Crisis, an outbreak erupts at the Pentagon. Kennedy, Nixon, Castro, and McNamara fight for survival.',
     crew: 'Celebrities',
@@ -299,7 +308,7 @@ export const TIMELINE_NODES: TimelineNode[] = [
     x: cx(X(19), EW), y: ROW_TRUE_TL,
     date: '1965 (Pocket Dimension)', location: 'Siberian Facility',
     summary: 'The final battle. Primis Nikolai poisons both crews, Samantha kills him with a Welling, and she and Eddie exit the Dark Aether into a new universe. The multiverse is destroyed.',
-    crew: 'Primis & Ultimis',
+    crew: 'Victis',
   },
   { id: 'tt-destroyed', nodeType: 'endState', label: 'MULTIVERSE DESTROYED',
     x: cx(X(20), SW), y: ROW_TRUE_TL, color: '#cc2222' },
@@ -327,9 +336,13 @@ export const TIMELINE_NODES: TimelineNode[] = [
 
   // Timeline labels (col 7)
   { id: 'tl-cycle',  nodeType: 'fracture', label: 'CYCLE TIMELINE',
-    x: cx(X(7), FW), y: ROW_CYCLE, color: '#cc2222' },
+    x: cx(X(7), FW), y: ROW_CYCLE, color: '#cc2222',
+    summary: 'In this timeline the mobsters of Alcatraz never break free. The cycle repeats endlessly — Sal, Finn, and Billy kill Al, die, and wake to do it again. Richtofen exploits the pocket dimension for his plans.',
+  },
   { id: 'tl-broken', nodeType: 'fracture', label: 'BROKEN TIMELINE',
-    x: cx(X(7), FW), y: ROW_BROKEN, color: '#22cc44' },
+    x: cx(X(7), FW), y: ROW_BROKEN, color: '#22cc44',
+    summary: 'Al finally prevails over the other mobsters, breaking the Alcatraz cycle. This allows Primis to later arrive at the pocket dimension in Blood of the Dead, where Primis Richtofen sacrifices himself to break free.',
+  },
 
   // Cycle path (cols 8–10)
   { id: 'd63-lab', nodeType: 'event', label: 'RICHTOFENS LAB',
@@ -363,7 +376,7 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Primis',
   },
   { id: 'ag-children', nodeType: 'endState', label: 'CHILDREN ARE SAFE',
-    x: cx(X(10 ), SW), y: ROW_AGARTHA, color: '#22cc44' },
+    x: cx(X(20), SW), y: ROW_AGARTHA, color: '#22cc44' },
 
   // ═══ EMPTY EARTH ══════════════════════════════════════════
 
@@ -441,6 +454,10 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   // ── Dimension 63 ───────────────────────────────────────
   { id: 'e-63-origins',    source: 'dim-63',       target: 'd63-origins' },
   { id: 'e-63-motd',       source: 'd63-origins',  target: 'd63-motd' },
+  // Primis crew's multiverse journey: Origins (1918, D63) → The Giant (1945, OD).
+  // After Origins, Primis spend ~27 years hunting Ultimis Richtofens across
+  // dimensions before arriving at Der Riese via teleporter in The Giant.
+  { id: 'e-origins-giant', source: 'd63-origins',  target: 'the-giant', sourceHandle: 'top', targetHandle: 'top' },
 
   // Cycle / Broken branches
   { id: 'e-motd-cycle',    source: 'd63-motd',     target: 'br-cycle' },
@@ -458,7 +475,13 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
 
   // ── Agartha ────────────────────────────────────────────
   { id: 'e-ag-rev',        source: 'dim-agartha',  target: 'ag-revelations' },
-  { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },  // The Cycle: Monty sends Primis back to the Great War
+  // Primis cross-fracture journey (DE → Zetsubou → Gorod Krovi)
+  { id: 'e-eis-zet',       source: 'der-eisendrache',  target: 'zetsubou' },
+  { id: 'e-zet-gk',        source: 'zetsubou',         target: 'gorod-krovi' },
+  // Fracture paths converge on Revelations (Primis collects all souls)
+  { id: 'e-gk-rev',        source: 'gorod-krovi',      target: 'ag-revelations' },
+  { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },
+  // The Cycle: Monty sends Primis back to the Great War
   { id: 'e-cycle',         source: 'ag-revelations', target: 'great-war', sourceHandle: 'bottom', targetHandle: 'bottom', label: 'THE CYCLE' },
   // ── Empty Earth ────────────────────────────────────────
   { id: 'e-ee-zero',       source: 'dim-empty',    target: 'ee-zero-base' },

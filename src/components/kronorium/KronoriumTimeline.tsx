@@ -30,6 +30,7 @@ const TYPE_ACCENT: Record<TimelineNodeType, string> = {
   branchReason: '#7aa991',
   fracture:     '#cc2222',
   endState:     '#cc2222',
+  waypoint:     'transparent',
 };
 
 // ── Crew definitions for filter UI ──────────────────────────
@@ -52,8 +53,9 @@ const CREWS = [
 /* ── Title ────────────────────────────────────────────────── */
 
 function TitleNode({ data }: NodeProps) {
+  const dimmed: boolean = data.dimmed ?? false;
   return (
-    <div style={{ pointerEvents: 'none', textAlign: 'center', userSelect: 'none' }}>
+    <div style={{ pointerEvents: 'none', textAlign: 'center', userSelect: 'none', opacity: dimmed ? 0.15 : 1 }}>
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
       <div
         style={{
@@ -193,6 +195,7 @@ function EventNode({ data, selected }: NodeProps) {
 
 function DimensionNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
+  const dimmed: boolean = data.dimmed ?? false;
   return (
     <div
       style={{
@@ -200,6 +203,7 @@ function DimensionNode({ data }: NodeProps) {
         padding: '6px 14px',
         width: 180,
         userSelect: 'none',
+        opacity: dimmed ? 0.15 : 1,
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -229,6 +233,7 @@ function DimensionNode({ data }: NodeProps) {
 
 function BranchReasonNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
+  const dimmed: boolean = data.dimmed ?? false;
   return (
     <div
       style={{
@@ -236,6 +241,7 @@ function BranchReasonNode({ data }: NodeProps) {
         padding: '3px 8px',
         width: 200,
         userSelect: 'none',
+        opacity: dimmed ? 0.15 : 1,
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -243,7 +249,7 @@ function BranchReasonNode({ data }: NodeProps) {
       <Handle type="target" id="bottom" position={Position.Bottom} style={{ opacity: 0 }} />
       <div
         style={{
-          fontSize: 8,
+          fontSize: 10,
           color: n.color ?? '#7aa991',
           fontFamily: "'IBM Plex Mono', monospace",
           letterSpacing: '0.1em',
@@ -264,7 +270,9 @@ function BranchReasonNode({ data }: NodeProps) {
 
 function FractureNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
+  const dimmed: boolean = data.dimmed ?? false;
   const bg = n.color ?? '#cc2222';
+  const hasContent = !!n.summary;
   return (
     <div
       style={{
@@ -275,6 +283,9 @@ function FractureNode({ data }: NodeProps) {
         border: `1px solid ${bg}60`,
         borderRadius: 2,
         userSelect: 'none',
+        cursor: hasContent ? 'pointer' : 'default',
+        opacity: dimmed ? 0.15 : 1,
+        transition: 'opacity 0.3s',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ background: bg, width: 6, height: 6, border: 'none', borderRadius: 1 }} />
@@ -329,6 +340,23 @@ function EndStateNode({ data }: NodeProps) {
   );
 }
 
+/* ── Waypoint (invisible routing node) ─────────────────────── */
+
+function WaypointNode() {
+  return (
+    <div style={{ width: 0, height: 0, position: 'relative' }}>
+      <Handle type="target" position={Position.Left} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="target" id="right" position={Position.Right} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="target" id="top" position={Position.Top} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="target" id="bottom" position={Position.Bottom} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="source" position={Position.Right} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="source" id="left" position={Position.Left} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="source" id="top" position={Position.Top} style={{ opacity: 0, width: 1, height: 1 }} />
+      <Handle type="source" id="bottom" position={Position.Bottom} style={{ opacity: 0, width: 1, height: 1 }} />
+    </div>
+  );
+}
+
 const nodeTypes = {
   title:        TitleNode,
   event:        EventNode,
@@ -336,6 +364,7 @@ const nodeTypes = {
   branchReason: BranchReasonNode,
   fracture:     FractureNode,
   endState:     EndStateNode,
+  waypoint:     WaypointNode,
 };
 
 // ── Custom zoom controls ─────────────────────────────────────
@@ -441,6 +470,7 @@ const HEIGHT_EST: Record<TimelineNodeType, number> = {
   branchReason: 22,
   fracture:     32,
   endState:     34,
+  waypoint:     0,
 };
 
 export default function KronoriumTimeline() {
@@ -457,20 +487,69 @@ export default function KronoriumTimeline() {
     );
   }, [crewFilter]);
 
+  // Structural nodes (title/dimension/branchReason/fracture) stay lit if any
+  // matching event is reachable downstream from them. Compute by reverse-BFS
+  // from each matching event, collecting all ancestor nodes. The cycle edge
+  // (ag-revelations → great-war) is excluded so reachability stays a DAG and
+  // doesn't make every label trivially "kept".
+  const keptAncestorIds = useMemo(() => {
+    if (!matchingNodeIds) return null;
+    const reverseAdj = new Map<string, string[]>();
+    for (const e of TIMELINE_EDGES) {
+      if (e.id === 'e-cycle') continue;
+      const arr = reverseAdj.get(e.target);
+      if (arr) arr.push(e.source);
+      else reverseAdj.set(e.target, [e.source]);
+    }
+    const kept = new Set<string>(matchingNodeIds);
+    const queue: string[] = [...matchingNodeIds];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      const parents = reverseAdj.get(cur);
+      if (!parents) continue;
+      for (const p of parents) {
+        if (!kept.has(p)) {
+          kept.add(p);
+          queue.push(p);
+        }
+      }
+    }
+    return kept;
+  }, [matchingNodeIds]);
+
   const nodes: Node[] = useMemo(() =>
-    TIMELINE_NODES.map(n => ({
-      id: n.id,
-      type: n.nodeType,
-      position: { x: n.x, y: n.y - HEIGHT_EST[n.nodeType] / 2 },
-      data: { node: n, label: n.label, dimmed: matchingNodeIds ? (n.nodeType === 'event' && !matchingNodeIds.has(n.id)) : false },
-      selectable: n.nodeType === 'event',
-      draggable: false,
-    })),
-  [matchingNodeIds]);
+    TIMELINE_NODES.map(n => {
+      let dimmed = false;
+      if (matchingNodeIds) {
+        if (n.nodeType === 'event') {
+          dimmed = !matchingNodeIds.has(n.id);
+        } else if (
+          n.nodeType === 'title' ||
+          n.nodeType === 'dimension' ||
+          n.nodeType === 'branchReason' ||
+          n.nodeType === 'fracture'
+        ) {
+          dimmed = !keptAncestorIds!.has(n.id);
+        }
+      }
+      return {
+        id: n.id,
+        type: n.nodeType,
+        position: { x: n.x, y: n.y - HEIGHT_EST[n.nodeType] / 2 },
+        data: { node: n, label: n.label, dimmed },
+        selectable: n.nodeType === 'event' || n.nodeType === 'fracture',
+        draggable: false,
+      };
+    }),
+  [matchingNodeIds, keptAncestorIds]);
 
   const edges: Edge[] = useMemo(() =>
     TIMELINE_EDGES.map(e => {
       const isCycle = e.id === 'e-cycle';
+      const isConverge = e.id === 'e-gk-rev';
+      const isJourney = e.id === 'e-eis-zet' || e.id === 'e-zet-gk' || e.id === 'e-giant-eis' || e.id === 'e-origins-giant';
+      const journeyColor = e.id === 'e-eis-zet' ? '#42a5f5' : e.id === 'e-zet-gk' ? '#66bb6a' : e.id === 'e-giant-eis' ? '#4a3a22' : e.id === 'e-origins-giant' ? '#4a3a22' : undefined;
+      const isSpecial = isCycle || isConverge || isJourney;
       const dimmed = matchingNodeIds
         ? !(matchingNodeIds.has(e.source) || matchingNodeIds.has(e.target))
         : false;
@@ -489,17 +568,18 @@ export default function KronoriumTimeline() {
         type: 'smoothstep',
         animated: isCycle,
         style: {
-          stroke: isCycle ? '#c9a24a' : '#4a3a22',
-          strokeWidth: isCycle ? 2 : 1.5,
-          strokeOpacity: dimmed ? 0.08 : isCycle ? 0.8 : 0.55,
+          stroke: isCycle ? '#c9a24a' : journeyColor ?? (isConverge ? '#ab47bc' : '#4a3a22'),
+          strokeWidth: isSpecial ? 2 : 1.5,
+          strokeOpacity: dimmed ? 0.08 : isSpecial ? 0.7 : 0.55,
           ...(isCycle ? { strokeDasharray: '6 3' } : {}),
+          ...((isConverge || isJourney) ? { strokeDasharray: '4 4' } : {}),
         },
       };
     }),
   [matchingNodeIds]);
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    if (node.type !== 'event') return;
+    if (node.type !== 'event' && node.type !== 'fracture') return;
     const n: TimelineNode | undefined = TIMELINE_NODES.find(t => t.id === node.id);
     if (!n) return;
     setSelected(prev =>
@@ -809,9 +889,11 @@ export default function KronoriumTimeline() {
             { color: '#7aa991', label: 'Branch Reason' },
             { color: '#ff5555', label: 'Fracture / Bad End' },
             { color: '#44ee66', label: 'Good End / True TL' },
+            { color: '#ab47bc', label: 'Soul Collection', dashed: true },
+            { color: '#4a3a22', label: 'Cleanup Journey', dashed: true },
           ].map(l => (
             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 16, height: 2, background: l.color, borderRadius: 1, opacity: 0.7 }} />
+              <div style={{ width: 16, height: 2, background: l.dashed ? 'transparent' : l.color, borderRadius: 1, opacity: 0.7, ...( l.dashed ? { borderBottom: `2px dashed ${l.color}` } : {}) }} />
               <span
                 style={{
                   fontSize: 9,
