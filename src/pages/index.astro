@@ -11,6 +11,65 @@ import '../styles/global.css';
   (src/pages/corkboard.astro), a FabricCanvas React island wrapping fabric.Canvas,
   a typed content source in src/data/ for the starter pin pool, and a third
   landing-page panel linking to it.
+
+  ==============================================================
+  ZOMBIES WEB: NEW ERA (CW → BO7) ARCHITECTURE & CONTENT TO-DO
+  ==============================================================
+  Tracks structural changes to support the Dark Aether storyline
+  and systems introduced from Cold War onwards.
+
+  [ ] 1. DATABASE SCHEMA: NEW ERA MECHANICS
+  ----------------------------------------------------------
+  - [ ] Weapon Rarity Modifiers: scaling stats for Base (Gray), Uncommon (Green),
+        Rare (Blue), Epic (Purple), Legendary (Orange).
+  - [ ] Dual Economy System: DB fields for Salvage costs alongside Essence (Points).
+  - [ ] Armor System: damage mitigation formulas for 1, 2, and 3-Plate armor levels.
+  - [ ] Loadouts: transition Starting Weapon logic from static pistols to custom loadouts.
+  - [ ] Field Upgrades: table for active abilities (Aether Shroud, Healing Aura,
+        Frenzied Guard) and their cooldowns.
+  - [ ] Skill Tiers & Augments:
+      - [ ] Cold War: Aetherium Crystal upgrade paths (Tiers I–V).
+      - [ ] BO6/BO7: Major and Minor Augments (e.g., Extension/Haste modifiers on perks).
+  - [ ] GobbleGums (BO6/BO7): re-integrate with updated Essence interaction rules.
+
+  [ ] 2. UI & COMPONENT DEVELOPMENT
+  ----------------------------------------------------------
+  - [ ] Arsenal Ranking Component: dynamic Weapon Tier List filtered by Game,
+        Rarity, and Ammo Mod efficiency. S-to-F tier board. Tag weapons as
+        Wall Buy vs. Mystery Box so players can quickly find reliable wall options
+        during ammo emergencies.
+  - [ ] Survival Masterclass Layout:
+      - [ ] Training Route Maps: visual maps/clips per level showing optimal
+            kiting loops and zombie spawn points along the route. Include
+            beginner explanation of the "train" technique.
+      - [ ] Camping Spot Breakdowns: best spots per map, wall/choke angles,
+            and critical "do not open" door warnings to prevent flanking routes.
+      - [ ] High-round strategy sections: camping vs. training tradeoffs, trap
+            utilization, and round-pacing guides.
+  - [ ] Lore Repository:
+      - [ ] Aether Timeline Encyclopedia (WaW → BO4): profile pages for key
+            figures (Richtofen, Samantha Maxis, etc.) — who they are, their goal,
+            which universe they belong to. Avoid front-loading 15 years of plot.
+      - [ ] Dark Aether Timeline Encyclopedia (CW → BO6): glossary for the
+            soft-reboot era — Requiem (CIA) vs. Omega Group (Soviet) factions,
+            political stakes, and the single-timeline 1980s–90s setting.
+      - [ ] Dark Aether Faction Glossary: Requiem, Omega Group, Terminus Outcomes.
+  - [ ] Mode Selectors: UI toggles on map pages to switch guide content between:
+      - [ ] Standard/Survival Mode (classic round-based).
+      - [ ] Directed Mode (guided narrative/Easter Egg steps).
+      - [ ] Cursed Mode (hardcore modifiers restricting perks/armor).
+      - [ ] Outbreak/Open World (objective-based progression).
+
+  [ ] 3. BO7 SPECIFIC ADDITIONS (2025/2026 ROADMAP)
+  ----------------------------------------------------------
+  - [ ] New Enemy Compendium: tags and weakness profiles for Armored Zombies,
+        Zombees, and the Zursa (Undead Bear Boss).
+  - [ ] New Perks Database: implement Wisp Tea and its Augments (Zombie Sitter, Fetcher).
+  - [ ] Vehicle Mechanics: sub-guide format for vehicle upgrades (e.g., Ol Tessie
+        in Tranzit-style maps).
+  - [ ] Chompy/Salvage Conversion: document new resource management loops
+        (e.g., feeding weapons for salvage).
+  - [ ] Cursed Modifiers: track special rewards/buffs for self-imposed limitations.
 -->
 
 <Layout title="Element 115 — CoD Zombies">
