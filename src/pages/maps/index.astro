@@ -40,6 +40,15 @@ function starParts(value: number) {
   </header>
 
   <!-- ═══════════════════════════════════════════ -->
+  <!-- NEW PLAYER STRIP                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <a href="/start" class="start-strip">
+    <span class="start-strip-label">[ NEW OPERATIVE ]</span>
+    <span class="start-strip-text">Not sure where to begin? Answer 3 questions and we'll find your map.</span>
+    <span class="start-strip-cta">FIND MY MAP →</span>
+  </a>
+
+  <!-- ═══════════════════════════════════════════ -->
   <!-- FILTER BAR                                  -->
   <!-- ═══════════════════════════════════════════ -->
   <div class="filter-bar" id="filter-bar">
@@ -514,6 +523,57 @@ function starParts(value: number) {
   }
 
   .header-count { color: #e07b2a; }
+
+  /* ════════════════════════════════════════════════ */
+  /* New player strip                                 */
+  /* ════════════════════════════════════════════════ */
+  .start-strip {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    margin-bottom: 16px;
+    background: #0d0f12;
+    border: 1px solid #252830;
+    border-left: 3px solid #e07b2a;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .start-strip:hover {
+    background: #111318;
+    border-color: #e07b2a;
+  }
+
+  .start-strip-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: #e07b2a;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .start-strip-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    flex: 1;
+  }
+
+  .start-strip-cta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: #e07b2a;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .start-strip { flex-wrap: wrap; gap: 6px; }
+    .start-strip-text { width: 100%; order: 3; }
+  }
 
   /* ════════════════════════════════════════════════ */
   /* Filter bar                                       */

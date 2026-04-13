@@ -1,0 +1,786 @@
+---
+import OpsLayout from '../layouts/OpsLayout.astro';
+import { MAPS, GAMES } from '../data/maps';
+
+const mapPayload = MAPS.map(m => ({
+  id:              m.id,
+  title:           m.title,
+  game:            m.game,
+  gameShort:       GAMES[m.game].short,
+  gameColor:       GAMES[m.game].color,
+  setting:         m.setting,
+  description:     m.description,
+  setupDifficulty: m.setupDifficulty,
+  eeDifficulty:    m.eeDifficulty ?? 0,
+  hasMainQuest:    m.hasMainQuest,
+  eeTitle:         m.eeTitle ?? '',
+  communityRating: m.communityRating,
+  hasWonderWeapon: m.hasWonderWeapon,
+  wonderWeapon:    m.wonderWeapon ?? '',
+}));
+---
+
+<OpsLayout title="Find Your Map" backHref="/maps" backLabel="MAP DATABASE">
+
+  <div id="quiz-root">
+
+    <!-- INTRO -->
+    <div class="quiz-screen" id="screen-intro" data-screen="intro">
+      <div class="screen-inner">
+        <p class="screen-eyebrow">[ OPERATIVE BRIEFING ]</p>
+        <h1 class="screen-title">FIND YOUR MAP</h1>
+        <p class="screen-sub">Six questions. We'll match you to the right drop zone.</p>
+        <div class="intro-bar"></div>
+        <button class="primary-btn" id="btn-start">BEGIN BRIEFING <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+
+    <!-- Q1: Setup & Complexity -->
+    <div class="quiz-screen hidden" id="screen-q1" data-screen="q1" data-qkey="setup">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="1"></div>
+        <p class="screen-eyebrow">[ QUESTION 01 / 06 · SETUP & COMPLEXITY ]</p>
+        <h2 class="screen-question">How do you prefer to spend your first 10 rounds?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="simple">
+            <span class="option-icon">◈</span>
+            <span class="option-label">SIMPLE</span>
+            <span class="option-desc">Open doors, turn on the power, and hit the Mystery Box. Nothing fancy.</span>
+          </button>
+          <button class="option-card" data-v="moderate">
+            <span class="option-icon">◈</span>
+            <span class="option-label">MODERATE</span>
+            <span class="option-desc">A few manageable mini-quests to unlock Pack-a-Punch and build a shield.</span>
+          </button>
+          <button class="option-card" data-v="complex">
+            <span class="option-icon">◈</span>
+            <span class="option-label">COMPLEX</span>
+            <span class="option-desc">Multi-step rituals and generator sequences just to get the basics running.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2: Survival Style -->
+    <div class="quiz-screen hidden" id="screen-q2" data-screen="q2" data-qkey="layout">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="2"></div>
+        <p class="screen-eyebrow">[ QUESTION 02 / 06 · SURVIVAL STRATEGY ]</p>
+        <h2 class="screen-question">What's your survival style when rounds get high?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="training">
+            <span class="option-icon">◈</span>
+            <span class="option-label">TRAINING</span>
+            <span class="option-desc">Running wide circles in open areas, stacking the horde into one clean pass.</span>
+          </button>
+          <button class="option-card" data-v="camping">
+            <span class="option-icon">◈</span>
+            <span class="option-label">CAMPING</span>
+            <span class="option-desc">Locking down a chokepoint with heavy firepower and holding the line.</span>
+          </button>
+          <button class="option-card" data-v="chaos">
+            <span class="option-icon">◈</span>
+            <span class="option-label">CHAOS</span>
+            <span class="option-desc">Constantly moving through tight, claustrophobic corridors with no safe space.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3: Wonder Weapons -->
+    <div class="quiz-screen hidden" id="screen-q3" data-screen="q3" data-qkey="ww">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="3"></div>
+        <p class="screen-eyebrow">[ QUESTION 03 / 06 · WONDER WEAPONS ]</p>
+        <h2 class="screen-question">How do you want to acquire your Wonder Weapon?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="box">
+            <span class="option-icon">◈</span>
+            <span class="option-label">MYSTERY BOX</span>
+            <span class="option-desc">Pure luck. Roll the box until it pays out.</span>
+          </button>
+          <button class="option-card" data-v="build">
+            <span class="option-icon">◈</span>
+            <span class="option-label">GUARANTEED BUILD</span>
+            <span class="option-desc">A dedicated quest that rewards me with a specialized, upgradeable weapon.</span>
+          </button>
+          <button class="option-card" data-v="multi">
+            <span class="option-icon">◈</span>
+            <span class="option-label">TEAM ARSENAL</span>
+            <span class="option-desc">Multiple Wonder Weapons available so the whole squad can be equipped.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4: Special Enemies -->
+    <div class="quiz-screen hidden" id="screen-q4" data-screen="q4" data-qkey="enemies">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="4"></div>
+        <p class="screen-eyebrow">[ QUESTION 04 / 06 · SPECIAL ENEMIES ]</p>
+        <h2 class="screen-question">What kind of special enemies do you want interrupting your game?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="classic">
+            <span class="option-icon">◈</span>
+            <span class="option-label">CLASSIC</span>
+            <span class="option-desc">Hellhounds and Nova Crawlers. Known threats, manageable danger.</span>
+          </button>
+          <button class="option-card" data-v="moderate">
+            <span class="option-icon">◈</span>
+            <span class="option-label">MODERATE</span>
+            <span class="option-desc">A Brutus or Mangler — enough to keep you alert without derailing the run.</span>
+          </button>
+          <button class="option-card" data-v="brutal">
+            <span class="option-icon">◈</span>
+            <span class="option-label">BRUTAL</span>
+            <span class="option-desc">Heavily-armored bullet sponges like the Panzer Soldat. Drop everything and run.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q5: Easter Eggs -->
+    <div class="quiz-screen hidden" id="screen-q5" data-screen="q5" data-qkey="ee">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="5"></div>
+        <p class="screen-eyebrow">[ QUESTION 05 / 06 · EASTER EGGS ]</p>
+        <h2 class="screen-question">How important is the Main Easter Egg quest?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="ignore">
+            <span class="option-icon">◈</span>
+            <span class="option-label">IRRELEVANT</span>
+            <span class="option-desc">I play purely to survive. The highest round number is the only goal.</span>
+          </button>
+          <button class="option-card" data-v="partial">
+            <span class="option-icon">◈</span>
+            <span class="option-label">WORTH IT FOR PERKS</span>
+            <span class="option-desc">I'll do Easter Egg steps that reward me with powerful weapons or perks, but I won't chase completion.</span>
+          </button>
+          <button class="option-card" data-v="full">
+            <span class="option-icon">◈</span>
+            <span class="option-label">THE WHOLE QUEST</span>
+            <span class="option-desc">The Easter Egg is the game. I want a complex, story-driven puzzle to finish.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6: Atmosphere -->
+    <div class="quiz-screen hidden" id="screen-q6" data-screen="q6" data-qkey="atmosphere">
+      <div class="screen-inner">
+        <div class="progress-bar" data-step="6"></div>
+        <p class="screen-eyebrow">[ QUESTION 06 / 06 · ATMOSPHERE ]</p>
+        <h2 class="screen-question">What vibe fits you best?</h2>
+        <div class="option-grid">
+          <button class="option-card" data-v="gritty">
+            <span class="option-icon">◈</span>
+            <span class="option-label">GRITTY & DARK</span>
+            <span class="option-desc">War-torn, genuinely creepy. Oppressive atmosphere with real weight to it.</span>
+          </button>
+          <button class="option-card" data-v="cinematic">
+            <span class="option-icon">◈</span>
+            <span class="option-label">CINEMATIC</span>
+            <span class="option-desc">Stylized, colorful, big set pieces. Feels like a blockbuster.</span>
+          </button>
+          <button class="option-card" data-v="scifi">
+            <span class="option-icon">◈</span>
+            <span class="option-label">SCI-FI CHAOS</span>
+            <span class="option-desc">Over-the-top multidimensional madness. Dragons, moon bases, colliding universes.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="quiz-screen hidden" id="screen-results" data-screen="results">
+      <div class="screen-inner screen-inner--results">
+        <p class="screen-eyebrow">[ MISSION ASSIGNMENT ]</p>
+        <h2 class="screen-title">YOUR DROP ZONES</h2>
+        <p class="screen-sub" id="results-sub"></p>
+        <div class="results-grid" id="results-grid"></div>
+        <div class="results-actions">
+          <button class="ghost-btn" id="btn-restart">← RETAKE BRIEFING</button>
+          <a href="/maps" class="ghost-btn">BROWSE ALL MAPS →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</OpsLayout>
+
+<script define:vars={{ mapPayload }}>
+
+  // ── Scoring tables ────────────────────────────────────
+  // Each answer → { mapId: points }
+  const SCORE_TABLE = {
+    setup: {
+      simple:   { 'kino-der-toten': 4, 'der-riese': 4, 'ascension': 4, 'five': 2, 'classified': 2, 'nacht-der-untoten': 2, 'verruckt': 2 },
+      moderate: { 'der-eisendrache': 4, 'mob-of-the-dead': 4, 'ix': 3, 'voyage-of-despair': 3, 'ancient-evil': 2, 'tag-der-toten': 2 },
+      complex:  { 'origins': 4, 'shadows-of-evil': 4, 'blood-of-the-dead': 3, 'moon': 3, 'revelations': 2 },
+    },
+    layout: {
+      training: { 'ascension': 4, 'revelations': 4, 'kino-der-toten': 4, 'nacht-der-untoten': 2, 'ancient-evil': 2, 'origins': 2 },
+      camping:  { 'buried': 4, 'the-giant': 4, 'der-eisendrache': 4, 'classified': 3, 'tag-der-toten': 2, 'five': 2 },
+      chaos:    { 'verruckt': 4, 'shangri-la': 4, 'five': 4, 'die-rise': 3, 'mob-of-the-dead': 2 },
+    },
+    ww: {
+      box:   { 'kino-der-toten': 4, 'shi-no-numa': 4, 'der-riese': 4, 'ascension': 3, 'the-giant': 3, 'call-of-the-dead': 2 },
+      build: { 'origins': 4, 'der-eisendrache': 4, 'zetsubou-no-shima': 3, 'gorod-krovi': 3 },
+      multi: { 'origins': 4, 'dead-of-the-night': 4, 'gorod-krovi': 3, 'der-eisendrache': 2 },
+    },
+    enemies: {
+      classic:  { 'shi-no-numa': 4, 'kino-der-toten': 4, 'nacht-der-untoten': 3, 'verruckt': 3, 'der-riese': 3 },
+      moderate: { 'mob-of-the-dead': 4, 'gorod-krovi': 4, 'blood-of-the-dead': 3, 'ix': 3, 'classified': 2 },
+      brutal:   { 'origins': 4, 'shadows-of-evil': 4, 'der-eisendrache': 3, 'zetsubou-no-shima': 3 },
+    },
+    ee: {
+      ignore:  { 'nacht-der-untoten': 4, 'verruckt': 4, 'der-riese': 4, 'the-giant': 3, 'classified': 3, 'five': 2 },
+      partial: { 'zetsubou-no-shima': 4, 'der-eisendrache': 4, 'ascension': 3, 'gorod-krovi': 3, 'ix': 2 },
+      full:    { 'blood-of-the-dead': 4, 'moon': 4, 'gorod-krovi': 4, 'origins': 3, 'mob-of-the-dead': 3, 'shadows-of-evil': 2 },
+    },
+    atmosphere: {
+      gritty:   { 'nacht-der-untoten': 4, 'verruckt': 4, 'shi-no-numa': 4, 'mob-of-the-dead': 4, 'der-riese': 3, 'blood-of-the-dead': 2 },
+      cinematic: { 'shadows-of-evil': 4, 'ix': 4, 'dead-of-the-night': 3, 'voyage-of-despair': 3, 'ancient-evil': 2 },
+      scifi:    { 'revelations': 4, 'moon': 4, 'origins': 3, 'ascension': 3, 'alpha-omega': 2 },
+    },
+  };
+
+  // Human-readable reason phrases per answer value
+  const ANSWER_PHRASES = {
+    setup: {
+      simple:   'straightforward setup',
+      moderate: 'moderate setup with clear objectives',
+      complex:  'deep multi-step setup',
+    },
+    layout: {
+      training: 'open layout built for training',
+      camping:  'strong defensive chokepoints',
+      chaos:    'tight corridors and constant pressure',
+    },
+    ww: {
+      box:   'Mystery Box Wonder Weapon',
+      build: 'craftable, upgradeable Wonder Weapon',
+      multi: 'multiple Wonder Weapons available',
+    },
+    enemies: {
+      classic:  'classic special enemies (Hellhounds, Crawlers)',
+      moderate: 'moderate boss threats',
+      brutal:   'brutal armored boss enemies',
+    },
+    ee: {
+      ignore:  'no Easter Egg required',
+      partial:'Easter Egg steps with gameplay rewards',
+      full:    'full story-driven Easter Egg quest',
+    },
+    atmosphere: {
+      gritty:   'gritty, dark atmosphere',
+      cinematic: 'cinematic, stylized presentation',
+      scifi:    'sci-fi multidimensional chaos',
+    },
+  };
+
+  // ── State ──────────────────────────────────────────────
+  const answers = {};
+  const QUESTION_FLOW = ['q1','q2','q3','q4','q5','q6'];
+
+  // ── Screen transitions ──────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.quiz-screen').forEach(s => s.classList.add('hidden'));
+    const next = document.getElementById(id);
+    next.classList.remove('hidden');
+    // Force reflow for fade-in
+    void next.offsetWidth;
+    next.classList.add('screen-visible');
+  }
+
+  // ── Progress bar render ─────────────────────────────────
+  function buildProgressBars() {
+    document.querySelectorAll('.progress-bar[data-step]').forEach(bar => {
+      const step = parseInt(bar.dataset.step);
+      bar.innerHTML = Array.from({ length: 6 }, (_, i) => {
+        let cls = 'progress-step';
+        if (i + 1 < step)  cls += ' filled';
+        if (i + 1 === step) cls += ' active';
+        return `<div class="${cls}"></div>`;
+      }).join('');
+    });
+  }
+
+  // ── Scoring ─────────────────────────────────────────────
+  function scoreAllMaps() {
+    const totals = {};
+    // Track per-question contribution per map for reason generation
+    const contribs = {}; // mapId → { qkey: points }
+
+    for (const [qkey, val] of Object.entries(answers)) {
+      const table = SCORE_TABLE[qkey]?.[val] ?? {};
+      for (const [mapId, pts] of Object.entries(table)) {
+        totals[mapId]   = (totals[mapId]   ?? 0) + pts;
+        contribs[mapId] = contribs[mapId] ?? {};
+        contribs[mapId][qkey] = (contribs[mapId][qkey] ?? 0) + pts;
+      }
+    }
+    // Blend with community rating (small bonus so equally-scored maps are broken by quality)
+    for (const map of mapPayload) {
+      totals[map.id] = (totals[map.id] ?? 0) + map.communityRating * 0.5;
+    }
+
+    return { totals, contribs };
+  }
+
+  // ── Reason generator ────────────────────────────────────
+  function getReason(mapId, contribs) {
+    const contrib = contribs[mapId] ?? {};
+    // Sort question keys by how much they contributed to this map
+    const ranked = Object.entries(contrib)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+    return ranked
+      .map(([qkey]) => ANSWER_PHRASES[qkey]?.[answers[qkey]])
+      .filter(Boolean)
+      .join(' · ');
+  }
+
+  // ── Render results ───────────────────────────────────────
+  function renderResults() {
+    const { totals, contribs } = scoreAllMaps();
+
+    const top3 = mapPayload
+      .map(m => ({ map: m, score: totals[m.id] ?? 0 }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
+    const ranks = ['PRIMARY', 'SECONDARY', 'ALTERNATE'];
+
+    document.getElementById('results-sub').textContent =
+      'Matched against your briefing across setup, layout, wonder weapons, enemies, Easter Eggs, and atmosphere.';
+
+    document.getElementById('results-grid').innerHTML = top3.map(({ map }, i) => `
+      <a href="/maps/${map.id}" class="result-card" style="--game-color:${map.gameColor}">
+        <div class="result-rank">${ranks[i]}</div>
+        <div class="result-top">
+          <span class="result-game-badge" style="background:${map.gameColor}">${map.gameShort}</span>
+          ${map.hasMainQuest ? '<span class="result-ee-badge">EE</span>' : ''}
+          ${map.hasWonderWeapon ? '<span class="result-ww-badge">WW</span>' : ''}
+        </div>
+        <h3 class="result-title">${map.title}</h3>
+        <p class="result-setting">${map.setting}</p>
+        <p class="result-desc">${map.description}</p>
+        <div class="result-rule"></div>
+        <p class="result-reason">${getReason(map.id, contribs) || `rated ${map.communityRating}/5`}</p>
+        <div class="result-cta">ENTER MAP <span>→</span></div>
+      </a>
+    `).join('');
+
+    showScreen('screen-results');
+  }
+
+  // ── Wire options ─────────────────────────────────────────
+  document.querySelectorAll('.option-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const screen = btn.closest('.quiz-screen');
+      const qkey   = screen.dataset.qkey;
+      answers[qkey] = btn.dataset.v;
+
+      // Highlight selection
+      screen.querySelectorAll('.option-card').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      setTimeout(() => {
+        const currentQ = screen.dataset.screen; // 'q1'…'q6'
+        const idx      = QUESTION_FLOW.indexOf(currentQ);
+        if (idx < QUESTION_FLOW.length - 1) {
+          showScreen(`screen-${QUESTION_FLOW[idx + 1]}`);
+        } else {
+          renderResults();
+        }
+      }, 200);
+    });
+  });
+
+  // ── Start / restart ──────────────────────────────────────
+  document.getElementById('btn-start').addEventListener('click', () => {
+    showScreen('screen-q1');
+  });
+
+  document.getElementById('btn-restart').addEventListener('click', () => {
+    for (const k of Object.keys(answers)) delete answers[k];
+    document.querySelectorAll('.option-card').forEach(b => b.classList.remove('selected'));
+    showScreen('screen-intro');
+  });
+
+  // ── Init ─────────────────────────────────────────────────
+  buildProgressBars();
+  showScreen('screen-intro');
+</script>
+
+<style>
+  /* ════════════════════════════════════════════════ */
+  /* Root                                             */
+  /* ════════════════════════════════════════════════ */
+  #quiz-root {
+    min-height: calc(100vh - 52px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Screen                                           */
+  /* ════════════════════════════════════════════════ */
+  .quiz-screen {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 16px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .quiz-screen.hidden {
+    display: none;
+  }
+
+  .quiz-screen.screen-visible {
+    opacity: 1;
+  }
+
+  .screen-inner {
+    padding: 48px 0;
+  }
+
+  .screen-inner--results {
+    max-width: 100%;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Type                                             */
+  /* ════════════════════════════════════════════════ */
+  .screen-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: #e07b2a;
+    opacity: 0.8;
+    margin: 0 0 12px;
+  }
+
+  .screen-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 5vw, 68px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: #dde1ea;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+
+  .screen-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #4a4e5a;
+    letter-spacing: 0.1em;
+    margin: 0 0 36px;
+  }
+
+  .screen-question {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 36px);
+    line-height: 1.15;
+    letter-spacing: 0.03em;
+    color: #dde1ea;
+    text-transform: uppercase;
+    margin: 0 0 28px;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Intro                                            */
+  /* ════════════════════════════════════════════════ */
+  .intro-bar {
+    width: 56px;
+    height: 2px;
+    background: #e07b2a;
+    margin-bottom: 40px;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Progress                                         */
+  /* ════════════════════════════════════════════════ */
+  .progress-bar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 28px;
+  }
+
+  .progress-step {
+    flex: 1;
+    height: 3px;
+    background: #1e2028;
+    transition: background 0.2s;
+  }
+
+  .progress-step.active { background: rgba(224, 123, 42, 0.6); }
+  .progress-step.filled { background: #e07b2a; }
+
+  /* ════════════════════════════════════════════════ */
+  /* Options                                          */
+  /* ════════════════════════════════════════════════ */
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 22px 18px;
+    background: #0f1114;
+    border: 1px solid #1e2028;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .option-card:hover {
+    border-color: rgba(224, 123, 42, 0.5);
+    background: #111318;
+  }
+
+  .option-card.selected {
+    border-color: #e07b2a;
+    background: #130e08;
+  }
+
+  .option-card.selected .option-icon {
+    color: #e07b2a;
+  }
+
+  .option-icon {
+    font-size: 13px;
+    color: #252830;
+    transition: color 0.15s;
+    line-height: 1;
+  }
+
+  .option-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    color: #dde1ea;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .option-desc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #4a4e5a;
+    line-height: 1.6;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Buttons                                          */
+  /* ════════════════════════════════════════════════ */
+  .primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    color: #0b0c0f;
+    background: #e07b2a;
+    padding: 14px 28px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+
+  .primary-btn:hover { background: #f09040; }
+
+  .ghost-btn {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #6b7280;
+    background: transparent;
+    border: 1px solid #252830;
+    padding: 10px 18px;
+    cursor: pointer;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .ghost-btn:hover { color: #dde1ea; border-color: #4a4e5a; }
+
+  /* ════════════════════════════════════════════════ */
+  /* Results                                          */
+  /* ════════════════════════════════════════════════ */
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+
+  .result-card {
+    display: flex;
+    flex-direction: column;
+    background: #0f1114;
+    border: 1px solid #1e2028;
+    border-top: 3px solid var(--game-color, #e07b2a);
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .result-card:hover {
+    border-color: var(--game-color, #e07b2a);
+    transform: translateY(-2px);
+  }
+
+  .result-rank {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: #3a3d48;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .result-top {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .result-game-badge {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    color: #fff;
+  }
+
+  .result-ee-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid rgba(201, 162, 74, 0.4);
+    background: rgba(201, 162, 74, 0.08);
+    color: #c9a24a;
+    letter-spacing: 0.08em;
+  }
+
+  .result-ww-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid rgba(61, 220, 132, 0.3);
+    background: rgba(61, 220, 132, 0.06);
+    color: #3ddc84;
+    letter-spacing: 0.08em;
+  }
+
+  .result-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    color: #dde1ea;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    line-height: 1.1;
+  }
+
+  .result-setting {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #4a4e5a;
+    letter-spacing: 0.07em;
+    margin: 0 0 10px;
+  }
+
+  .result-desc {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #6b7280;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .result-rule {
+    height: 1px;
+    background: #1e2028;
+    margin: 14px 0;
+  }
+
+  .result-reason {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    color: #e07b2a;
+    opacity: 0.75;
+    margin: 0 0 14px;
+    line-height: 1.65;
+  }
+
+  .result-cta {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #4a4e5a;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: color 0.15s;
+  }
+
+  .result-card:hover .result-cta { color: #dde1ea; }
+
+  .results-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* ════════════════════════════════════════════════ */
+  /* Responsive                                       */
+  /* ════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .option-grid  { grid-template-columns: 1fr; }
+    .results-grid { grid-template-columns: 1fr; }
+    .screen-inner { padding: 28px 0; }
+    .option-card  { padding: 16px 14px; flex-direction: row; align-items: center; gap: 14px; }
+    .option-icon  { display: none; }
+  }
+
+  @media (min-width: 769px) and (max-width: 1100px) {
+    .results-grid { grid-template-columns: 1fr 1fr; }
+    .result-card:last-child { grid-column: 1 / -1; max-width: calc(50% - 7px); }
+  }
+</style>
