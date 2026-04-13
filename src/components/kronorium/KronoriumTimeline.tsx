@@ -21,8 +21,6 @@ import {
 import { MAP_LORE_BY_NODE } from '../../data/mapLore';
 import MapLoreModal from './MapLoreModal';
 
-// ── Node-type colour map for minimap ────────────────────────
-
 const TYPE_ACCENT: Record<TimelineNodeType, string> = {
   title:        '#00e5ff',
   event:        '#c9a24a',
@@ -32,8 +30,6 @@ const TYPE_ACCENT: Record<TimelineNodeType, string> = {
   endState:     '#cc2222',
   waypoint:     'transparent',
 };
-
-// ── Crew definitions for filter UI ──────────────────────────
 
 const CREWS = [
   { id: 'Primis',      color: '#4fc3f7' },
@@ -45,12 +41,6 @@ const CREWS = [
   { id: 'SoE Crew',    color: '#ce93d8' },
   { id: 'CIA/CDC',     color: '#90a4ae' },
 ] as const;
-
-// ══════════════════════════════════════════════════════════════
-//  Custom node components  (horizontal flow: left/right handles)
-// ══════════════════════════════════════════════════════════════
-
-/* ── Title ────────────────────────────────────────────────── */
 
 function TitleNode({ data }: NodeProps) {
   const dimmed: boolean = data.dimmed ?? false;
@@ -72,8 +62,6 @@ function TitleNode({ data }: NodeProps) {
     </div>
   );
 }
-
-/* ── Event (rich map card) ────────────────────────────────── */
 
 function EventNode({ data, selected }: NodeProps) {
   const n: TimelineNode = data.node;
@@ -191,8 +179,6 @@ function EventNode({ data, selected }: NodeProps) {
   );
 }
 
-/* ── Dimension header ─────────────────────────────────────── */
-
 function DimensionNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
   const dimmed: boolean = data.dimmed ?? false;
@@ -229,8 +215,6 @@ function DimensionNode({ data }: NodeProps) {
   );
 }
 
-/* ── Branch reason (small explanatory text) ───────────────── */
-
 function BranchReasonNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
   const dimmed: boolean = data.dimmed ?? false;
@@ -265,8 +249,6 @@ function BranchReasonNode({ data }: NodeProps) {
     </div>
   );
 }
-
-/* ── Fracture / timeline label (coloured badge) ───────────── */
 
 function FractureNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
@@ -307,8 +289,6 @@ function FractureNode({ data }: NodeProps) {
   );
 }
 
-/* ── End-state (UNIVERSE DESTROYED, CHILDREN ARE SAFE) ────── */
-
 function EndStateNode({ data }: NodeProps) {
   const n: TimelineNode = data.node;
   const color = n.color ?? '#cc2222';
@@ -340,8 +320,6 @@ function EndStateNode({ data }: NodeProps) {
   );
 }
 
-/* ── Waypoint (invisible routing node) ─────────────────────── */
-
 function WaypointNode() {
   return (
     <div style={{ width: 0, height: 0, position: 'relative' }}>
@@ -366,8 +344,6 @@ const nodeTypes = {
   endState:     EndStateNode,
   waypoint:     WaypointNode,
 };
-
-// ── Custom zoom controls ─────────────────────────────────────
 
 const ZOOM_STEP = 1.25;
 
@@ -409,8 +385,6 @@ function CustomZoomControls() {
   );
 }
 
-// ── Minimap absolute panning ─────────────────────────────────
-
 function MiniMapAbsolutePan() {
   const { setCenter, getZoom } = useReactFlow();
   const dragging = useRef(false);
@@ -444,12 +418,6 @@ function MiniMapAbsolutePan() {
   return null;
 }
 
-
-
-// ══════════════════════════════════════════════════════════════
-//  Main component
-// ══════════════════════════════════════════════════════════════
-
 interface SelectedDetail {
   id: string;
   label: string;
@@ -459,10 +427,6 @@ interface SelectedDetail {
   mapId?: string;
 }
 
-// Estimated rendered heights per node type so we can vertically centre
-// each node on its row. ReactFlow positions by top-left corner, but
-// Left/Right handles sit at 50 % of the node height. Offsetting by
-// half the height makes handles on the same row line up perfectly.
 const HEIGHT_EST: Record<TimelineNodeType, number> = {
   title:        30,
   event:        100,
@@ -487,11 +451,6 @@ export default function KronoriumTimeline() {
     );
   }, [crewFilter]);
 
-  // Structural nodes (title/dimension/branchReason/fracture) stay lit if any
-  // matching event is reachable downstream from them. Compute by reverse-BFS
-  // from each matching event, collecting all ancestor nodes. The cycle edge
-  // (ag-revelations → great-war) is excluded so reachability stays a DAG and
-  // doesn't make every label trivially "kept".
   const keptAncestorIds = useMemo(() => {
     if (!matchingNodeIds) return null;
     const reverseAdj = new Map<string, string[]>();
@@ -592,10 +551,8 @@ export default function KronoriumTimeline() {
   const onPaneClick = useCallback(() => setSelected(null), []);
 
   const onInit = useCallback((instance: import('reactflow').ReactFlowInstance) => {
-    // First fit the full graph, then zoom in 7 levels toward the left ("beginning of time")
     instance.fitView({ padding: 0.12 });
 
-    // Use rAF to let fitView settle before adjusting
     requestAnimationFrame(() => {
       const vp = instance.getViewport();
       const newZoom = Math.min(vp.zoom * Math.pow(ZOOM_STEP, 5), 2);
@@ -606,7 +563,6 @@ export default function KronoriumTimeline() {
       const containerW = rect?.width ?? window.innerWidth;
       const containerH = rect?.height ?? window.innerHeight;
 
-      // Focal point: left side of the canvas, vertically centred
       const focalX = containerW * 0.05;
       const focalY = containerH / 2;
 
@@ -627,7 +583,7 @@ export default function KronoriumTimeline() {
         .lab-link { animation: redBlink 1.2s ease-in-out infinite !important; }
       `}</style>
 
-      {/* ── Left panel ── */}
+      
       <div
         style={{
           width: 280,
@@ -674,7 +630,7 @@ export default function KronoriumTimeline() {
           </a>
         </div>
 
-        {/* ── Crew filter ── */}
+        
         <div style={{ padding: '12px 18px', borderBottom: '1px solid #2e2416' }}>
           <div
             style={{
@@ -831,7 +787,7 @@ export default function KronoriumTimeline() {
         </div>
       </div>
 
-      {/* ── Canvas ── */}
+      
       <div style={{ flex: 1, position: 'relative' }}>
         <ReactFlow
           nodes={nodes}
@@ -867,7 +823,7 @@ export default function KronoriumTimeline() {
           <MiniMapAbsolutePan />
         </ReactFlow>
 
-        {/* Legend */}
+        
         <div
           style={{
             position: 'absolute',
@@ -910,7 +866,7 @@ export default function KronoriumTimeline() {
         </div>
       </div>
 
-      {/* ── Lore Modal ── */}
+      
       {loreNodeId && MAP_LORE_BY_NODE[loreNodeId] && (
         <MapLoreModal
           entry={MAP_LORE_BY_NODE[loreNodeId]}

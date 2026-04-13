@@ -4,9 +4,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 
 <OpsLayout title="FAQ">
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- PAGE HEADER                                 -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <header class="page-header">
     <div class="header-hud-tl" aria-hidden="true"></div>
     <p class="header-eyebrow">[ OPERATIVE DATABASE ]</p>
@@ -17,12 +17,12 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     </p>
   </header>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- FAQ SECTIONS                                -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <div class="faq-root">
 
-    <!-- BASICS -->
+    
     <section class="faq-section">
       <div class="faq-section-header">
         <span class="faq-section-label">01</span>
@@ -94,7 +94,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       </dl>
     </section>
 
-    <!-- GAMEPLAY -->
+    
     <section class="faq-section">
       <div class="faq-section-header">
         <span class="faq-section-label">02</span>
@@ -156,7 +156,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       </dl>
     </section>
 
-    <!-- EASTER EGGS & STORY -->
+    
     <section class="faq-section">
       <div class="faq-section-header">
         <span class="faq-section-label">03</span>
@@ -222,7 +222,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       </dl>
     </section>
 
-    <!-- GETTING STARTED -->
+    
     <section class="faq-section">
       <div class="faq-section-header">
         <span class="faq-section-label">04</span>
@@ -289,7 +289,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       </dl>
     </section>
 
-  </div><!-- .faq-root -->
+  </div>
 
 </OpsLayout>
 
@@ -312,9 +312,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 </script>
 
 <style>
-  /* ════════════════════════════════════════════════ */
-  /* Page header (shared pattern)                     */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .page-header {
     position: relative;
     margin-bottom: 48px;
@@ -362,9 +362,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 
   .header-count { color: #e07b2a; }
 
-  /* ════════════════════════════════════════════════ */
-  /* FAQ root                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-root {
     display: flex;
     flex-direction: column;
@@ -372,9 +372,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     max-width: 860px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Section header                                   */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-section-header {
     display: flex;
     align-items: center;
@@ -402,9 +402,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     text-transform: uppercase;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* FAQ list                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-list {
     margin: 0;
     padding: 0;
@@ -413,9 +413,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     gap: 2px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* FAQ item                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-item {
     border: 1px solid #1e2028;
     background: #0f1114;
@@ -432,9 +432,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     border-left: 2px solid #e07b2a;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Question row                                     */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-question {
     display: flex;
     align-items: center;
@@ -473,9 +473,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     transition: color 0.15s;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Answer panel                                     */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .faq-answer {
     max-height: 0;
     overflow: hidden;
@@ -523,7 +523,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     font-style: normal;
   }
 
-  /* inner padding wrapper — keeps transition clean */
+  
   .faq-answer > * {
     padding: 0 20px 20px;
   }
@@ -534,9 +534,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     padding-top: 4px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Responsive                                       */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   @media (max-width: 768px) {
     .faq-question { font-size: 14px; padding: 14px 16px; }
     .faq-answer > * { padding: 0 16px 16px; }

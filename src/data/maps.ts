@@ -30,7 +30,6 @@ export interface MapData {
   wonderWeapon?: string;
 }
 
-// ─── Game metadata ──────────────────────────────────────────────────
 export const GAMES: Record<GameId, { label: string; short: string; color: string; year: number }> = {
   waw: { label: 'Call of Duty: World at War',  short: 'WaW', color: '#7A3A1A', year: 2008 },
   bo1: { label: 'Call of Duty: Black Ops',     short: 'BO1', color: '#B5580A', year: 2010 },
@@ -52,10 +51,7 @@ export const CREW_GROUPS: Record<CrewGroup, string> = {
   celebrities:  'Celebrity Crew',
 };
 
-// ─── Map data ────────────────────────────────────────────────────────
 export const MAPS: MapData[] = [
-
-  // ══════════════ WORLD AT WAR ══════════════
 
   {
     id: 'nacht-der-untoten',
@@ -119,8 +115,6 @@ export const MAPS: MapData[] = [
     hasWonderWeapon: true,
     wonderWeapon: 'Wunderwaffe DG-2',
   },
-
-  // ══════════════ BLACK OPS ══════════════
 
   {
     id: 'kino-der-toten',
@@ -229,8 +223,6 @@ export const MAPS: MapData[] = [
     wonderWeapon: 'Wave Gun / QED',
   },
 
-  // ══════════════ BLACK OPS II ══════════════
-
   {
     id: 'tranzit',
     title: 'TranZit',
@@ -320,8 +312,6 @@ export const MAPS: MapData[] = [
     hasWonderWeapon: true,
     wonderWeapon: 'Elemental Staffs',
   },
-
-  // ══════════════ BLACK OPS III ══════════════
 
   {
     id: 'shadows-of-evil',
@@ -429,8 +419,6 @@ export const MAPS: MapData[] = [
     hasWonderWeapon: true,
     wonderWeapon: 'Apothicon Servant',
   },
-
-  // ══════════════ BLACK OPS 4 ══════════════
 
   {
     id: 'ix',
@@ -575,8 +563,6 @@ export const MAPS: MapData[] = [
   },
 ];
 
-// ─── Thumbnails ──────────────────────────────────────────────────────
-// Map id → file under /public/images/maps/thumbnails/
 const THUMB_DIR = '/images/maps/thumbnails';
 export const MAP_THUMBNAILS: Record<string, string> = {
   'nacht-der-untoten':  `${THUMB_DIR}/nacht.webp`,
@@ -602,16 +588,12 @@ export const MAP_THUMBNAILS: Record<string, string> = {
   'revelations':        `${THUMB_DIR}/Revelations.webp`,
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────
-
-/** All maps for a given game, in release order. */
 export function mapsByGame(game: GameId): MapData[] {
   return MAPS.filter(m => m.game === game).sort(
     (a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime()
   );
 }
 
-/** All unique crew groups present across the full map list. */
 export function allCrewGroups(): CrewGroup[] {
   return [...new Set(MAPS.map(m => m.crewGroup))];
 }

@@ -2,6 +2,7 @@
 import OpsLayout from '../../layouts/OpsLayout.astro';
 import { MAPS, GAMES, CREW_GROUPS } from '../../data/maps.ts';
 import { MAP_GUIDES } from '../../data/mapGuides.ts';
+import { WONDER_WEAPONS } from '../../data/wonderWeapons.ts';
 
 export function getStaticPaths() {
   return MAPS.map(map => ({ params: { slug: map.id } }));
@@ -16,7 +17,6 @@ const relatedMaps = MAPS
   .filter(m => m.game === map.game && m.id !== map.id)
   .slice(0, 5);
 
-// Build ToC from what's present
 const tocItems: Array<{ id: string; label: string }> = [
   { id: 'intel-brief',      label: 'Intel Brief' },
   { id: 'setup-guide',      label: 'Setup Guide' },
@@ -30,6 +30,10 @@ const tocItems: Array<{ id: string; label: string }> = [
 const releaseDate = new Date(map.releaseDate).toLocaleDateString('en-US', {
   year: 'numeric', month: 'long', day: 'numeric',
 });
+
+const wonderWeaponTarget = map.wonderWeapon
+  ? WONDER_WEAPONS.find((weapon) => weapon.name.toLowerCase() === map.wonderWeapon!.toLowerCase())
+  : undefined;
 
 function pips(value: number, max = 5): boolean[] {
   return Array.from({ length: max }, (_, i) => i < value);
@@ -49,10 +53,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   backHref="/maps"
   backLabel="ALL MAPS"
 >
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- HERO                                        -->
-  <!-- ═══════════════════════════════════════════ -->
   <div class="hero" style={`--game-color: ${game.color};`}>
     <div class="hero-top">
       <span class="hero-id">{ slug }</span>
@@ -118,15 +118,9 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- CONTENT GRID                                -->
-  <!-- ═══════════════════════════════════════════ -->
   <div class="content-grid">
 
-    <!-- ── LEFT: Main guide ── -->
     <div class="guide-main">
-
-      <!-- INTEL BRIEF -->
       <section class="guide-section" id="intel-brief">
         <div class="section-head">
           <span class="section-label">Field Manual — Overview</span>
@@ -141,7 +135,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         )}
       </section>
 
-      <!-- SETUP GUIDE -->
       <section class="guide-section" id="setup-guide">
         <div class="section-head">
           <span class="section-label">Field Manual — Priority</span>
@@ -183,7 +176,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         )}
       </section>
 
-      <!-- BUILDABLES — one section per item -->
       { guide?.buildables?.map((b, i) => (
         <section class="guide-section" id={`buildable-${i}`}>
           <div class="section-head">
@@ -219,7 +211,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </section>
       ))}
 
-      <!-- MAIN QUEST -->
       { map.hasMainQuest && (
         <section class="guide-section" id="main-quest">
           <div class="section-head">
@@ -263,7 +254,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </section>
       )}
 
-      <!-- FIELD STRATEGIES -->
       <section class="guide-section" id="field-strategies">
         <div class="section-head">
           <span class="section-label">Field Manual — Tactics</span>
@@ -284,7 +274,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         )}
       </section>
 
-      <!-- SPECIAL ENEMIES -->
       { guide?.specialEnemies && guide.specialEnemies.length > 0 && (
         <section class="guide-section" id="special-enemies">
           <div class="section-head">
@@ -305,7 +294,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </section>
       )}
 
-      <!-- CUSTOM SECTIONS -->
       { guide?.customSections?.map(sec => (
         <section class="guide-section" id={sec.id}>
           <div class="section-head">
@@ -331,12 +319,9 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </section>
       ))}
 
-    </div><!-- end .guide-main -->
+    </div>
 
-    <!-- ── RIGHT: Sidebar ── -->
     <aside class="guide-sidebar">
-
-      <!-- TABLE OF CONTENTS -->
       <div class="sidebar-card">
         <span class="card-label">Page Contents</span>
         <nav class="toc-nav">
@@ -349,7 +334,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </nav>
       </div>
 
-      <!-- QUICK STATS -->
       <div class="sidebar-card">
         <span class="card-label">Quick Stats</span>
 
@@ -414,7 +398,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         )}
       </div>
 
-      <!-- MYSTERY BOX -->
       { guide?.mysteryBoxSpawns && guide.mysteryBoxSpawns.length > 0 && (
         <div class="sidebar-card">
           <span class="card-label">Mystery Box Spawns</span>
@@ -426,7 +409,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </div>
       )}
 
-      <!-- PERKS -->
       { guide?.perks && guide.perks.length > 0 && (
         <div class="sidebar-card">
           <span class="card-label">Perk Machines</span>
@@ -441,7 +423,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </div>
       )}
 
-      <!-- CREW ROSTER -->
       <div class="sidebar-card">
         <span class="card-label">Crew Roster</span>
         <p class="crew-group">{ CREW_GROUPS[map.crewGroup] }</p>
@@ -452,20 +433,24 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </ul>
       </div>
 
-      <!-- WONDER WEAPON -->
       { map.hasWonderWeapon && map.wonderWeapon && (
         <div class="sidebar-card card-ww">
           <span class="card-label">Wonder Weapon</span>
-          <p class="ww-card-name">{ map.wonderWeapon }</p>
+          {wonderWeaponTarget ? (
+            <a class="ww-card-link" href={`/wonder-weapons#ww-${wonderWeaponTarget.id}`}>
+              <p class="ww-card-name">{ map.wonderWeapon }</p>
+            </a>
+          ) : (
+            <p class="ww-card-name">{ map.wonderWeapon }</p>
+          )}
           { guide?.wwNote && (
             <p class="ww-card-note">{ guide.wwNote }</p>
           )}
         </div>
       )}
 
-      <!-- RELATED MAPS (same game) -->
       { relatedMaps.length > 0 && (
-        <div class="sidebar-card">
+        <div class="sidebar-card" data-pagefind-ignore="all">
           <span class="card-label">{ game.short } — More Maps</span>
           <ul class="related-list">
             { relatedMaps.map(r => (
@@ -480,17 +465,13 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
         </div>
       )}
 
-    </aside><!-- end .guide-sidebar -->
+    </aside>
 
-  </div><!-- end .content-grid -->
+  </div>
 
 </OpsLayout>
 
 <style>
-  /* ─────────────────────────────────────── */
-  /* HERO                                    */
-  /* ─────────────────────────────────────── */
-
   .hero {
     border: 1px solid #252830;
     border-top: 3px solid var(--game-color, #e07b2a);
@@ -578,7 +559,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     text-transform: uppercase;
   }
 
-  /* Difficulty pips */
   .pips {
     display: flex;
     gap: 4px;
@@ -598,7 +578,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
 
   .pip-sm { width: 8px; height: 8px; }
 
-  /* Stars */
   .stars {
     display: flex;
     gap: 2px;
@@ -627,10 +606,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     text-transform: uppercase;
   }
 
-  /* ─────────────────────────────────────── */
-  /* CONTENT GRID                            */
-  /* ─────────────────────────────────────── */
-
+      
   .content-grid {
     display: grid;
     grid-template-columns: 1fr 300px;
@@ -638,10 +614,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     align-items: start;
   }
 
-  /* ─────────────────────────────────────── */
-  /* SECTIONS (left column)                  */
-  /* ─────────────────────────────────────── */
-
+      
   .guide-section {
     margin-bottom: 40px;
   }
@@ -681,8 +654,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin: 0;
   }
 
-  /* Lore note */
-  .lore-note {
+    .lore-note {
     margin-top: 20px;
     padding: 16px 20px;
     border: 1px solid #252830;
@@ -708,8 +680,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     font-family: 'IBM Plex Mono', monospace;
   }
 
-  /* Setup blocks */
-  .setup-block {
+    .setup-block {
     margin-bottom: 24px;
   }
 
@@ -760,8 +731,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     opacity: 0.7;
   }
 
-  /* Placeholder */
-  .placeholder {
+    .placeholder {
     padding: 20px 24px;
     border: 1px dashed #252830;
     background: rgba(255,255,255,0.01);
@@ -783,8 +753,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin: 0;
   }
 
-  /* Buildables */
-  .buildable-card {
+    .buildable-card {
     border: 1px solid #252830;
     background: #13151c;
     padding: 20px 24px;
@@ -814,12 +783,10 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     background: rgba(255,255,255,0.02);
   }
 
-  /* Smooth scroll + offset for sticky nav */
-  html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; }
   .guide-section[id] { scroll-margin-top: 80px; }
 
-  /* Parts list */
-  .parts-list {
+    .parts-list {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -840,8 +807,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin-bottom: 12px;
   }
 
-  /* Grid of location cards — one card per spawn */
-  .locations-grid {
+    .locations-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
@@ -895,8 +861,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     align-items: center;
   }
 
-  /* Step image */
-  .step-img {
+    .step-img {
     width: 100%;
     max-width: 480px;
     border: 1px solid #252830;
@@ -904,8 +869,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin-top: 10px;
   }
 
-  /* Custom sections */
-  .custom-items {
+    .custom-items {
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -949,8 +913,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin: 0;
   }
 
-  /* ToC nav */
-  .toc-nav {
+    .toc-nav {
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -988,8 +951,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   .toc-link:hover .toc-arrow { color: #e07b2a; transform: translateX(2px); }
   .toc-link:hover span:last-child { color: #e07b2a; }
 
-  /* EE Steps */
-  .ee-overview {
+    .ee-overview {
     font-size: 18px;
     line-height: 1.8;
     color: #9ca3af;
@@ -1055,8 +1017,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin-right: 6px;
   }
 
-  /* Strategies */
-  .strategy-list {
+    .strategy-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -1083,10 +1044,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     top: 2px;
   }
 
-  /* ─────────────────────────────────────── */
-  /* SIDEBAR                                 */
-  /* ─────────────────────────────────────── */
-
+      
   .guide-sidebar {
     position: sticky;
     top: 72px;
@@ -1149,8 +1107,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   .badge-yes { color: #3ddc84; border: 1px solid rgba(61,220,132,0.3); }
   .badge-no  { color: #6b7280; border: 1px solid #252830; }
 
-  /* Crew */
-  .crew-group {
+    .crew-group {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     letter-spacing: 0.12em;
@@ -1182,8 +1139,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     color: #e07b2a;
   }
 
-  /* EE Solo badge — in section head and sidebar */
-  .solo-badge {
+    .solo-badge {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.18em;
@@ -1200,8 +1156,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
   .badge-solo-partial { color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
   .badge-solo-no      { color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
 
-  /* Mystery Box spawns */
-  .box-list {
+    .box-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -1231,8 +1186,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     opacity: 0.6;
   }
 
-  /* Perk list */
-  .perk-list {
+    .perk-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -1267,7 +1221,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     line-height: 1.5;
   }
 
-  /* Special Enemies section */
   .enemy-list {
     display: flex;
     flex-direction: column;
@@ -1301,8 +1254,8 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     margin: 0;
   }
 
-  /* Wonder Weapon card */
   .card-ww { border-color: rgba(224, 123, 42, 0.3); }
+  .ww-card-link { text-decoration: none; display: block; }
 
   .ww-card-name {
     font-family: 'Rajdhani', sans-serif;
@@ -1323,7 +1276,6 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     padding-top: 10px;
   }
 
-  /* Related maps */
   .related-list {
     list-style: none;
     padding: 0;
@@ -1366,11 +1318,7 @@ function starTypes(rating: number): Array<'full' | 'half' | 'empty'> {
     color: #e07b2a;
   }
 
-
-  /* ─────────────────────────────────────── */
-  /* RESPONSIVE                              */
-  /* ─────────────────────────────────────── */
-
+      
   @media (max-width: 900px) {
     .content-grid {
       grid-template-columns: 1fr;

@@ -6,21 +6,17 @@ import { pickRandomDocuments, type LabDocument } from '../../data/labDocuments';
 import DocumentViewer from './DocumentViewer';
 import LabTerminal from './LabTerminal';
 
-// ── Constants ────────────────────────────────────────────────
-
 const DOC_COUNT = 14;
 const GLOW_RANGE = 3.2;
 const GLOW_IDLE = 0.03;
 const GLOW_NEAR = 0.08;
 const GLOW_TARGET = 0.28;
 
-// FPS controller
 const EYE_HEIGHT = 1.6;
 const MOVE_SPEED = 2.6;
 const PLAYER_RADIUS = 0.3;
 const PICKUP_RANGE = 2.2;
 
-// Room bounds (walls at ±8 on x, ±6 on z)
 const ROOM_HALF_X = 8;
 const ROOM_HALF_Z = 6;
 const ROOM_MIN_X = -ROOM_HALF_X + PLAYER_RADIUS;
@@ -28,7 +24,6 @@ const ROOM_MAX_X = ROOM_HALF_X - PLAYER_RADIUS;
 const ROOM_MIN_Z = -ROOM_HALF_Z + PLAYER_RADIUS;
 const ROOM_MAX_Z = ROOM_HALF_Z - PLAYER_RADIUS;
 
-// Furniture AABBs (XZ plane) the player can't walk through
 const OBSTACLES: Array<{ minX: number; maxX: number; minZ: number; maxZ: number }> = [
   { minX: -1.2, maxX: 1.2, minZ: -3.2, maxZ: -1.8 },     // desk
   { minX: -7.5, maxX: -6.5, minZ: -6.0, maxZ: -5.0 },    // filing cabinet (at [-7, 0, -5.5])
@@ -53,8 +48,6 @@ function collidesAt(x: number, z: number): boolean {
   }
   return false;
 }
-
-// ── Interactable document mesh ───────────────────────────────
 
 interface DocProps {
   position: [number, number, number];
@@ -105,8 +98,6 @@ function DocPaper({ position, rotation = [0, 0, 0], scale = [0.28, 0.38, 1], doc
   );
 }
 
-// ── Room geometry ────────────────────────────────────────────
-
 const ROOM_W = ROOM_HALF_X * 2;
 const ROOM_D = ROOM_HALF_Z * 2;
 const CEIL_H = 3.2;
@@ -127,35 +118,33 @@ function Room() {
 
   return (
     <group>
-      {/* Floor */}
+      
       <mesh rotation={[-Math.PI / 2, 0, 0]} material={floorMat}>
         <planeGeometry args={[ROOM_W, ROOM_D]} />
       </mesh>
-      {/* Ceiling */}
+      
       <mesh position={[0, CEIL_H, 0]} rotation={[Math.PI / 2, 0, 0]} material={ceilMat}>
         <planeGeometry args={[ROOM_W, ROOM_D]} />
       </mesh>
-      {/* Back wall */}
+      
       <mesh position={[0, CEIL_H / 2, -ROOM_HALF_Z]} material={wallMat}>
         <planeGeometry args={[ROOM_W, CEIL_H]} />
       </mesh>
-      {/* Front wall */}
+      
       <mesh position={[0, CEIL_H / 2, ROOM_HALF_Z]} rotation={[0, Math.PI, 0]} material={wallMat}>
         <planeGeometry args={[ROOM_W, CEIL_H]} />
       </mesh>
-      {/* Left wall */}
+      
       <mesh position={[-ROOM_HALF_X, CEIL_H / 2, 0]} rotation={[0, Math.PI / 2, 0]} material={wallMat}>
         <planeGeometry args={[ROOM_D, CEIL_H]} />
       </mesh>
-      {/* Right wall */}
+      
       <mesh position={[ROOM_HALF_X, CEIL_H / 2, 0]} rotation={[0, -Math.PI / 2, 0]} material={wallMat}>
         <planeGeometry args={[ROOM_D, CEIL_H]} />
       </mesh>
     </group>
   );
 }
-
-// ── Props / furniture ────────────────────────────────────────
 
 function Desk() {
   const { scene } = useGLTF('/3dassets/psx_dining_table.glb');
@@ -171,7 +160,6 @@ function FilingCabinet() {
   const groupRef = useRef<THREE.Group>(null!);
   const { actions } = useAnimations(animations, groupRef);
   const openRef = useRef<Record<string, boolean>>({});
-
 
   const handleClick = useCallback(() => {
     if (!actions) return;
@@ -224,21 +212,21 @@ function Shelf() {
   );
   return (
     <group position={[7, 0, -4.4]}>
-      {/* Shelf boards */}
+      
       <mesh position={[0, 1.6, 0]} material={woodMat}>
         <boxGeometry args={[1.6, 0.04, 0.3]} />
       </mesh>
       <mesh position={[0, 2.2, 0]} material={woodMat}>
         <boxGeometry args={[1.6, 0.04, 0.3]} />
       </mesh>
-      {/* Side brackets */}
+      
       <mesh position={[-0.78, 1.9, 0]} material={woodMat}>
         <boxGeometry args={[0.04, 0.64, 0.28]} />
       </mesh>
       <mesh position={[0.78, 1.9, 0]} material={woodMat}>
         <boxGeometry args={[0.04, 0.64, 0.28]} />
       </mesh>
-      {/* Jar props */}
+      
       <mesh position={[-0.4, 1.72, 0]}>
         <cylinderGeometry args={[0.06, 0.06, 0.2, 8]} />
         <meshStandardMaterial color="#2a4a3a" roughness={0.4} transparent opacity={0.7} />
@@ -273,7 +261,6 @@ function OldComputer() {
   const { scene } = useGLTF('/3dassets/old_computer.glb');
   const cloned = useMemo(() => {
     const c = scene.clone(true);
-    // Tag every mesh so the raycast can identify it as the computer
     c.traverse((child: any) => {
       if (child.isMesh) {
         child.userData = { interactable: 'computer' };
@@ -324,8 +311,6 @@ function BluePen() {
   );
 }
 
-// ── Blood decals ────────────────────────────────────────────
-
 function BloodyDragMark() {
   const { scene } = useGLTF('/3dassets/bloody_drag_mark_decal_psx.glb');
   return (
@@ -357,8 +342,6 @@ function BloodyHand({ position, rotation, scale }: {
         const mat = child.material.clone();
         mat.transparent = true;
         mat.alphaTest = 0.5;
-        // If the model uses a map (texture), it should have alpha;
-        // otherwise force white parts invisible by treating white as transparent
         if (!mat.map) {
           mat.opacity = 0.9;
         }
@@ -374,8 +357,6 @@ function BloodyHand({ position, rotation, scale }: {
   );
 }
 
-// ── Barricaded door (planks nailed across) ──────────────────
-
 function BarricadedDoor() {
   const woodMat = useMemo(
     () => new THREE.MeshStandardMaterial({ color: '#3a2a18', roughness: 0.9 }),
@@ -383,12 +364,12 @@ function BarricadedDoor() {
   );
   return (
     <group position={[7.9, 0, 4.2]} rotation={[0, -Math.PI / 2, 0]}>
-      {/* Door frame */}
+      
       <mesh position={[0, 1.2, 0]}>
         <boxGeometry args={[1.0, 2.4, 0.1]} />
         <meshStandardMaterial color="#1a1410" roughness={0.95} />
       </mesh>
-      {/* Planks nailed across */}
+      
       <mesh position={[0, 1.6, 0.08]} rotation={[0, 0, 0.15]} material={woodMat}>
         <boxGeometry args={[1.2, 0.12, 0.04]} />
       </mesh>
@@ -401,8 +382,6 @@ function BarricadedDoor() {
     </group>
   );
 }
-
-// ── Preload all GLB assets ──────────────────────────────────
 
 useGLTF.preload('/3dassets/psx_dining_table.glb');
 useGLTF.preload('/3dassets/filing_cabinet.glb');
@@ -418,8 +397,6 @@ useGLTF.preload('/3dassets/bloody_drag_mark_decal_psx.glb');
 useGLTF.preload('/3dassets/help_blood_decal_psx.glb');
 useGLTF.preload('/3dassets/psx_bloody_hand.glb');
 
-// ── Flickering light ─────────────────────────────────────────
-
 interface FlickerLightProps {
   position: [number, number, number];
   color?: string;
@@ -427,9 +404,9 @@ interface FlickerLightProps {
   baseIntensity?: number;
   distance?: number;
   phase?: number;
-  /** [min, max] seconds the bulb stays lit between flickers */
+  
   onDwell?: [number, number];
-  /** [min, max] seconds the bulb drops dark during a flicker */
+  
   offDwell?: [number, number];
 }
 
@@ -451,7 +428,6 @@ function FlickerLight({
     if (!lightRef.current) return;
     const t = clock.elapsedTime + phase;
 
-    // Hard on/off flicker — both lights use this, just with different dwell ranges
     if (t > blinkStateRef.current.nextToggle) {
       blinkStateRef.current.on = !blinkStateRef.current.on;
       const range = blinkStateRef.current.on ? onDwell : offDwell;
@@ -464,7 +440,6 @@ function FlickerLight({
       return;
     }
 
-    // Continuous subtle flicker while lit
     const flicker =
       baseIntensity +
       Math.sin(t * 12) * 0.18 +
@@ -487,7 +462,7 @@ function FlickerLight({
         decay={1.6}
         castShadow
       />
-      {/* Bulb mesh */}
+      
       <mesh position={[position[0], position[1] + 0.05, position[2]]}>
         <sphereGeometry args={[0.07, 10, 10]} />
         <meshStandardMaterial
@@ -497,7 +472,7 @@ function FlickerLight({
           emissiveIntensity={3}
         />
       </mesh>
-      {/* Wire */}
+      
       <mesh position={[position[0], position[1] + 0.12, position[2]]}>
         <cylinderGeometry args={[0.005, 0.005, 0.12, 4]} />
         <meshStandardMaterial color="#333" />
@@ -505,8 +480,6 @@ function FlickerLight({
     </>
   );
 }
-
-// ── FPS Controller ───────────────────────────────────────────
 
 interface FPSControllerProps {
   docs: LabDocument[];
@@ -555,19 +528,15 @@ function FPSController({
     return () => onControlsReady?.({ lock: () => {} });
   }, [onControlsReady]);
 
-  // Track whether we were locked before a pause so we can restore it
   const wasLockedBeforePause = useRef(false);
 
   useEffect(() => {
     if (paused) {
-      // Unlock whenever a modal overlay is open so the cursor can be used.
       if (controlsRef.current?.isLocked) {
         wasLockedBeforePause.current = true;
         controlsRef.current.unlock();
       }
     } else if (wasLockedBeforePause.current) {
-      // Unpause: re-lock after a short delay (browsers require a user gesture
-      // gap before re-locking pointer, but the overlay click/keypress counts)
       wasLockedBeforePause.current = false;
       const timer = setTimeout(() => {
         controlsRef.current?.lock();
@@ -576,13 +545,11 @@ function FPSController({
     }
   }, [paused, terminalOpen]);
 
-  // Attempt pickup / interact on E / F
   useEffect(() => {
     const tryPick = () => {
       if (!lockedRef.current) return;
       const id = targetIdRef.current;
       if (!id) return;
-      // Check if it's an interactable (prefixed with @)
       if (id.startsWith('@')) {
         onInteractRef.current(id.slice(1));
         return;
@@ -609,8 +576,6 @@ function FPSController({
     };
   }, []);
 
-  // Fix eye height once on mount so the OrbitControls-era starting position
-  // doesn't leave the player floating.
   useEffect(() => {
     camera.position.y = EYE_HEIGHT;
   }, [camera]);
@@ -629,7 +594,6 @@ function FPSController({
       return;
     }
 
-    // Movement
     camera.getWorldDirection(forward);
     forward.y = 0;
     if (forward.lengthSq() > 0) forward.normalize();
@@ -644,7 +608,6 @@ function FPSController({
 
     if (move.lengthSq() > 0) {
       move.normalize().multiplyScalar(MOVE_SPEED * delta);
-      // Slide along walls: resolve X and Z independently
       const nextX = camera.position.x + move.x;
       if (!collidesAt(nextX, camera.position.z)) camera.position.x = nextX;
       const nextZ = camera.position.z + move.z;
@@ -652,7 +615,6 @@ function FPSController({
     }
     camera.position.y = EYE_HEIGHT;
 
-    // Raycast from the screen center for pickup targeting
     raycasterRef.current.setFromCamera(centerNdc, camera);
     const hits = raycasterRef.current.intersectObjects(scene.children, true);
     let found: string | null = null;
@@ -667,7 +629,6 @@ function FPSController({
         found = `@${ud.interactable}`;
         break;
       }
-      // Non-doc object blocks the ray (wall, furniture) — stop searching
       break;
     }
     if (found !== targetIdRef.current) {
@@ -695,39 +656,26 @@ function FPSController({
   );
 }
 
-// ── Document spawn positions ─────────────────────────────────
-
 const DOC_SPAWNS: Array<{
   position: [number, number, number];
   rotation: [number, number, number];
   scale?: [number, number, number];
 }> = [
-  // Desk papers
   { position: [-1.385, 0.055, -2.59], rotation: [-Math.PI / 2, 0, -0.859], scale: [0.212, 0.2, 0.01] },
   { position: [0.4, 0.82, -2.5], rotation: [-Math.PI / 2, 0, -0.08] },
   { position: [0.8, 0.82, -2.4], rotation: [-Math.PI / 2, 0, 0.25] },
-  // Wall board (notice board on back wall)
   { position: [-0.5, 2.15, -5.89], rotation: [0, 0, 0.04] },
   { position: [0.4, 1.85, -5.89], rotation: [0, 0, -0.06] },
-  // Floor scattered
   { position: [3.2, 0.01, 2], rotation: [-Math.PI / 2, 0, 0.4] },
   { position: [-3.5, 0.01, 3.5], rotation: [-Math.PI / 2, 0, -0.2] },
   { position: [5, 0.01, 0.5], rotation: [-Math.PI / 2, 0, 1.1] },
-  // Shelf
   { position: [7.3, 2.24, -4.3], rotation: [Math.PI / 2, 0, 0.03], scale: [0.24, 0.32, 1] },
-  // On/near filing cabinet
   { position: [-6.7, 1.445, -5.7], rotation: [-Math.PI / 2, 0, 0.15], scale: [0.22, 0.3, 1] },
-  // Near psx cabinet
   { position: [7.0, 0.67, -1.5], rotation: [-Math.PI / 2, 0, -0.1], scale: [0.24, 0.32, 1] },
-  // Left wall area floor
   { position: [-5.5, 0.01, -1], rotation: [-Math.PI / 2, 0, 0.7] },
-  // Near barricaded door
   { position: [5.5, 0.01, 4.5], rotation: [-Math.PI / 2, 0, -0.5] },
-  // Near jug
   { position: [-6.0, 0.01, 2.5], rotation: [-Math.PI / 2, 0, 0.3] },
 ];
-
-// ── Scene wrapper ────────────────────────────────────────────
 
 interface LabSceneProps {
   docs: LabDocument[];
@@ -754,9 +702,9 @@ function LabScene({
 }: LabSceneProps) {
   return (
     <>
-      {/* Lighting */}
+      
       <ambientLight intensity={0.25} color="#5a4a30" />
-      {/* Main desk light — mostly on with occasional quick flickers */}
+      
       <FlickerLight
         position={[0, 3.0, -2.5]}
         color="#ffe2a8"
@@ -766,7 +714,7 @@ function LabScene({
         onDwell={[2.5, 6.0]}
         offDwell={[0.03, 0.1]}
       />
-      {/* Second bulb over the entrance side — snappier blink cadence */}
+      
       <FlickerLight
         position={[0, 3.0, 3.0]}
         color="#ffd890"
@@ -777,7 +725,7 @@ function LabScene({
         onDwell={[0.8, 3.0]}
         offDwell={[0.05, 0.2]}
       />
-      {/* Third bulb in the back-left corner for the bigger room */}
+      
       <FlickerLight
         position={[-5, 3.0, -3.5]}
         color="#e8c070"
@@ -788,15 +736,15 @@ function LabScene({
         onDwell={[1.0, 4.0]}
         offDwell={[0.06, 0.25]}
       />
-      {/* Warm fill so the far corners never go pitch black */}
+      
       <pointLight position={[-6, 2.2, 4]} color="#8a6030" intensity={0.45} distance={14} decay={1.8} />
       <pointLight position={[6, 2.2, 4]} color="#8a6030" intensity={0.35} distance={12} decay={1.8} />
       <pointLight position={[6, 2.2, -4]} color="#7a5020" intensity={0.3} distance={10} decay={1.8} />
 
-      {/* Room structure */}
+      
       <Room />
 
-      {/* Furniture */}
+      
       <Desk />
       <Chair />
       <FilingCabinet />
@@ -805,18 +753,18 @@ function LabScene({
       <WallBoard />
       <BarricadedDoor />
 
-      {/* Props */}
+      
       <OldComputer />
       <Mauser />
       <RayGun />
       <OldBook />
       <BluePen />
 
-      {/* Blood decals */}
+      
       <BloodyDragMark />
       <HelpBloodDecal />
 
-      {/* Interactable documents */}
+      
       {docs.map((doc, i) => {
         const spawn = DOC_SPAWNS[i];
         if (!spawn) return null;
@@ -832,7 +780,7 @@ function LabScene({
         );
       })}
 
-      {/* FPS walk + look + raycast pickup */}
+      
       <FPSController
         docs={docs}
         paused={paused}
@@ -846,8 +794,6 @@ function LabScene({
     </>
   );
 }
-
-// ── Main exported component ──────────────────────────────────
 
 export default function RichtofensLab() {
   const [docs] = useState(() => pickRandomDocuments(DOC_COUNT));
@@ -884,7 +830,7 @@ export default function RichtofensLab() {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0a0806' }}>
-      {/* 3D Canvas */}
+      
       <Canvas
         camera={{ position: [0, EYE_HEIGHT, 4], fov: 70, near: 0.1, far: 50 }}
         shadows
@@ -907,7 +853,7 @@ export default function RichtofensLab() {
         />
       </Canvas>
 
-      {/* Crosshair */}
+      
       {locked && !paused && (
         <div
           style={{
@@ -927,7 +873,7 @@ export default function RichtofensLab() {
         />
       )}
 
-      {/* Pickup prompt */}
+      
       {locked && !paused && targetedDoc && (
         <div
           style={{
@@ -950,7 +896,7 @@ export default function RichtofensLab() {
         </div>
       )}
 
-      {/* Computer interact prompt */}
+      
       {locked && !paused && targetedInteractable === 'computer' && (
         <div
           style={{
@@ -973,7 +919,7 @@ export default function RichtofensLab() {
         </div>
       )}
 
-      {/* Click-to-play overlay (shown when pointer is not locked) */}
+      
       {!locked && !paused && (
         <div
           style={{
@@ -1003,7 +949,7 @@ export default function RichtofensLab() {
         </div>
       )}
 
-      {/* HUD — found counter */}
+      
       <div
         style={{
           position: 'absolute',
@@ -1026,7 +972,7 @@ export default function RichtofensLab() {
           : `${foundIds.size} / ${DOC_COUNT} documents found`}
       </div>
 
-      {/* Back link */}
+      
       <a
         href="/kronorium"
         style={{
@@ -1045,7 +991,7 @@ export default function RichtofensLab() {
         ← Kronorium
       </a>
 
-      {/* Lab title */}
+      
       <div
         style={{
           position: 'absolute',
@@ -1062,7 +1008,7 @@ export default function RichtofensLab() {
         Richtofen&apos;s Lab
       </div>
 
-      {/* Document viewer overlay */}
+      
       {viewingDoc && (
         <DocumentViewer
           doc={viewingDoc}
@@ -1072,7 +1018,7 @@ export default function RichtofensLab() {
         />
       )}
 
-      {/* Terminal overlay */}
+      
       {terminalOpen && <LabTerminal onClose={handleTerminalClose} />}
     </div>
   );

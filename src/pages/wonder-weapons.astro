@@ -67,7 +67,7 @@ const ACQ_LABEL: Record<string, string> = {
 
           <div class="ww-grid">
             {weapons.map(w => (
-              <article class="ww-card">
+              <article class="ww-card" id={`ww-${w.id}`}>
 
                 <header class="ww-card-head">
                   <div class="ww-titles">
@@ -150,7 +150,6 @@ const ACQ_LABEL: Record<string, string> = {
 </OpsLayout>
 
 <style>
-  /* ════════════════ Page header (shared pattern) ════════════════ */
   .page-header {
     position: relative;
     margin-bottom: 36px;
@@ -185,7 +184,6 @@ const ACQ_LABEL: Record<string, string> = {
   }
   .header-count { color: #e07b2a; }
 
-  /* ════════════════ Table of contents (game jump) ════════════════ */
   .ww-toc {
     display: flex; flex-wrap: wrap; gap: 10px;
     margin-bottom: 40px;
@@ -219,7 +217,6 @@ const ACQ_LABEL: Record<string, string> = {
     background: rgba(224, 123, 42, 0.1);
   }
 
-  /* ════════════════ Sections ════════════════ */
   .ww-root { display: flex; flex-direction: column; gap: 56px; }
 
   .ww-section { scroll-margin-top: 24px; }
@@ -250,7 +247,6 @@ const ACQ_LABEL: Record<string, string> = {
     margin-left: auto;
   }
 
-  /* ════════════════ Grid of cards ════════════════ */
   .ww-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -264,9 +260,15 @@ const ACQ_LABEL: Record<string, string> = {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    transition: border-color 0.15s, transform 0.15s;
+    scroll-margin-top: 24px;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   }
   .ww-card:hover { border-color: #e07b2a; transform: translateY(-1px); }
+  .ww-card:target {
+    border-color: #e07b2a;
+    background: #161a22;
+    box-shadow: 0 0 0 1px rgba(224, 123, 42, 0.45), 0 0 24px rgba(224, 123, 42, 0.18);
+  }
 
   .ww-card-head {
     display: flex; align-items: flex-start; justify-content: space-between;
@@ -310,8 +312,7 @@ const ACQ_LABEL: Record<string, string> = {
     margin: 0;
   }
 
-  /* ════════════════ Stats definition list ════════════════ */
-  .ww-stats {
+    .ww-stats {
     margin: 0;
     display: flex; flex-direction: column; gap: 10px;
     padding-top: 4px;
@@ -355,8 +356,7 @@ const ACQ_LABEL: Record<string, string> = {
   }
   .variant-list li { color: #c4c8d4; font-size: 12px; }
 
-  /* ════════════════ Footer (origin + cross-links) ════════════════ */
-  .ww-footer {
+    .ww-footer {
     margin-top: auto;
     padding-top: 12px;
     border-top: 1px solid #1e2028;
@@ -383,8 +383,7 @@ const ACQ_LABEL: Record<string, string> = {
   .footer-also { display: inline-flex; flex-wrap: wrap; gap: 6px; }
   .dot { color: #4a4e5a; }
 
-  /* ════════════════ Responsive ════════════════ */
-  @media (max-width: 640px) {
+    @media (max-width: 640px) {
     .ww-grid { grid-template-columns: 1fr; }
     .stat { grid-template-columns: 70px 1fr; gap: 10px; }
     .ww-name { font-size: 18px; }
