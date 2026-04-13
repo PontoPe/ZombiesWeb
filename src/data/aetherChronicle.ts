@@ -1,6 +1,3 @@
-// ── Complete Aether Story Chronicle ─────────────────────────
-// Parsed from the "Complete Aether Timeline" document by JoeArd
-// (based on the official Zombies Chronicles Timeline + BO4 additions)
 
 export type ChronicleSection =
   | 'main'        // Primary timeline
@@ -49,15 +46,7 @@ export const CREW_META: Record<Crew, { label: string; color: string }> = {
   none:    { label: '',        color: '#7a6a50' },
 };
 
-// ═══════════════════════════════════════════════════════════════
-//  DATA
-// ═══════════════════════════════════════════════════════════════
-
 export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
-
-  // ──────────────────────────────────────────
-  //  PRIMARY TIMELINE
-  // ──────────────────────────────────────────
 
   {
     id: 'm-001',
@@ -1085,10 +1074,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     crew: 'none',
   },
 
-  // ──────────────────────────────────────────
-  //  DIMENSION 63
-  // ──────────────────────────────────────────
-
   {
     id: 'd63-001',
     date: 'January 15th, 1292',
@@ -1194,7 +1179,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     crew: 'primis',
     source: 'Origins gameplay, main quest',
   },
-  // Mob of the Dead and Shadows of Evil entries
   {
     id: 'd63-013',
     date: 'December 31st, 1933',
@@ -1266,10 +1250,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     section: 'dim63',
     crew: 'none',
   },
-
-  // ──────────────────────────────────────────
-  //  AGARTHA
-  // ──────────────────────────────────────────
 
   {
     id: 'ag-001',
@@ -1360,10 +1340,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     source: 'Revelations outro cutscene',
   },
 
-  // ──────────────────────────────────────────
-  //  DECEPTIO FRACTURE
-  // ──────────────────────────────────────────
-
   {
     id: 'df-001',
     date: 'October 13th, 1945',
@@ -1385,10 +1361,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     source: 'Der Eisendrache main quest',
   },
 
-  // ──────────────────────────────────────────
-  //  PRODITONE FRACTURE
-  // ──────────────────────────────────────────
-
   {
     id: 'pf-001',
     date: 'July 8th, 1942',
@@ -1408,10 +1380,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     crew: 'primis',
     source: 'Zetsubou No Shima main quest',
   },
-
-  // ──────────────────────────────────────────
-  //  AGONIA FRACTURE
-  // ──────────────────────────────────────────
 
   {
     id: 'af-001',
@@ -1465,10 +1433,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     crew: 'primis',
     source: 'Gorod Krovi main quest',
   },
-
-  // ──────────────────────────────────────────
-  //  BROKEN CYCLE
-  // ──────────────────────────────────────────
 
   {
     id: 'bc-001',
@@ -1530,10 +1494,6 @@ export const CHRONICLE_ENTRIES: ChronicleEntry[] = [
     crew: 'primis',
     source: 'Tag der Toten outro cutscene',
   },
-
-  // ──────────────────────────────────────────
-  //  THE DARK AETHER
-  // ──────────────────────────────────────────
 
   {
     id: 'da-001',

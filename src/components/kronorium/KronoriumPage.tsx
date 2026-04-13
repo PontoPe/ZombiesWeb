@@ -17,7 +17,7 @@ export default function KronoriumPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* ── Tab bar ── */}
+      
       <div
         style={{
           display: 'flex',
@@ -53,7 +53,7 @@ export default function KronoriumPage() {
           );
         })}
 
-        {/* View toggle (only visible when chronicle tab is active) */}
+        
         {tab === 'chronicle' && (
           <div
             style={{
@@ -106,7 +106,7 @@ export default function KronoriumPage() {
         )}
       </div>
 
-      {/* ── Active panel ── */}
+      
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {tab === 'map' ? (
           <KronoriumTimeline />

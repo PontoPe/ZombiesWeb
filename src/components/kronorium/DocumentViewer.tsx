@@ -14,32 +14,32 @@ export default function DocumentViewer({ doc, onClose, found, total }: Props) {
   return (
     <div style={styles.backdrop} onClick={onClose}>
       <div style={styles.shell} onClick={e => e.stopPropagation()}>
-        {/* Close button */}
+        
         <button style={styles.closeBtn} onClick={onClose} title="Close">
           ×
         </button>
 
-        {/* Found counter */}
+        
         <div style={styles.counter}>
           {found} / {total} DOCUMENTS FOUND
         </div>
 
-        {/* Document card */}
+        
         <div style={{ ...styles.paper, ...templateBg(doc.template), ...variant.paper }}>
-          {/* Burned corners overlay */}
+          
           <div style={{ ...styles.burns, ...variant.burns }} />
 
-          {/* Stamp */}
+          
           {doc.stamp && <div style={{ ...styles.stamp, ...variant.stamp }}>{doc.stamp}</div>}
 
-          {/* Template content */}
+          
           {doc.template === 'autopsy' && <AutopsyLayout doc={doc} />}
           {doc.template === 'blueprint' && <BlueprintLayout doc={doc} />}
           {doc.template === 'field-ops' && <FieldOpsLayout doc={doc} />}
           {doc.template === 'dossier' && <DossierLayout doc={doc} />}
           {doc.template === 'research' && <ResearchLayout doc={doc} />}
 
-          {/* Margin notes */}
+          
           {doc.marginNotes && doc.marginNotes.length > 0 && (
             <div style={{ ...styles.marginNotes, ...variant.marginNotes }}>
               {doc.marginNotes.map((note, i) => (
@@ -61,8 +61,6 @@ export default function DocumentViewer({ doc, onClose, found, total }: Props) {
     </div>
   );
 }
-
-// ── Template layouts ─────────────────────────────────────────
 
 function AutopsyLayout({ doc }: { doc: LabDocument }) {
   return (
@@ -152,8 +150,6 @@ function ResearchLayout({ doc }: { doc: LabDocument }) {
     </div>
   );
 }
-
-// ── Template background helpers ──────────────────────────────
 
 interface DocVariant {
   paper: React.CSSProperties;
@@ -321,8 +317,6 @@ function templateBg(t: DocTemplate): React.CSSProperties {
   return {};
 }
 
-// ── Styles ───────────────────────────────────────────────────
-
 const styles: Record<string, React.CSSProperties> = {
   backdrop: {
     position: 'fixed',
@@ -423,14 +417,12 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.85,
   },
 
-  // Shared
   divider: {
     height: 1,
     background: 'rgba(100, 70, 30, 0.3)',
     margin: '14px 0 18px',
   },
 
-  // Form fields (autopsy, dossier)
   autopsyChrome: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -476,7 +468,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#2a1e0e',
   },
 
-  // Body text
   handBody: {
     fontFamily: "'Caveat', cursive",
     fontSize: 19,
@@ -496,7 +487,6 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 2,
   },
 
-  // Blueprint-specific
   bpTitle: {
     fontFamily: "'Rajdhani', sans-serif",
     fontWeight: 700,
@@ -537,7 +527,6 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 2,
   },
 
-  // Field-ops specific
   opsHeader: {
     fontFamily: "'Cinzel', serif",
     fontSize: 14,
@@ -594,7 +583,6 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 2,
   },
 
-  // Dossier specific
   dosTitle: {
     fontFamily: "'Cinzel', serif",
     fontWeight: 700,
@@ -623,7 +611,6 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 2,
   },
 
-  // Research specific
   resFileNo: {
     fontFamily: "'IBM Plex Mono', monospace",
     fontSize: 10,

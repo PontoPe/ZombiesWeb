@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Operative (Gameplay) palette ── */
+  
   --color-ops-bg:      #0b0c0f;
   --color-ops-surface: #13151c;
   --color-ops-border:  #252830;
@@ -10,7 +10,7 @@
   --color-ops-text:    #dde1ea;
   --color-ops-muted:   #6b7280;
 
-  /* ── Kronorium (Lore) palette ── */
+  
   --color-lore-bg:     #110e09;
   --color-lore-surface:#1e1810;
   --color-lore-paper:  #c8b48e;
@@ -19,7 +19,7 @@
   --color-lore-text:   #ede0c8;
   --color-lore-muted:  #8a7a62;
 
-  /* ── Typography ── */
+  
   --font-ops:   'Rajdhani', sans-serif;
   --font-mono:  'IBM Plex Mono', monospace;
   --font-lore:  'Cinzel', serif;

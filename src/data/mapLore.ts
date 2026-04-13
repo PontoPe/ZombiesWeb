@@ -1,6 +1,3 @@
-// ══════════════════════════════════════════════════════════════
-//  In-depth lore entries for every event node on the timeline
-// ══════════════════════════════════════════════════════════════
 
 export type StoryImpact = 'Low' | 'Medium' | 'High' | 'Critical';
 
@@ -25,7 +22,6 @@ export interface MapLoreEntry {
   aftermath: LoreSubsection[];
 }
 
-// ── Helper ───────────────────────────────────────────────────
 function lore(
   nodeId: string,
   title: string,
@@ -37,15 +33,8 @@ function lore(
   return { nodeId, title, header, prelude, quest, aftermath };
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DATA
-// ══════════════════════════════════════════════════════════════
-
 export const MAP_LORE: MapLoreEntry[] = [
 
-  // ─────────────────────────────────────────────────────────
-  //  THE GREAT WAR
-  // ─────────────────────────────────────────────────────────
   lore('great-war', 'THE GREAT WAR', {
     setting: 'The borderlands between Earth and Agartha, circa 1292 AD. An interdimensional battlefield where reality itself is tearing apart under the strain of the Apothicon invasion.',
     crew: ['The four champions of the Great War (the original Primis)', 'The Keepers'],
@@ -68,9 +57,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The Summoning Key remained hidden in the physical world. Element 115 meteorites — remnants of the Apothicon invasion — embedded themselves across the globe, waiting to be discovered centuries later by Group 935. The cycle that would trap Primis in an eternal loop was set in motion. The prophecy written in the Kronorium foretold that the champions would return.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  NACHT DER UNTOTEN
-  // ─────────────────────────────────────────────────────────
   lore('nacht', 'NACHT DER UNTOTEN', {
     setting: 'An abandoned airfield bunker in northern Germany, 1945. A small concrete structure surrounded by fog and the stench of decay. The first known site of a modern zombie outbreak.',
     crew: ['Unnamed US Marines'],
@@ -93,9 +79,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The outbreak at the airfield was one of many that occurred as World War II ended. Group 935\'s experiments had scattered Element 115 across Europe and the Pacific, and the dead were rising at every site. The world\'s governments would attempt to cover up these events, but the damage was already done. The stage was set for Verrückt, Shi No Numa, and the discovery that would change everything at Der Riese.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  VERRÜCKT
-  // ─────────────────────────────────────────────────────────
   lore('verruckt', 'VERRÜCKT', {
     setting: 'Wittenau Sanatorium, a Group 935 asylum turned black site in Berlin, 1945. The facility reeks of medical experiments and madness. Electroshock therapy equipment lines the corridors.',
     crew: ['Marine squad led by "Tank" Dempsey (pre-Ultimis)', 'Peter McCain (prior operative, MIA)'],
@@ -120,9 +103,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Verrückt is where the Zombies storyline shifts from "random Marines fighting zombies" to a deliberate narrative about Group 935, Element 115, and the individuals who would become the iconic Ultimis crew. Every map after this builds on the revelations found in these bloodied asylum halls.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  GOROD KROVI
-  // ─────────────────────────────────────────────────────────
   lore('gorod-krovi', 'GOROD KROVI', {
     setting: 'A fractured version of Stalingrad, Soviet Union, November 6th, 1945. In this Agonia fracture, the Battle of Stalingrad never ended — dragons now patrol the skies alongside zombie hordes, and mechanized soldiers roam the ruins.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -147,9 +127,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'After the Easter egg completion, the crew is teleported directly into the heart of a fractured reality — Revelations, where the Shadow Man has fused remnants of every previous map into one horrifying arena. The soul collection is complete, but Richtofen\'s true plan and the implications of what he\'s done are about to be revealed.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  FIVE
-  // ─────────────────────────────────────────────────────────
   lore('five-agonia', 'FIVE', {
     setting: 'The Pentagon, Washington D.C., November 6th, 1963. Deep beneath the world\'s most secure military headquarters, an outbreak tears through the halls of power during the height of the Cold War.',
     crew: ['President John F. Kennedy', 'Secretary of Defense Robert McNamara', 'President Richard Nixon', 'Prime Minister Fidel Castro'],
@@ -174,9 +151,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The outbreak at the Pentagon occurs on the same day as the events of Ascension. The timeline is converging — multiple outbreaks happening simultaneously across the globe, all triggered by 115 experimentation. The world is being pushed toward the breaking point that will culminate on the Moon.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  ZETSUBOU NO SHIMA
-  // ─────────────────────────────────────────────────────────
   lore('zetsubou', 'ZETSUBOU NO SHIMA', {
     setting: 'A Division 9 research facility on a remote island in the Pacific, October 18th, 1945. The jungle has been mutated by Element 115 — carnivorous plants, giant spiders, and flooded research tunnels fill the landscape.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -201,9 +175,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The Kronorium directs Primis to the Agonia fracture next — a nightmarish version of Stalingrad where dragons fill the skies. Nikolai\'s soul awaits. The crew teleports out of the collapsing island facility, leaving Division 9\'s horrors behind but carrying the weight of Takeo\'s sacrifice forward.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  THE GIANT
-  // ─────────────────────────────────────────────────────────
   lore('the-giant', 'THE GIANT', {
     setting: 'The Der Riese facility in Breslau, Poland, October 13th, 1945. A Group 935 weapons research complex housing the Matter Transference Device and Wunderwaffe DG-2 prototypes. This is the Deceptio fracture version of events.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -228,9 +199,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The beacon sent from Der Riese reaches Maxis, who begins coordinating from Agartha. Primis now has a clear mission: travel through the fractures, collect the four Ultimis souls, and use the Summoning Key to restore order. Their next destination is an Austrian castle in the Alps — Der Eisendrache — where Ultimis Dempsey is being held.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  DER EISENDRACHE
-  // ─────────────────────────────────────────────────────────
   lore('der-eisendrache', 'DER EISENDRACHE', {
     setting: 'Eagle\'s Nest — a medieval Austrian castle in the Alps repurposed by Group 935, November 5th, 1945. The fortress houses a death ray, a rocket launch pad, and an MPD (Moon Pyramid Device) replica. Snow-covered battlements overlook a vast mountain range.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -255,9 +223,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'With one soul collected and the Moon in ruins, Primis must now travel to a remote Pacific island where Division 9 has been conducting biological experiments. Takeo\'s counterpart awaits in Zetsubou No Shima. The stakes are rising, and Richtofen\'s refusal to explain the full plan is creating tension within the group.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  SHI NO NUMA (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-shi-no-numa', 'SHI NO NUMA', {
     setting: 'A Japanese swamp research facility operated by Group 935 and Division 9, September 17th, 1945. Decrepit wooden buildings built on stilts over murky water, surrounded by dense jungle and rising fog.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -282,9 +247,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'With the Vril Device secured, Richtofen leads the crew back to the main Group 935 facility at Der Riese. There, he plans to use the teleporters to advance his scheme — overloading the system to catapult the crew through time and space. The next stop will be Kino der Toten, 1963.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  DER RIESE (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-der-riese', 'DER RIESE', {
     setting: 'Group 935\'s primary weapons research facility near Breslau, Poland, October 13th, 1945. The factory complex houses the Matter Transference Device, Wunderwaffe laboratories, and the original teleporter prototypes.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -309,9 +271,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Der Riese represents the last moment the Ultimis crew was in their own time period. Everything after this point is a journey through the consequences of Richtofen\'s betrayal of Maxis — a chain of events that will take them from Berlin to the Pentagon, from a Soviet cosmodrome to Siberia, from the Himalayas to the Moon. There is no going back.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  KINO DER TOTEN (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-kino', 'KINO DER TOTEN', {
     setting: 'An abandoned Group 935 theater in Berlin, October 28th, 1963. The facility was used for brainwashing experiments involving Nova 6 gas and zombie projection technology. Film reels and propaganda posters line the walls of this once-grand cinema.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -338,9 +297,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'After surviving the theater, Richtofen determines that they need to reach the Ascension Facility — a Soviet cosmodrome where Group 935 scientist Gersh has been working with Element 115. The crew\'s journey through time is accelerating, and Richtofen\'s plan is moving toward its climax on the Moon.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  CLASSIFIED (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-classified', 'CLASSIFIED', {
     setting: 'The Pentagon, Washington D.C., November 5th, 1963. A reimagining of "Five" from the perspective of the Ultimis crew, revealing classified documents about Broken Arrow, Group 935, and the government\'s secret war against the undead.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -363,9 +319,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The documents found here foreshadow events in Alpha Omega and Tag der Toten. The Broken Arrow program\'s failures, the Avogadro containment, and Camp Edward\'s research all originate from decisions made during this period. Classified is a critical puzzle piece that connects the Cold War-era maps into a coherent narrative.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  ASCENSION (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-ascension', 'ASCENSION', {
     setting: 'The Baikonur Cosmodrome, Soviet Kazakhstan, November 6th, 1963. A Soviet space launch facility secretly operating as a Group 935/GRU-Division 8 research complex. Centrifuges, rocket gantries, and lunar landers dominate the landscape.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -390,9 +343,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The Ultimis crew must now retrieve the Vril Device components needed for the Moon operation. Their next destination is a Siberian coastal facility where a film crew is shooting a movie — unaware that the site contains a sealed room with exactly what Richtofen needs. Call of the Dead awaits.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  CALL OF THE DEAD (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-call-dead', 'CALL OF THE DEAD', {
     setting: 'A derelict Group 935 outpost on the coast of Siberia, March 17th, 2011. An icebound facility near a beached freighter, surrounded by frozen tundra. A Hollywood film crew has unwittingly set up production on top of a dormant 115 site.',
     crew: ['Sarah Michelle Gellar', 'Robert Englund', 'Danny Trejo', 'Michael Rooker', 'George Romero (boss zombie)'],
@@ -417,9 +367,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'With the Golden Rod secured, only one artifact remains: the Focusing Stone, hidden within the ancient ruins of Shangri-La. The Ultimis crew teleports to an unknown point in time and space — arriving at a Himalayan temple that exists outside normal time, trapped in a paradox loop. The final pieces of Richtofen\'s puzzle are almost in place.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  SHANGRI-LA (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-shangri-la', 'SHANGRI-LA', {
     setting: 'Ancient temple ruins in the Himalayas, date uncertain (the location exists in a time loop, approximately April 25th, 1956). A lush, overgrown paradise corrupted by Element 115 — waterfalls, stone carvings, underground mines, and geysers create a vibrant but deadly environment.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -444,9 +391,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Nothing can stop Richtofen now. He has the artifacts, the knowledge, and three unwitting soldiers who trust him just enough to follow him to the Moon. What happens next will shatter the Earth, define the future of humanity, and set in motion events that span another twenty years of suffering. The road to Moon is the road to the apocalypse.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  MOON (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-moon', 'MOON', {
     setting: 'Griffin Station — a secret Group 935 base on the lunar surface, October 13th, 2025. The facility houses the Moon Pyramid Device (MPD), a Keeper artifact of immense power. The airless lunar landscape and cramped facility corridors create a suffocating atmosphere.',
     crew: ['Ultimis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -473,9 +417,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'With Richtofen in the Aether and Maxis reduced to a digital consciousness, the two begin a war for control of the remaining 115 pylons on Earth — massive structures that channel Aether energy. This war will play out across TranZit, Die Rise, and Buried, waged through a new group of survivors: the Victis crew. The world has ended, but the story is far from over.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────────
-  //  NUKETOWN (True Timeline)
-  // ─────────────────────────────────────────────────────────────
   lore('tt-nuketown', 'NUKETOWN', {
     setting: 'Nuketown test site — a mock suburban neighborhood built for nuclear weapons testing in the Nevada desert, October 13th, 2025. Mannequins line the driveways of pristine 1950s houses as the sky burns and rockets fall from space.',
     crew: ['Unnamed CIA and CDC operatives'],
@@ -496,9 +437,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Nuketown Zombies is a small but powerful piece of the Aether story. It grounds the cosmic events of Moon in visceral, ground-level reality. The rockets that shattered civilization aren\'t just a cutscene — they are a playable extinction event. The map\'s simplicity is its strength: no quest distracts from the dawning horror that the world is ending, and there is nothing anyone can do to stop it.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  TRANZIT (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-tranzit', 'TRANZIT', {
     setting: 'The irradiated wasteland of Hanford, Washington, October 21st, 2035. A devastated American landscape where a robotic bus navigates through fire, fog, and lava. The ruins of a diner, farm, power station, and town are connected by a winding road through dangerous terrain.',
     crew: ['Victis — Samuel Stuhlinger, Marlton Johnson, Abigail "Misty" Briarton, Russman'],
@@ -523,9 +461,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'TranZit established the post-apocalyptic era of Zombies. The world is truly destroyed — there is no government, no military, no hope of rescue. The survivors are on their own, manipulated by two disembodied voices with god-like power. The desolation of TranZit\'s wasteland drives home the consequences of what happened on the Moon.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  DIE RISE (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-die-rise', 'DIE RISE', {
     setting: 'Collapsed skyscrapers in a ruined Chinese city, October 22nd, 2035. Two massive towers have toppled against each other, creating a vertical battlefield of crumbling floors, broken elevators, and vertiginous drops into the abyss.',
     crew: ['Victis — Samuel Stuhlinger, Marlton Johnson, Abigail "Misty" Briarton, Russman'],
@@ -550,9 +485,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The dynamic between the four Victis members is strained. Stuhlinger\'s secret communication with Richtofen is wearing on him, and the others are getting suspicious. Marlton\'s analytical mind is piecing together that they\'re being used. But with no other options in a destroyed world, they follow the voices into the dark.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  BURIED (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-buried', 'BURIED', {
     setting: 'An underground ghost town buried beneath a mining facility, December 31st, 2035. An entire Old West settlement was swallowed by the Earth and preserved underground, now infested with the undead and haunted by spectral witches.',
     crew: ['Victis — Samuel Stuhlinger, Marlton Johnson, Abigail "Misty" Briarton, Russman'],
@@ -577,9 +509,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The events of Buried set the stage for the Black Ops 4 Aether maps. Victis would eventually be frozen in stasis by Richtofen (Primis) beneath Alcatraz, to be used later. The 115 pylon network activated by the Victis crew becomes the mechanism through which the multiverse will ultimately be addressed — in Alpha Omega and Tag der Toten. Buried is the end of an era and the beginning of the final chapter.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  ALPHA OMEGA (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-alpha-omega', 'ALPHA OMEGA', {
     setting: 'Camp Edward, a Broken Arrow facility in the Nevada desert, October 13th, 2025. The Nuketown testing ground has been converted into a secret research base housing the Rushmore A.I. and the imprisoned Avogadro.',
     crew: ['Primis & Ultimis combined — all eight members (Richtofen, Dempsey, Nikolai, Takeo × 2)'],
@@ -604,9 +533,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'The final destination is a Siberian facility trapped in a pocket dimension — the same location as Call of the Dead, but altered. Tag der Toten awaits, and with it, the end of the Aether storyline. Everything the crew has fought for across dimensions, timelines, and decades comes down to one final map.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  TAG DER TOTEN (True Timeline)
-  // ─────────────────────────────────────────────────────────
   lore('tt-tag', 'TAG DER TOTEN', {
     setting: 'A Siberian facility trapped in a pocket dimension, 1965 (outside normal time). The frozen coastal environment from Call of the Dead, now distorted and decaying. Icebergs, abandoned buildings, and dimensional tears fill the landscape. The end of all things.',
     crew: ['Primis & Ultimis combined — all eight members (Richtofen, Dempsey, Nikolai, Takeo × 2)'],
@@ -631,9 +557,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Samantha and Eddie emerge into a new universe — one without Element 115, without the Dark Aether, without the corruption that created the zombie plague. They are children, innocent and hopeful. The last image of the Aether storyline is a field of flowers under a clear sky. After decades of darkness, death, and interdimensional war, the story ends with the simplest possible message: there is a world worth saving, even if saving it means letting go of everything.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  ORIGINS (Dimension 63)
-  // ─────────────────────────────────────────────────────────
   lore('d63-origins', 'ORIGINS', {
     setting: 'Excavation Site 64, the Western Front near the Somme, France, June 4th, 1918. World War I rages above while ancient 115 deposits are unearthed below. Trenches, mud, barbed wire, and colossal Panzer robots define the landscape.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen (their first meeting)'],
@@ -658,9 +581,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Origins is both a beginning and an ending. The release of Samantha from Agartha triggers a chain of events that leads Richtofen to consult the Kronorium, learn about the cycle, and begin his dimension-hopping quest to collect souls. It also establishes Dimension 63 as a crucial alternate timeline where events diverge from the Original Dimension. MOTD, Shadows of Evil, and Blood of the Dead all exist in this dimensional space.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  MOB OF THE DEAD (Dimension 63)
-  // ─────────────────────────────────────────────────────────
   lore('d63-motd', 'MOB OF THE DEAD', {
     setting: 'Alcatraz Island, San Francisco Bay, December 31st, 1933. A purgatorial pocket dimension overlaid on the infamous prison. The Golden Gate Bridge stretches into the fog, the cell blocks echo with screams, and the undead Warden stalks the halls.',
     crew: ['Albert "Weasel" Arlington', 'Salvatore DeLuca', 'Billy Handsome', 'Michael "Finn" O\'Leary'],
@@ -685,9 +605,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Crucially, the purgatorial dimension of Alcatraz contains blood vials that Richtofen later collects during his dimension-hopping (as seen in the "The Giant" opening cutscene where he carries them). These vials contain the blood of the MOTD crew and provide a form of dimensional insurance — as long as Richtofen carries them, he cannot be permanently killed, as the blood connects him to the pocket dimension\'s time-defying properties. This directly sets up the events of Blood of the Dead.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  SHADOWS OF EVIL (Dimension 63 – Cycle)
-  // ─────────────────────────────────────────────────────────
   lore('d63-soe', 'SHADOWS OF EVIL', {
     setting: 'Morg City — a fictional 1940s American noir city in Dimension 63, April 25th, 1944. Art Deco architecture, jazz clubs, burlesque theaters, and docks create a rain-soaked urban landscape hiding Lovecraftian horrors beneath its surface.',
     crew: ['Nero Blackstone (magician)', 'Jessica Rose (burlesque dancer)', 'Jack Vincent (corrupt cop)', 'Floyd Campbell (boxer)'],
@@ -712,9 +629,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'With the Summoning Key gone and the rift partially open, Dimension 63\'s cycle timeline is doomed. The Apothicons will eventually consume it — leading to the "Universe Destroyed" endpoint on the timeline. The four characters of Morg City are left to face the consequences of their sins with no divine artifact to protect them. Their story is a tragedy: they were manipulated from beginning to end.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  BLOOD OF THE DEAD (Dimension 63 – Broken)
-  // ─────────────────────────────────────────────────────────
   lore('d63-blood', 'BLOOD OF THE DEAD', {
     setting: 'Alcatraz Island in a pocket dimension, July 4th, 1941. The same purgatorial prison from Mob of the Dead, but now warped further by the Dark Aether. The Warden has been resurrected as a spectral entity, and the prison is a trap designed specifically for the Primis crew.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -739,9 +653,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Blood of the Dead is the turning point of the entire Aether saga. Everything before it was Richtofen\'s plan. Everything after it is Nikolai\'s. With the original Richtofen gone, Nikolai begins secretly reading the Kronorium and formulating the endgame — a plan that will require the deaths of everyone he loves. The crew escapes Alcatraz, and their next stops are Alpha Omega and Tag der Toten.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  REVELATIONS (Agartha)
-  // ─────────────────────────────────────────────────────────
   lore('ag-revelations', 'REVELATIONS', {
     setting: 'The House / The Aether — fragments of every previous map fused into a single, fractured reality, 2025+. Portions of Nacht, Der Eisendrache, Shangri-La, Mob of the Dead, Verrückt, Origins, and Kino float in a void connected by Aether energy streams.',
     crew: ['Primis — Tank Dempsey, Nikolai Belinski, Takeo Masaki, Edward Richtofen'],
@@ -766,9 +677,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'Revelations reveals the full scope of the time loop. Primis fights the Great War → is scattered through time → reunites at Origins → travels through The Giant, DE, ZNS, GK → arrives at Revelations → is sent back to the Great War. This cycle repeats endlessly, with minor variations each time. Breaking this cycle becomes the driving motivation for Blood of the Dead and the BO4 maps that follow. The ending is both triumphant (the Shadow Man is defeated) and tragic (the crew is trapped in an eternal loop).' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  RICHTOFEN'S LAB (Dimension 63 – Cycle)
-  // ─────────────────────────────────────────────────────────
   lore('d63-lab', 'RICHTOFEN\'S LAB', {
     setting: 'A hidden laboratory operated by Dimension 63\'s version of Edward Richtofen, 1940s. Located beneath an undisclosed location, the lab contains Element 115 experiments, collected artifacts, and journals detailing Richtofen\'s growing understanding of the multiverse.',
     crew: ['Edward Richtofen (Dimension 63)'],
@@ -791,9 +699,6 @@ export const MAP_LORE: MapLoreEntry[] = [
       text: 'It was during this period that the Shadow Man was inadvertently trapped within the Summoning Key during the Shadows of Evil Easter egg. Richtofen knew the Key contained the Shadow Man but took it anyway — a calculated risk that would nearly doom all of reality in Revelations. The lab was where that fateful decision was made.' },
   ]),
 
-  // ─────────────────────────────────────────────────────────
-  //  ZERO BASE (Empty Earth)
-  // ─────────────────────────────────────────────────────────
   lore('ee-zero-base', 'ZERO BASE', {
     setting: 'A barren version of Earth where life never developed — an entire planet of empty rock, ocean, and atmosphere with no biosphere. Used as an untouchable staging ground by those who know of its existence.',
     crew: ['Various — used as a safe house by different factions'],
@@ -817,7 +722,6 @@ export const MAP_LORE: MapLoreEntry[] = [
   ]),
 ];
 
-// ── Quick lookup ──────────────────────────────────────────────
 export const MAP_LORE_BY_NODE: Record<string, MapLoreEntry> = {};
 for (const entry of MAP_LORE) {
   MAP_LORE_BY_NODE[entry.nodeId] = entry;

@@ -8,8 +8,6 @@ import {
   type Crew,
 } from '../../data/aetherChronicle';
 
-// ── Styles ──────────────────────────────────────────────────
-
 const FONTS = {
   title: "'Cinzel', serif",
   mono: "'IBM Plex Mono', monospace",
@@ -27,8 +25,6 @@ const COLORS = {
   faint: '#2e2416',
   gold: '#c9a24a',
 };
-
-// ── Section nav pill ────────────────────────────────────────
 
 function SectionNav({
   active,
@@ -70,8 +66,6 @@ function SectionNav({
   );
 }
 
-// ── Crew filter pills ───────────────────────────────────────
-
 function CrewFilter({
   active,
   onSelect,
@@ -112,8 +106,6 @@ function CrewFilter({
   );
 }
 
-// ── Search bar ──────────────────────────────────────────────
-
 function SearchBar({
   value,
   onChange,
@@ -143,8 +135,6 @@ function SearchBar({
   );
 }
 
-// ── Timeline entry card ─────────────────────────────────────
-
 function EntryCard({
   entry,
   expanded,
@@ -166,7 +156,7 @@ function EntryCard({
         transition: 'all 0.15s',
       }}
     >
-      {/* Card */}
+      
       <div
         style={{
           background: expanded ? '#1a1510' : COLORS.surface,
@@ -179,7 +169,7 @@ function EntryCard({
             : '0 1px 4px #00000030',
         }}
       >
-        {/* Date row */}
+        
         <div
           style={{
             display: 'flex',
@@ -215,7 +205,7 @@ function EntryCard({
           )}
         </div>
 
-        {/* Title */}
+        
         {entry.title && (
           <div
             style={{
@@ -231,7 +221,7 @@ function EntryCard({
           </div>
         )}
 
-        {/* Description */}
+        
         <div
           style={{
             fontSize: expanded ? 13.5 : 12,
@@ -247,7 +237,7 @@ function EntryCard({
           {entry.description}
         </div>
 
-        {/* Source */}
+        
         {expanded && entry.source && (
           <div
             style={{
@@ -266,8 +256,6 @@ function EntryCard({
     </div>
   );
 }
-
-// ── Section header ──────────────────────────────────────────
 
 function SectionHeader({ label, subtitle }: { label: string; subtitle?: string }) {
   return (
@@ -318,8 +306,6 @@ function SectionHeader({ label, subtitle }: { label: string; subtitle?: string }
   );
 }
 
-// ── Main component ──────────────────────────────────────────
-
 export default function AetherChronicle() {
   const [sectionFilter, setSectionFilter] = useState<ChronicleSection | 'all'>('all');
   const [crewFilter, setCrewFilter] = useState<Crew | 'all'>('all');
@@ -350,7 +336,6 @@ export default function AetherChronicle() {
     return entries;
   }, [sectionFilter, crewFilter, search]);
 
-  // Group entries by section for display
   const grouped = useMemo(() => {
     const groups: { section: (typeof CHRONICLE_SECTIONS)[number]; entries: ChronicleEntry[] }[] = [];
     const sectionOrder = CHRONICLE_SECTIONS.map(s => s.id);
@@ -374,14 +359,13 @@ export default function AetherChronicle() {
     setExpandedId(prev => (prev === id ? null : id));
   }, []);
 
-  // Scroll to top when filters change
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
   }, [sectionFilter, crewFilter, search]);
 
   return (
     <div style={{ display: 'flex', height: '100%', fontFamily: 'sans-serif' }}>
-      {/* ── Left panel ── */}
+      
       <div
         style={{
           width: 260,
@@ -393,7 +377,7 @@ export default function AetherChronicle() {
           overflow: 'hidden',
         }}
       >
-        {/* Search */}
+        
         <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${COLORS.border}` }}>
           <div
             style={{
@@ -410,7 +394,7 @@ export default function AetherChronicle() {
           <SearchBar value={search} onChange={setSearch} />
         </div>
 
-        {/* Crew filter */}
+        
         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${COLORS.border}` }}>
           <div
             style={{
@@ -427,7 +411,7 @@ export default function AetherChronicle() {
           <CrewFilter active={crewFilter} onSelect={setCrewFilter} />
         </div>
 
-        {/* Section filter */}
+        
         <div style={{ padding: '12px 16px', flex: 1, overflowY: 'auto' }}>
           <div
             style={{
@@ -444,7 +428,7 @@ export default function AetherChronicle() {
           <SectionNav active={sectionFilter} onSelect={setSectionFilter} />
         </div>
 
-        {/* Stats */}
+        
         <div
           style={{
             padding: '12px 16px',
@@ -459,7 +443,7 @@ export default function AetherChronicle() {
         </div>
       </div>
 
-      {/* ── Timeline content ── */}
+      
       <div
         ref={scrollRef}
         style={{
@@ -477,7 +461,7 @@ export default function AetherChronicle() {
             position: 'relative',
           }}
         >
-          {/* Vertical center line */}
+          
           <div
             style={{
               position: 'absolute',
@@ -495,7 +479,7 @@ export default function AetherChronicle() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {group.entries.map(entry => (
                   <div key={entry.id} style={{ position: 'relative', paddingLeft: 20 }}>
-                    {/* Dot on the timeline line */}
+                    
                     <div
                       style={{
                         position: 'absolute',

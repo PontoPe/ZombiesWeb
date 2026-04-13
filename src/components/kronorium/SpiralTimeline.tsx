@@ -7,8 +7,6 @@ import {
   type ChronicleSection,
 } from '../../data/aetherChronicle';
 
-// ── Constants ───────────────────────────────────────────────
-
 const CANVAS_W = 1920;
 const CANVAS_H = 1320;
 
@@ -30,10 +28,6 @@ const SECTION_COLORS: Record<ChronicleSection, string> = {
   darkAether: '#8855cc',
 };
 
-// ── Spiral geometry ─────────────────────────────────────────
-// The official timeline is an outward spiral starting near the center.
-// We model each section as a segment of a multi-arm spiral.
-
 interface SpiralNode {
   x: number;
   y: number;
@@ -42,11 +36,6 @@ interface SpiralNode {
   angle: number;
 }
 
-/**
- * Generate spiral coordinates.
- * The spiral is an Archimedean spiral: r = a + b*theta
- * centered on the canvas.
- */
 function generateSpiralLayout(): {
   nodes: SpiralNode[];
   paths: { section: ChronicleSection; points: { x: number; y: number }[] }[];
@@ -54,7 +43,6 @@ function generateSpiralLayout(): {
   const cx = CANVAS_W / 2;
   const cy = CANVAS_H / 2;
 
-  // Group entries by section
   const sectionEntries: Record<string, ChronicleEntry[]> = {};
   for (const sec of CHRONICLE_SECTIONS) {
     sectionEntries[sec.id] = CHRONICLE_ENTRIES.filter(e => e.section === sec.id);
@@ -63,13 +51,6 @@ function generateSpiralLayout(): {
   const allNodes: SpiralNode[] = [];
   const allPaths: { section: ChronicleSection; points: { x: number; y: number }[] }[] = [];
 
-  // Layout parameters per section.
-  // The canvas is 1920×1320, center (960, 660).
-  // Four distinct spatial clusters matching the reference image:
-  //   Red   (center)      → main
-  //   Green (upper-left)  → agartha
-  //   Blue  (right)       → dim63
-  //   Yellow(lower-left)  → fractures (deceptio / proditone / agonia / broken / darkAether)
   const sectionLayout: {
     id: ChronicleSection;
     startAngle: number;
@@ -79,16 +60,12 @@ function generateSpiralLayout(): {
     offsetX: number; // from canvas center (960, 660)
     offsetY: number;
   }[] = [
-    // ── CLUSTER 1 · Main Timeline — large center spiral ──────────────────
     { id: 'main',      startAngle: Math.PI * 0.5, totalSweep: Math.PI * 9,   startRadius: 40,  endRadius: 460, offsetX:    0, offsetY:    0 },
 
-    // ── CLUSTER 2 · Agartha — small upper-left spiral ────────────────────
     { id: 'agartha',   startAngle: Math.PI * 0.3, totalSweep: Math.PI * 3.5, startRadius: 18,  endRadius: 148, offsetX: -565, offsetY: -275 },
 
-    // ── CLUSTER 3 · Dimension 63 — medium right-side spiral ──────────────
     { id: 'dim63',     startAngle: Math.PI * 0.5, totalSweep: Math.PI * 5.5, startRadius: 28,  endRadius: 290, offsetX:  548, offsetY: -105 },
 
-    // ── CLUSTER 4 · Fractures — small lower-left cluster (all share center)
     { id: 'deceptio',  startAngle: Math.PI * 0.5, totalSweep: Math.PI * 1.5, startRadius: 18,  endRadius:  90, offsetX: -535, offsetY:  325 },
     { id: 'proditone', startAngle: Math.PI * 1.3, totalSweep: Math.PI * 2.0, startRadius: 35,  endRadius: 125, offsetX: -535, offsetY:  325 },
     { id: 'agonia',    startAngle: Math.PI * 2.6, totalSweep: Math.PI * 1.5, startRadius: 58,  endRadius: 162, offsetX: -535, offsetY:  325 },
@@ -122,7 +99,6 @@ function generateSpiralLayout(): {
       pathPoints.push({ x, y });
     }
 
-    // Add intermediate points for smoother curves
     const smoothPoints: { x: number; y: number }[] = [];
     const INTERP_COUNT = Math.max(n * 3, 30);
     for (let i = 0; i <= INTERP_COUNT; i++) {
@@ -163,8 +139,6 @@ function pointsToSmoothPath(points: { x: number; y: number }[]): string {
   return d;
 }
 
-// ── Detail Panel ────────────────────────────────────────────
-
 function DetailPanel({
   entry,
   section,
@@ -200,7 +174,7 @@ function DetailPanel({
         overflowY: 'auto',
       }}
     >
-      {/* Close button */}
+      
       <button
         onClick={onClose}
         style={{
@@ -219,7 +193,7 @@ function DetailPanel({
         ×
       </button>
 
-      {/* Date */}
+      
       <div
         style={{
           fontSize: 9,
@@ -232,7 +206,7 @@ function DetailPanel({
         {entry.date}
       </div>
 
-      {/* Section tag */}
+      
       <div
         style={{
           display: 'inline-block',
@@ -249,7 +223,7 @@ function DetailPanel({
         {CHRONICLE_SECTIONS.find(s => s.id === section)?.label}
       </div>
 
-      {/* Crew */}
+      
       {crewLabel && (
         <span
           style={{
@@ -265,7 +239,7 @@ function DetailPanel({
         </span>
       )}
 
-      {/* Title */}
+      
       {entry.title && (
         <div
           style={{
@@ -282,7 +256,7 @@ function DetailPanel({
         </div>
       )}
 
-      {/* Description */}
+      
       <div
         style={{
           fontSize: 14,
@@ -295,7 +269,7 @@ function DetailPanel({
         {entry.description}
       </div>
 
-      {/* Source */}
+      
       {entry.source && (
         <div
           style={{
@@ -313,8 +287,6 @@ function DetailPanel({
     </div>
   );
 }
-
-// ── Section Legend ───────────────────────────────────────────
 
 function SectionLegend({
   activeSection,
@@ -408,8 +380,6 @@ function SectionLegend({
   );
 }
 
-// ── Main Component ──────────────────────────────────────────
-
 export default function SpiralTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasDragged = useRef(false);
@@ -423,17 +393,14 @@ export default function SpiralTimeline() {
   const [bgAlpha, setBgAlpha] = useState(0.55);
   const [stretchedSection, setStretchedSection] = useState<ChronicleSection | null>(null);
 
-  // Generate layout once
   const { nodes, paths } = useMemo(() => generateSpiralLayout(), []);
 
-  // ── Stretched layout: compute straight-line positions for a section ──
   const getStretchedPositions = useCallback(
     (section: ChronicleSection) => {
       const sectionNodes = nodes.filter(n => n.section === section);
       const n = sectionNodes.length;
       if (n === 0) return { nodePositions: new Map<string, { x: number; y: number }>(), pathPoints: [] as { x: number; y: number }[] };
 
-      // Lay out as a horizontal line centered in the current viewBox
       const margin = 80;
       const lineY = CANVAS_H / 2;
       const lineStartX = margin;
@@ -455,13 +422,11 @@ export default function SpiralTimeline() {
     [nodes]
   );
 
-  // Current stretched data (memoized)
   const stretchedData = useMemo(() => {
     if (!stretchedSection) return null;
     return getStretchedPositions(stretchedSection);
   }, [stretchedSection, getStretchedPositions]);
 
-  // Helper to get the effective position of a node
   const getNodePos = useCallback(
     (node: SpiralNode) => {
       if (stretchedSection === node.section && stretchedData) {
@@ -473,7 +438,6 @@ export default function SpiralTimeline() {
     [stretchedSection, stretchedData]
   );
 
-  // ── Path click (not on a node) → stretch/unstretch ──
   const handlePathClick = useCallback(
     (section: ChronicleSection, e: React.MouseEvent) => {
       e.stopPropagation();
@@ -482,8 +446,6 @@ export default function SpiralTimeline() {
     },
     []
   );
-
-  // ── Zoom ──
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
@@ -511,12 +473,9 @@ export default function SpiralTimeline() {
     [viewBox]
   );
 
-  // ── Pan ──
-
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (e.button !== 0) return;
-      // Don't start drag if we clicked a node
       const target = e.target as HTMLElement;
       if (target.closest('.spiral-node')) return;
 
@@ -552,8 +511,6 @@ export default function SpiralTimeline() {
     setIsDragging(false);
   }, []);
 
-  // ── Node click ──
-
   const handleNodeClick = useCallback(
     (node: SpiralNode, e: React.MouseEvent) => {
       e.stopPropagation();
@@ -563,12 +520,10 @@ export default function SpiralTimeline() {
       }
       setSelectedEntry(node);
 
-      // Position the panel near the click point
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
       let px = e.clientX - rect.left + 12;
       let py = e.clientY - rect.top - 60;
-      // Keep panel inside viewport
       if (px + 380 > rect.width) px = px - 390;
       if (py + 300 > rect.height) py = rect.height - 420;
       if (py < 10) py = 10;
@@ -578,7 +533,6 @@ export default function SpiralTimeline() {
     [selectedEntry]
   );
 
-  // Close panel on background click — but not when the click is the tail of a pan drag
   const handleBgClick = useCallback(() => {
     if (hasDragged.current) {
       hasDragged.current = false;
@@ -588,13 +542,11 @@ export default function SpiralTimeline() {
     setStretchedSection(null);
   }, []);
 
-  // Reset zoom
   const handleReset = useCallback(() => {
     setViewBox({ x: 0, y: 0, w: CANVAS_W, h: CANVAS_H });
     setSelectedEntry(null);
   }, []);
 
-  // ── Compute node radius based on zoom ──
   const baseNodeRadius = viewBox.w / CANVAS_W * 6;
   const titleNodeRadius = viewBox.w / CANVAS_W * 9;
   const strokeW = Math.max(1.2, viewBox.w / CANVAS_W * 2.5);
@@ -612,7 +564,7 @@ export default function SpiralTimeline() {
       }}
       onClick={handleBgClick}
     >
-      {/* CSS animations */}
+      
       <style>{`
         @keyframes panelFadeIn {
           from { opacity: 0; transform: translateY(8px); }
@@ -653,7 +605,7 @@ export default function SpiralTimeline() {
         }
       `}</style>
 
-      {/* SVG Canvas */}
+      
       <svg
         width="100%"
         height="100%"
@@ -665,7 +617,7 @@ export default function SpiralTimeline() {
         onPointerUp={handlePointerUp}
         style={{ display: 'block', touchAction: 'none' }}
       >
-        {/* Background image */}
+        
         <image
           href="/images/kronorium-timeline.jpg"
           x="0"
@@ -677,7 +629,7 @@ export default function SpiralTimeline() {
           style={{ transition: 'opacity 0.5s ease-in-out' }}
         />
 
-        {/* Vignette overlay */}
+        
         <defs>
           <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
             <stop offset="0%" stopColor="transparent" />
@@ -693,26 +645,24 @@ export default function SpiralTimeline() {
         </defs>
         <rect x="0" y="0" width={CANVAS_W} height={CANVAS_H} fill="url(#vignette)" opacity={stretchedSection ? 0 : 1} style={{ transition: 'opacity 0.5s ease-in-out' }} />
 
-        {/* Section paths (spiral lines) */}
+        
         {paths.map(({ section, points }) => {
           const color = SECTION_COLORS[section];
           const isActive = activeSection === null || activeSection === section;
           const isStretched = stretchedSection === section;
           const isOtherStretched = stretchedSection !== null && stretchedSection !== section;
 
-          // Use stretched path points if this section is stretched
           const effectivePoints = isStretched && stretchedData
             ? stretchedData.pathPoints
             : points;
           const pathD = pointsToSmoothPath(effectivePoints);
 
-          // When another section is stretched, fade this one out
           const glowOpacity = isOtherStretched ? 0 : isActive ? (isStretched ? 0.25 : 0.15) : 0.03;
           const lineOpacity = isOtherStretched ? 0 : isActive ? 0.8 : 0.12;
 
           return (
             <g key={section} style={{ transition: 'opacity 0.5s ease-in-out' }}>
-              {/* Glow layer */}
+              
               <path
                 d={pathD}
                 fill="none"
@@ -723,7 +673,7 @@ export default function SpiralTimeline() {
                 opacity={glowOpacity}
                 style={{ transition: 'all 0.5s ease-in-out' }}
               />
-              {/* Main line */}
+              
               <path
                 d={pathD}
                 fill="none"
@@ -734,7 +684,7 @@ export default function SpiralTimeline() {
                 opacity={lineOpacity}
                 style={{ transition: 'all 0.5s ease-in-out' }}
               />
-              {/* Invisible wider hit area for clicking */}
+              
               <path
                 d={pathD}
                 fill="none"
@@ -749,7 +699,7 @@ export default function SpiralTimeline() {
           );
         })}
 
-        {/* Nodes */}
+        
         {nodes.map(node => {
           const color = SECTION_COLORS[node.section];
           const crewColor = CREW_META[node.entry.crew].color;
@@ -762,7 +712,6 @@ export default function SpiralTimeline() {
           const r = hasTitle ? titleNodeRadius : baseNodeRadius;
           const pos = getNodePos(node);
 
-          // Fade out nodes from other sections when one is stretched
           const nodeOpacity = isOtherStretched ? 0 : isActive ? 1 : 0.15;
 
           return (
@@ -780,7 +729,7 @@ export default function SpiralTimeline() {
               onMouseEnter={() => setHoveredNode(node.entry.id)}
               onMouseLeave={() => setHoveredNode(null)}
             >
-              {/* Outer glow ring for titled/key events */}
+              
               {hasTitle && (
                 <circle
                   cx={pos.x}
@@ -794,7 +743,7 @@ export default function SpiralTimeline() {
                 />
               )}
 
-              {/* Node circle */}
+              
               <circle
                 cx={pos.x}
                 cy={pos.y}
@@ -805,7 +754,7 @@ export default function SpiralTimeline() {
                 style={{ transition: 'all 0.5s ease-in-out' }}
               />
 
-              {/* Inner crew color dot */}
+              
               <circle
                 cx={pos.x}
                 cy={pos.y}
@@ -815,7 +764,7 @@ export default function SpiralTimeline() {
                 style={{ transition: 'all 0.5s ease-in-out' }}
               />
 
-              {/* Title label — rotated when stretched to avoid overlap */}
+              
               {hasTitle && (
                 <text
                   x={pos.x}
@@ -839,7 +788,7 @@ export default function SpiralTimeline() {
                 </text>
               )}
 
-              {/* Date label on hover */}
+              
               {isHovered && (
                 <text
                   x={pos.x}
@@ -861,7 +810,7 @@ export default function SpiralTimeline() {
         })}
       </svg>
 
-      {/* Detail panel */}
+      
       {selectedEntry && (
         <DetailPanel
           entry={selectedEntry.entry}
@@ -871,10 +820,10 @@ export default function SpiralTimeline() {
         />
       )}
 
-      {/* Section legend */}
+      
       <SectionLegend activeSection={activeSection} onToggle={setActiveSection} />
 
-      {/* Controls */}
+      
       <div
         style={{
           position: 'absolute',
@@ -937,7 +886,7 @@ export default function SpiralTimeline() {
           ⟲
         </button>
 
-        {/* Alpha slider */}
+        
         <div
           onClick={e => e.stopPropagation()}
           style={{
@@ -992,7 +941,7 @@ export default function SpiralTimeline() {
         </div>
       </div>
 
-      {/* Hint */}
+      
       <div
         style={{
           position: 'absolute',

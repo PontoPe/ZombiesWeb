@@ -26,9 +26,9 @@ function starParts(value: number) {
 
 <OpsLayout title="Map Database">
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- PAGE HEADER                                 -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <header class="page-header">
     <div class="header-hud-tl" aria-hidden="true"></div>
     <p class="header-eyebrow">[ OPERATIVE DATABASE ]</p>
@@ -39,21 +39,21 @@ function starParts(value: number) {
     </p>
   </header>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- NEW PLAYER STRIP                            -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <a href="/start" class="start-strip">
     <span class="start-strip-label">[ NEW OPERATIVE ]</span>
     <span class="start-strip-text">Not sure where to begin? Answer these questions and we'll find your map.</span>
     <span class="start-strip-cta">FIND MY MAP →</span>
   </a>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- FILTER BAR                                  -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <div class="filter-bar" id="filter-bar">
 
-    <!-- Game -->
+    
     <div class="filter-group">
       <span class="filter-group-label">GAME</span>
       <div class="filter-game-btns">
@@ -69,7 +69,7 @@ function starParts(value: number) {
 
     <div class="filter-divider"></div>
 
-    <!-- Crew -->
+    
     <div class="filter-group">
       <span class="filter-group-label">CREW</span>
       <select class="filter-select" id="crew-select">
@@ -82,7 +82,7 @@ function starParts(value: number) {
 
     <div class="filter-divider"></div>
 
-    <!-- Max Quest Diff -->
+    
     <div class="filter-group">
       <span class="filter-group-label">MAX QUEST DIFF</span>
       <div class="filter-range-btns">
@@ -94,7 +94,7 @@ function starParts(value: number) {
 
     <div class="filter-divider"></div>
 
-    <!-- Max Setup Diff -->
+    
     <div class="filter-group">
       <span class="filter-group-label">MAX SETUP</span>
       <div class="filter-range-btns">
@@ -106,7 +106,7 @@ function starParts(value: number) {
 
     <div class="filter-divider"></div>
 
-    <!-- Min Rating -->
+    
     <div class="filter-group">
       <span class="filter-group-label">MIN RATING</span>
       <div class="filter-range-btns">
@@ -120,14 +120,14 @@ function starParts(value: number) {
 
     <div class="filter-divider"></div>
 
-    <!-- Main Quest Only -->
+    
     <div class="filter-group">
       <button class="ee-toggle" id="mq-toggle">MAIN QUEST ONLY</button>
     </div>
 
     <div class="filter-divider"></div>
 
-    <!-- Sort -->
+    
     <div class="filter-group">
       <span class="filter-group-label">SORT</span>
       <div class="filter-range-btns">
@@ -139,22 +139,22 @@ function starParts(value: number) {
       </div>
     </div>
 
-    <!-- Reset -->
+    
     <button class="filter-reset" id="filter-reset" hidden>✕ RESET</button>
   </div>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- RESULT COUNT                                -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <p class="gallery-count">
     <span class="count-num" id="count-num">{MAPS.length}</span>
     <span class="count-label" id="count-label"> MAPS FOUND</span>
     <span class="count-filtered" id="count-filtered" hidden> — FILTERED</span>
   </p>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- GAME SECTIONS                               -->
-  <!-- ═══════════════════════════════════════════ -->
+  
+  
+  
   <div id="gallery-root">
 
     {groups.map(({ game, meta: g, maps }) => (
@@ -190,7 +190,7 @@ function starParts(value: number) {
                 data-release={map.releaseDate}
                 data-title={map.title}
               >
-                {/* Image / placeholder */}
+                
                 <div class="card-img">
                   {MAP_THUMBNAILS[map.id]
                     ? <img class="card-img-photo" src={MAP_THUMBNAILS[map.id]} alt={map.title} loading="lazy" />
@@ -205,7 +205,7 @@ function starParts(value: number) {
                   </div>
                 </div>
 
-                {/* Body */}
+                
                 <div class="card-body">
                   <h3 class="card-title">{map.title}</h3>
                   <p class="card-setting">
@@ -215,7 +215,7 @@ function starParts(value: number) {
                   <p class="card-desc">{map.description}</p>
                   <div class="card-rule"></div>
 
-                  {/* Stats */}
+                  
                   <div class="card-stats">
                     <div class="stat-row">
                       <span class="stat-label">QUEST</span>
@@ -259,21 +259,17 @@ function starParts(value: number) {
       </section>
     ))}
 
-    <!-- No results -->
+    
     <div class="no-results" id="no-results" hidden>
       <p>No maps match your filters.</p>
       <button id="no-results-reset">Clear filters</button>
     </div>
 
-  </div><!-- #gallery-root -->
+  </div>
 
 </OpsLayout>
 
-<!-- ═══════════════════════════════════════════════ -->
-<!-- INTERACTIVITY (vanilla JS, no hydration)        -->
-<!-- ═══════════════════════════════════════════════ -->
 <script>
-  // ── State ──────────────────────────────────────
   const state = {
     games:         new Set<string>(),
     crew:          '',
@@ -284,14 +280,12 @@ function starParts(value: number) {
     sortBy:        'release' as string,
   };
 
-  // ── DOM refs ───────────────────────────────────
   const countNum      = document.getElementById('count-num')!;
   const countFiltered = document.getElementById('count-filtered')!;
   const resetBtn      = document.getElementById('filter-reset') as HTMLButtonElement;
   const noResults     = document.getElementById('no-results')!;
   const sections      = Array.from(document.querySelectorAll<HTMLElement>('[data-game-section]'));
 
-  // ── Filter logic ───────────────────────────────
   function matches(card: HTMLElement): boolean {
     const { game, crew, setup, eeDiff, rating, hasQuest } = card.dataset;
     if (state.games.size && !state.games.has(game!))      return false;
@@ -304,7 +298,6 @@ function starParts(value: number) {
     return true;
   }
 
-  // ── Sort key ───────────────────────────────────
   function sortKey(card: HTMLElement): string | number {
     switch (state.sortBy) {
       case 'release': return card.dataset.release!;
@@ -322,7 +315,6 @@ function starParts(value: number) {
     return String(ak).localeCompare(String(bk));
   }
 
-  // ── Apply filters + sort ───────────────────────
   function apply() {
     let total = 0;
 
@@ -330,27 +322,22 @@ function starParts(value: number) {
       const grid   = section.querySelector<HTMLElement>('.map-grid')!;
       const cards  = Array.from(grid.querySelectorAll<HTMLElement>('.map-card'));
 
-      // Determine visibility
       cards.forEach(c => { c.hidden = !matches(c); });
 
       const visible = cards.filter(c => !c.hidden);
       const hidden  = cards.filter(c =>  c.hidden);
 
-      // Sort visible cards, re-append
       visible.sort(compare);
       [...visible, ...hidden].forEach(c => grid.appendChild(c));
 
-      // Section visibility
       const count = visible.length;
       total += count;
       section.hidden = count === 0;
 
-      // Update section count label
       const countEl = section.querySelector<HTMLElement>('[data-section-count]');
       if (countEl) countEl.textContent = `${count} MAP${count !== 1 ? 'S' : ''}`;
     });
 
-    // Update global count
     countNum.textContent = String(total);
 
     const filtered = isFiltered();
@@ -372,7 +359,6 @@ function starParts(value: number) {
     );
   }
 
-  // ── Update button active states ─────────────────
   function updateActiveStates() {
     document.querySelectorAll<HTMLButtonElement>('[data-filter-game]').forEach(btn => {
       const g = btn.dataset.filterGame!;
@@ -401,7 +387,6 @@ function starParts(value: number) {
     });
   }
 
-  // ── Wire events ────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('[data-filter-game]').forEach(btn => {
     btn.addEventListener('click', () => {
       const g = btn.dataset.filterGame!;
@@ -462,7 +447,6 @@ function starParts(value: number) {
   resetBtn?.addEventListener('click', resetFilters);
   document.getElementById('no-results-reset')?.addEventListener('click', resetFilters);
 
-  // ── Section collapse ───────────────────────────
   document.querySelectorAll<HTMLButtonElement>('[data-collapse-section]').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.closest<HTMLElement>('.game-section')!;
@@ -474,9 +458,9 @@ function starParts(value: number) {
 </script>
 
 <style is:global>
-  /* ════════════════════════════════════════════════ */
-  /* Page header                                      */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .page-header {
     position: relative;
     margin-bottom: 40px;
@@ -524,9 +508,9 @@ function starParts(value: number) {
 
   .header-count { color: #e07b2a; }
 
-  /* ════════════════════════════════════════════════ */
-  /* New player strip                                 */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .start-strip {
     display: flex;
     align-items: center;
@@ -575,9 +559,9 @@ function starParts(value: number) {
     .start-strip-text { width: 100%; order: 3; }
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Filter bar                                       */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .filter-bar {
     display: flex;
     align-items: center;
@@ -688,9 +672,9 @@ function starParts(value: number) {
   }
   .filter-reset:hover { background: #3a1a1a; color: #e04040; }
 
-  /* ════════════════════════════════════════════════ */
-  /* Result count                                     */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .gallery-count {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
@@ -702,9 +686,9 @@ function starParts(value: number) {
   .count-label    { color: #4a4e5a; }
   .count-filtered { color: #3a3d48; }
 
-  /* ════════════════════════════════════════════════ */
-  /* Game sections                                    */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .game-section { margin-bottom: 48px; }
 
   .section-header {
@@ -757,18 +741,18 @@ function starParts(value: number) {
     flex-shrink: 0;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Map grid                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .map-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Map card                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .map-card {
     display: flex;
     flex-direction: column;
@@ -961,9 +945,9 @@ function starParts(value: number) {
   .cta-arrow { font-size: 14px; transition: transform 0.15s; }
   .map-card:hover .cta-arrow { transform: translateX(4px); }
 
-  /* ════════════════════════════════════════════════ */
-  /* No results                                       */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .no-results {
     text-align: center;
     padding: 80px 20px;
@@ -983,9 +967,9 @@ function starParts(value: number) {
     cursor: pointer;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Responsive                                       */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   @media (max-width: 768px) {
     .filter-bar   { top: 52px; padding: 10px; gap: 6px; }
     .filter-group { padding: 0 8px; }

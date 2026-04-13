@@ -3,127 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import '../styles/global.css';
 ---
 
-<!--
-  TODO: Theorist Corkboard — planned third product surface.
-  A drag-and-drop canvas (Fabric.js is already installed) for pinning cyphers,
-  ciphered radio transcripts, numbered group documents, and player-authored
-  notes, with string-connected clue threads between them. Needs: a new route
-  (src/pages/corkboard.astro), a FabricCanvas React island wrapping fabric.Canvas,
-  a typed content source in src/data/ for the starter pin pool, and a third
-  landing-page panel linking to it.
-
-  ==============================================================
-  ZOMBIES WEB: NEW ERA (CW → BO7) ARCHITECTURE & CONTENT TO-DO
-  ==============================================================
-  Tracks structural changes to support the Dark Aether storyline
-  and systems introduced from Cold War onwards.
-
-  [ ] 1. DATABASE SCHEMA: NEW ERA MECHANICS
-  ----------------------------------------------------------
-  - [ ] Weapon Rarity Modifiers: scaling stats for Base (Gray), Uncommon (Green),
-        Rare (Blue), Epic (Purple), Legendary (Orange).
-  - [ ] Dual Economy System: DB fields for Salvage costs alongside Essence (Points).
-  - [ ] Armor System: damage mitigation formulas for 1, 2, and 3-Plate armor levels.
-  - [ ] Loadouts: transition Starting Weapon logic from static pistols to custom loadouts.
-  - [ ] Field Upgrades: table for active abilities (Aether Shroud, Healing Aura,
-        Frenzied Guard) and their cooldowns.
-  - [ ] Skill Tiers & Augments:
-      - [ ] Cold War: Aetherium Crystal upgrade paths (Tiers I–V).
-      - [ ] BO6/BO7: Major and Minor Augments (e.g., Extension/Haste modifiers on perks).
-  - [ ] GobbleGums (BO6/BO7): re-integrate with updated Essence interaction rules.
-
-  [ ] 2. UI & COMPONENT DEVELOPMENT
-  ----------------------------------------------------------
-  - [ ] Arsenal Ranking Component: dynamic Weapon Tier List filtered by Game,
-        Rarity, and Ammo Mod efficiency. S-to-F tier board. Tag weapons as
-        Wall Buy vs. Mystery Box so players can quickly find reliable wall options
-        during ammo emergencies.
-  - [ ] Survival Masterclass Layout:
-      - [ ] Training Route Maps: visual maps/clips per level showing optimal
-            kiting loops and zombie spawn points along the route. Include
-            beginner explanation of the "train" technique.
-      - [ ] Camping Spot Breakdowns: best spots per map, wall/choke angles,
-            and critical "do not open" door warnings to prevent flanking routes.
-      - [ ] High-round strategy sections: camping vs. training tradeoffs, trap
-            utilization, and round-pacing guides.
-  - [ ] Lore Repository:
-      - [ ] Aether Timeline Encyclopedia (WaW → BO4): profile pages for key
-            figures (Richtofen, Samantha Maxis, etc.) — who they are, their goal,
-            which universe they belong to. Avoid front-loading 15 years of plot.
-      - [ ] Dark Aether Timeline Encyclopedia (CW → BO6): glossary for the
-            soft-reboot era — Requiem (CIA) vs. Omega Group (Soviet) factions,
-            political stakes, and the single-timeline 1980s–90s setting.
-      - [ ] Dark Aether Faction Glossary: Requiem, Omega Group, Terminus Outcomes.
-  - [ ] Mode Selectors: UI toggles on map pages to switch guide content between:
-      - [ ] Standard/Survival Mode (classic round-based).
-      - [ ] Directed Mode (guided narrative/Easter Egg steps).
-      - [ ] Cursed Mode (hardcore modifiers restricting perks/armor).
-      - [ ] Outbreak/Open World (objective-based progression).
-
-  [ ] 3. BO7 SPECIFIC ADDITIONS (2025/2026 ROADMAP)
-  ----------------------------------------------------------
-  - [ ] New Enemy Compendium: tags and weakness profiles for Armored Zombies,
-        Zombees, and the Zursa (Undead Bear Boss).
-  - [ ] New Perks Database: implement Wisp Tea and its Augments (Zombie Sitter, Fetcher).
-  - [ ] Vehicle Mechanics: sub-guide format for vehicle upgrades (e.g., Ol Tessie
-        in Tranzit-style maps).
-  - [ ] Chompy/Salvage Conversion: document new resource management loops
-        (e.g., feeding weapons for salvage).
-  - [ ] Cursed Modifiers: track special rewards/buffs for self-imposed limitations.
-
-  ==============================================================
-  NEW PLAYER ONBOARDING
-  ==============================================================
-  Highest-ROI gap: new players hit the site with no entry point.
-
-  [x] 4. "WHERE TO START" GUIDE — shipped at /start
-
-  [x] 5. FAQ PAGE — shipped at /faq
-
-  [x] 6. GLOBAL SEARCH — shipped via Pagefind. /search route + nav button, "/" shortcut.
-
-  ==============================================================
-  VETERAN / COMPLETIONIST CONTENT
-  ==============================================================
-
-  [ ] 7. AUDIO LOG & RADIO TRANSCRIPT ARCHIVE
-  ----------------------------------------------------------
-  - [ ] Indexed archive of all in-game audio logs, radio transcripts, and diary
-        entries (Nikolai diaries, Group 935 recordings, Der Wille transmissions,
-        Requiem audio logs, etc.) organized by map and character.
-  - [ ] Each entry tagged with crew, map, and canon date so it cross-references
-        the Kronorium chronicle. Lives naturally in the Kronorium surface.
-
-  [ ] 8. PERK ENCYCLOPEDIA
-  ----------------------------------------------------------
-  - [ ] Standalone perk reference (e.g., /perks) covering every perk across all
-        games: effect, cost, machine location per map, upgrade/Tier behavior,
-        Major and Minor Augments (BO6/BO7), and GobbleGum interactions.
-  - [ ] Currently scattered per-map in guide pages — veterans need a single
-        cross-game reference.
-
-  [x] 9. WONDER WEAPON COMPENDIUM — shipped at /wonder-weapons
-
-  [ ] 10. ACHIEVEMENT / TROPHY GUIDE
-  ----------------------------------------------------------
-  - [ ] Per-map achievement/trophy breakdowns: name, description, difficulty,
-        step-by-step tips. Completionists and trophy hunters have no home here.
-  - [ ] Filter by game, difficulty, and solo-viability.
-
-  [ ] 11. CO-OP STRATEGY GUIDES
-  ----------------------------------------------------------
-  - [ ] Co-op role breakdowns per map: who runs which route, who holds which
-        lane, who builds which buildable, suggested perk loadouts per role.
-  - [ ] High-round co-op coordination guides (2-player through 4-player splits).
-
-  [ ] 12. CIPHER / PUZZLE ARCHIVE
-  ----------------------------------------------------------
-  - [ ] Indexed archive of every in-game cipher: map location, cipher text,
-        cipher type (Vigenère, Morse, etc.), and community-solved translation.
-  - [ ] Distinct from the Theorist Corkboard (which is player-authored) — this
-        is a reference of already-solved official ciphers.
--->
-
 <Layout title="Element 115 — CoD Zombies">
   <a href="/search" class="landing-search" aria-label="Search the archive">
     <span class="ls-icon" aria-hidden="true">⌕</span>
@@ -133,15 +12,15 @@ import '../styles/global.css';
 
   <main id="landing">
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- OPS PANEL (left)                       -->
-    <!-- ══════════════════════════════════════ -->
+    
+    
+    
     <section class="panel ops-panel" id="ops-panel">
       <a href="/maps" class="panel-link" aria-label="Access Database"></a>
       <div class="ops-grid-bg"></div>
       <div class="ops-scanlines"></div>
 
-      <!-- HUD corner brackets -->
+      
       <i class="hud tl"></i>
       <i class="hud tr"></i>
       <i class="hud bl"></i>
@@ -162,9 +41,9 @@ import '../styles/global.css';
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- CENTER DIVIDER                         -->
-    <!-- ══════════════════════════════════════ -->
+    
+    
+    
     <div class="divide" aria-hidden="true">
       <div class="divide-line"></div>
       <div class="divide-emblem">
@@ -173,9 +52,9 @@ import '../styles/global.css';
       <div class="divide-line"></div>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- LORE PANEL (right)                     -->
-    <!-- ══════════════════════════════════════ -->
+    
+    
+    
     <section class="panel lore-panel" id="lore-panel">
       <a href="/kronorium" class="panel-link" aria-label="Open the Book"></a>
       <div class="lore-paper-bg"></div>
@@ -183,7 +62,7 @@ import '../styles/global.css';
       <div class="lore-vignette"></div>
       <div class="lore-glare"></div>
 
-      <!-- Ornate corners -->
+      
       <i class="arc tl"></i>
       <i class="arc tr"></i>
       <i class="arc bl"></i>
@@ -205,9 +84,6 @@ import '../styles/global.css';
   </main>
 </Layout>
 
-<!-- ════════════════════════════════════════════ -->
-<!-- GSAP hover animation                         -->
-<!-- ════════════════════════════════════════════ -->
 <script>
   import gsap from 'gsap';
 
@@ -215,7 +91,6 @@ import '../styles/global.css';
   const lore    = document.getElementById('lore-panel') as HTMLElement;
   const opsGrid = ops.querySelector('.ops-grid-bg') as HTMLElement;
 
-  // "/" hotkey → search
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
       e.preventDefault();
@@ -223,7 +98,6 @@ import '../styles/global.css';
     }
   });
 
-  // ── OPS: mouse-parallax grid ──────────────────────────────────
   ops.addEventListener('mousemove', (e) => {
     const rect = ops.getBoundingClientRect();
     const nx = (e.clientX - rect.left)  / rect.width;
@@ -237,7 +111,6 @@ import '../styles/global.css';
     gsap.to(opsGrid, { backgroundPosition: '0px 0px', duration: 0.8, ease: 'power2.out' });
   });
 
-  // ── LORE: floating dust particles on hover ────────────────────
   const activeParticles: HTMLElement[] = [];
   let loreInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -277,11 +150,9 @@ import '../styles/global.css';
     });
   }
 
-  // ── LORE: mouse-following glare + centre glow ────────────────
   const loreCentreGlow = lore.querySelector('.lore-centre-glow') as HTMLElement;
   const loreGlare = lore.querySelector('.lore-glare') as HTMLElement;
 
-  // Set initial state: centered, rotated, invisible, ready to track
   gsap.set(loreGlare, { xPercent: -50, yPercent: -50, rotation: 28, opacity: 0 });
 
   lore.addEventListener('mousemove', (e) => {
@@ -291,7 +162,6 @@ import '../styles/global.css';
     const nx = x / rect.width;
     const ny = y / rect.height;
 
-    // Glare streak follows cursor with smooth lag
     gsap.to(loreGlare, {
       x:        x,
       y:        y,
@@ -300,7 +170,6 @@ import '../styles/global.css';
       ease:     'power2.out',
     });
 
-    // Centre glow also follows mouse, but larger and softer
     gsap.to(loreCentreGlow, {
       '--gx':   `${nx * 100}%`,
       '--gy':   `${ny * 100}%`,
@@ -322,7 +191,7 @@ import '../styles/global.css';
 </script>
 
 <style>
-  /* ─── Landing search pill ─── */
+  
   .landing-search {
     position: fixed;
     top: 20px;
@@ -361,7 +230,7 @@ import '../styles/global.css';
     .ls-label { display: none; }
   }
 
-  /* ─── Root container ─── */
+  
   #landing {
     display: flex;
     height: 100vh;
@@ -369,7 +238,7 @@ import '../styles/global.css';
     overflow: hidden;
   }
 
-  /* ─── Shared panel base ─── */
+  
   .panel {
     position: relative;
     width: 50%;
@@ -396,9 +265,9 @@ import '../styles/global.css';
     width: 100%;
   }
 
-  /* ─────────────────────────────────────── */
-  /* OPS PANEL                               */
-  /* ─────────────────────────────────────── */
+  
+  
+  
 
   .ops-panel {
     background-color: #0b0c0f;
@@ -406,14 +275,14 @@ import '../styles/global.css';
   }
 
   .ops-inner {
-    /* push content toward the center divider */
+    
     margin-right: 120px;
-    /* extra top padding to align .ops-bar with .lore-bar (lore has file-no + label above its title) */
+    
     padding-top: calc(33vh + 40px);
     text-align: right;
   }
 
-  /* Subtle orange grid */
+  
   .ops-grid-bg {
     position: absolute;
     inset: 0;
@@ -423,7 +292,7 @@ import '../styles/global.css';
     background-size: 44px 44px;
   }
 
-  /* Scanlines */
+  
   .ops-scanlines {
     position: absolute;
     inset: 0;
@@ -437,7 +306,7 @@ import '../styles/global.css';
     pointer-events: none;
   }
 
-  /* HUD corner brackets */
+  
   .hud {
     position: absolute;
     width: 28px;
@@ -449,7 +318,7 @@ import '../styles/global.css';
   .hud.bl { bottom: 20px; left: 20px;  border-bottom: 2px solid #e07b2a; border-left:  2px solid #e07b2a; }
   .hud.br { bottom: 20px; right: 20px; border-bottom: 2px solid #e07b2a; border-right: 2px solid #e07b2a; }
 
-  /* OPS typography */
+  
   .ops-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -521,9 +390,9 @@ import '../styles/global.css';
     background: #f09040;
   }
 
-  /* ─────────────────────────────────────── */
-  /* LORE PANEL                              */
-  /* ─────────────────────────────────────── */
+  
+  
+  
 
   .lore-panel {
     background-color: #1c1308;
@@ -531,11 +400,11 @@ import '../styles/global.css';
   }
 
   .lore-inner {
-    /* push content toward the center divider */
+    
     margin-left: 120px;
   }
 
-  /* Paper grain + warm amber wash */
+  
   .lore-paper-bg {
     position: absolute;
     inset: 0;
@@ -548,11 +417,11 @@ import '../styles/global.css';
         rgba(120, 88, 42, 0.08) 22px,
         rgba(120, 88, 42, 0.08) 23px
       ),
-      /* warm amber wash over the whole panel */
+      
       linear-gradient(160deg, rgba(175, 120, 45, 0.09) 0%, rgba(140, 90, 25, 0.06) 100%);
   }
 
-  /* Small focused glare — position driven by CSS vars so both axes are visible */
+  
   .lore-centre-glow {
     position: absolute;
     inset: 0;
@@ -563,7 +432,7 @@ import '../styles/global.css';
     z-index: 1;
   }
 
-  /* Mouse-following glare streak */
+  
   .lore-glare {
     position: absolute;
     top: 0;
@@ -583,27 +452,27 @@ import '../styles/global.css';
     mix-blend-mode: screen;
   }
 
-  /* Age stains, burns, water damage — like the reference documents */
+  
   .lore-vignette {
     position: absolute;
     inset: 0;
     background:
-      /* Heavy burned corners — like edge-aged paper */
+      
       radial-gradient(ellipse at   0%   0%, rgba(3, 1, 0, 0.92) 0%, transparent 42%),
       radial-gradient(ellipse at 100%   0%, rgba(3, 1, 0, 0.88) 0%, transparent 38%),
       radial-gradient(ellipse at   0% 100%, rgba(3, 1, 0, 0.92) 0%, transparent 44%),
       radial-gradient(ellipse at 100% 100%, rgba(3, 1, 0, 0.90) 0%, transparent 40%),
-      /* Ring water stain — wet glass mark, top-left area */
+      
       radial-gradient(circle at 22% 28%, rgba(140, 95, 30, 0.30) 0%, rgba(140, 95, 30, 0.24) 7%, transparent 8%, transparent 12%, rgba(110, 72, 18, 0.14) 13%, transparent 18%),
-      /* Smaller ring — mid right */
+      
       radial-gradient(circle at 78% 58%, rgba(115, 75, 22, 0.22) 0%, rgba(115, 75, 22, 0.18) 4%, transparent 5%, transparent 8%, rgba(90, 58, 14, 0.10) 9%, transparent 13%),
-      /* Blotch stain — bottom right */
+      
       radial-gradient(ellipse at 88% 82%, rgba(120, 78, 22, 0.32) 0%, transparent 22%),
-      /* Edge bleed — right side */
+      
       radial-gradient(ellipse at 115% 50%, rgba(95, 48, 12, 0.40) 0%, transparent 34%);
   }
 
-  /* CLASSIFIED rubber-stamp — box style, like the Thundergun blueprint */
+  
   .lore-panel::after {
     content: 'CLASSIFIED';
     position: absolute;
@@ -619,12 +488,12 @@ import '../styles/global.css';
     pointer-events: none;
     z-index: 1;
     user-select: none;
-    /* Box border — the defining look of a rubber stamp */
+    
     border: 5px solid rgba(155, 28, 28, 0.24);
     padding: 10px 28px;
   }
 
-  /* Ornate corner brackets — more visible, slightly offset for hand-made feel */
+  
   .arc {
     position: absolute;
     width: 52px;
@@ -638,7 +507,7 @@ import '../styles/global.css';
   .arc.bl { bottom: 14px; left: 18px;  border-bottom: 1px solid #c9a24a; border-left:  1px solid #c9a24a; }
   .arc.br { bottom: 16px; right: 16px; border-bottom: 1px solid #c9a24a; border-right: 1px solid #c9a24a; }
 
-  /* File number — typewriter stamp, like Brutus card */
+  
   .lore-file-no {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 9px;
@@ -648,7 +517,7 @@ import '../styles/global.css';
     margin: 0 0 18px;
   }
 
-  /* LORE typography */
+  
   .lore-label {
     font-family: 'Caveat', cursive;
     font-size: 22px;
@@ -674,7 +543,7 @@ import '../styles/global.css';
   .lore-bar {
     width: 72px;
     height: 3px;
-    /* tapered brush-stroke feel */
+    
     background: linear-gradient(to right, #c9a24a 0%, #a07830 55%, transparent 100%);
     margin-bottom: 36px;
     clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0 60%);
@@ -712,9 +581,9 @@ import '../styles/global.css';
     border-color: #e0b860;
   }
 
-  /* ─────────────────────────────────────── */
-  /* CENTER DIVIDER                          */
-  /* ─────────────────────────────────────── */
+  
+  
+  
 
   .divide {
     position: absolute;
@@ -762,9 +631,9 @@ import '../styles/global.css';
     letter-spacing: 2px;
   }
 
-  /* ─────────────────────────────────────── */
-  /* MOBILE                                  */
-  /* ─────────────────────────────────────── */
+  
+  
+  
 
   @media (max-width: 768px) {
     #landing {
