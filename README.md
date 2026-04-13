@@ -142,6 +142,58 @@ Preview production build:
 npm run preview
 ```
 
+## Product TODO (player-facing roadmap)
+
+### Product gaps
+
+- [ ] **In-game mode for guides**
+  - [ ] Step checklist (tap to mark done)
+  - [ ] Large Next / Previous step controls
+  - [ ] Optional keep-screen-awake toggle
+  - [ ] Hide-spoilers toggle to collapse future steps
+
+- [ ] **Interactive puzzle solvers**
+  - [ ] Ship first solver set for 2–3 maps
+  - [ ] Support puzzle patterns like code wheels, symbol translators, dial/valve sequences
+
+- [ ] **Progress tracking (local-first)**
+  - [ ] Mark EE completed (solo/co-op)
+  - [ ] Per-map personal notes
+  - [ ] Export/share completion card
+
+- [ ] **Content coverage beyond BO4**
+  - [ ] Cold War coverage plan
+  - [ ] Vanguard coverage plan
+  - [ ] MWZ / modern-era coverage plan
+  - [ ] Publish a visible coverage roadmap page
+
+- [ ] **Community feedback loop**
+  - [ ] Suggest-a-correction on map/step entries
+  - [ ] Lightweight tips section with voting
+
+### UX and performance
+
+- [ ] **Treat heavy routes like optional DLC**
+  - [ ] Route-level code splitting for Kronorium and Lab surfaces
+  - [ ] Lazy-load 3D assets only on `/kronorium/lab`
+  - [ ] Add a low-spec mode toggle (reduce particles/effects)
+
+- [ ] **Search UX upgrades**
+  - [ ] Add type filters (Maps / Lore / Wonder Weapons / Perks)
+  - [ ] Improve section-level highlighting and jump-to anchors
+
+### Repo hygiene and trust signals
+
+- [ ] **Open-source basics**
+  - [ ] Add `LICENSE`
+  - [ ] Add `CONTRIBUTING.md`
+  - [ ] Add content sources / attribution policy
+
+- [ ] **Quality guardrails**
+  - [ ] Add lint and format scripts (`eslint`, `prettier`)
+  - [ ] Add typecheck script (`astro check` and/or `tsc --noEmit`)
+  - [ ] Add CI workflow for build + typecheck on pull requests
+
 ## Project layout
 
 ```
