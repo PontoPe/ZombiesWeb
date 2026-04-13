@@ -7,6 +7,9 @@ interface Props {
   backLabel?: string;
 }
 const { title = 'Field Manual', backHref = '/', backLabel = 'HOME' } = Astro.props;
+const searchHref = Astro.url.pathname === '/maps' || Astro.url.pathname.startsWith('/maps/')
+  ? '/search?from=maps'
+  : '/search';
 ---
 
 <html lang="en">
@@ -38,7 +41,7 @@ const { title = 'Field Manual', backHref = '/', backLabel = 'HOME' } = Astro.pro
         <span class="nav-title">{title}</span>
       </div>
       <div class="nav-right">
-        <a href="/search" class="nav-search" aria-label="Search">
+        <a href={searchHref} class="nav-search" aria-label="Search">
           <span class="nav-search-icon" aria-hidden="true">⌕</span>
           <span class="nav-search-label">SEARCH</span>
           <span class="nav-search-key">/</span>
@@ -53,10 +56,11 @@ const { title = 'Field Manual', backHref = '/', backLabel = 'HOME' } = Astro.pro
 
     <script>
       (function () {
+        const searchLink = document.querySelector('.nav-search');
         document.addEventListener('keydown', (e) => {
           if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
             e.preventDefault();
-            window.location.href = '/search';
+            window.location.href = searchLink instanceof HTMLAnchorElement ? searchLink.href : '/search';
           }
         });
       })();

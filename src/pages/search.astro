@@ -46,12 +46,21 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 
 <script is:inline>
   (function () {
+    document.body.classList.add('search-page');
     const from = new URLSearchParams(window.location.search).get('from');
+    const back = document.querySelector('.nav-back');
+
+    if (from === 'maps' && back instanceof HTMLAnchorElement) {
+      back.setAttribute('href', '/maps');
+      const spans = back.querySelectorAll('span');
+      if (spans.length >= 2) spans[spans.length - 1].textContent = 'MAPS';
+      return;
+    }
+
     if (from !== 'kronorium') return;
     document.body.classList.add('search-lore-theme');
     const shell = document.getElementById('pf-shell');
     if (shell) shell.classList.add('lore-theme');
-    const back = document.querySelector('.nav-back');
     if (back instanceof HTMLAnchorElement) {
       back.setAttribute('href', '/kronorium');
       const spans = back.querySelectorAll('span');
@@ -542,6 +551,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     left: 0;
     right: 0;
     bottom: 0;
+    background-color: #0b0c0f;
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
@@ -564,6 +574,10 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     top: 0;
     width: 8000px;
     height: 6000px;
+    background-image:
+      linear-gradient(rgba(224, 123, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224, 123, 42, 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
     transform-origin: 0 0;
     transform: translate(calc(50vw - 4400px), calc((100vh - 52px) / 2 - 3300px)) scale(1.1);
     will-change: transform;
@@ -881,12 +895,8 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     color: #c9a24a;
   }
   :global(body.search-lore-theme .nav-search-icon) { color: #c9a24a; }
+  :global(body.search-page .ops-grid-bg) { display: none; }
   :global(body.search-lore-theme .ops-body) { background: #0e0b07; }
-  :global(body.search-lore-theme .ops-grid-bg) {
-    background-color: #0e0b07;
-    background-image: radial-gradient(circle, #1e1810 1px, transparent 1px);
-    background-size: 36px 36px;
-  }
   :global(body.search-lore-theme .ops-scanlines) { display: none; }
 
   /* LORE THEME — amber / parchment palette for kronorium-sourced search */
@@ -912,12 +922,12 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 
   .search-shell.lore-theme .search-network {
     background-color: #0e0b07;
-    background-image: radial-gradient(circle, #1e1810 1px, transparent 1px);
-    background-size: 36px 36px;
   }
 
   .search-shell.lore-theme .search-canvas {
     z-index: 0;
+    background-image: radial-gradient(circle, #1e1810 1px, transparent 1px);
+    background-size: 36px 36px;
     transform: translate(calc(50vw - 4000px), calc(50vh - 52px - 3000px)) scale(1);
   }
 
