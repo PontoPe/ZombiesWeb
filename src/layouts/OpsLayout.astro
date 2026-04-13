@@ -192,6 +192,10 @@ const { title = 'Field Manual', backHref = '/', backLabel = 'HOME' } = Astro.pro
     padding: 40px 32px 80px;
   }
 
+  :global(.header-hud-tl) {
+    display: none !important;
+  }
+
   @media (max-width: 768px) {
     .ops-nav { padding: 0 16px; }
     .nav-right { display: none; }
