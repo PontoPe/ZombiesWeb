@@ -575,6 +575,33 @@ export const MAPS: MapData[] = [
   },
 ];
 
+// ─── Thumbnails ──────────────────────────────────────────────────────
+// Map id → file under /public/images/maps/thumbnails/
+const THUMB_DIR = '/images/maps/thumbnails';
+export const MAP_THUMBNAILS: Record<string, string> = {
+  'nacht-der-untoten':  `${THUMB_DIR}/nacht.webp`,
+  'verruckt':           `${THUMB_DIR}/Verruckt.webp`,
+  'shi-no-numa':        `${THUMB_DIR}/ShiNoNuma.webp`,
+  'der-riese':          `${THUMB_DIR}/DerRiese.webp`,
+  'kino-der-toten':     `${THUMB_DIR}/Kino.webp`,
+  'five':               `${THUMB_DIR}/five.webp`,
+  'ascension':          `${THUMB_DIR}/ascension.webp`,
+  'call-of-the-dead':   `${THUMB_DIR}/Call_of_the_Dead.webp`,
+  'shangri-la':         `${THUMB_DIR}/Shangri_La.webp`,
+  'moon':               `${THUMB_DIR}/moon.webp`,
+  'tranzit':            `${THUMB_DIR}/tranzit.webp`,
+  'die-rise':           `${THUMB_DIR}/die_rise.jpg`,
+  'mob-of-the-dead':    `${THUMB_DIR}/motd.webp`,
+  'buried':             `${THUMB_DIR}/buried.jpg`,
+  'origins':            `${THUMB_DIR}/origins.webp`,
+  'shadows-of-evil':    `${THUMB_DIR}/Shadows_of_Evil.webp`,
+  'the-giant':          `${THUMB_DIR}/The_Giant_Menu_Selection_BO3.webp`,
+  'der-eisendrache':    `${THUMB_DIR}/DE_Icon.webp`,
+  'zetsubou-no-shima':  `${THUMB_DIR}/Zetsubou_No_Shima_Menu_Selection_BO3.webp`,
+  'gorod-krovi':        `${THUMB_DIR}/Gorod_Krovi_Menu_Selection_BO3.webp`,
+  'revelations':        `${THUMB_DIR}/Revelations.webp`,
+};
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 /** All maps for a given game, in release order. */

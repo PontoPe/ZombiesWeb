@@ -1,5 +1,5 @@
 import type { MapData } from '../../data/maps';
-import { GAMES } from '../../data/maps';
+import { GAMES, MAP_THUMBNAILS } from '../../data/maps';
 
 interface Props {
   map: MapData;
@@ -33,13 +33,16 @@ function StarRating({ value }: { value: number }) {
 
 export default function MapCard({ map }: Props) {
   const game = GAMES[map.game];
+  const thumb = MAP_THUMBNAILS[map.id];
 
   return (
     <a href={`/maps/${map.id}`} className="map-card">
 
       {/* ── Image / placeholder ── */}
       <div className="card-img">
-        <span className="card-img-letter">{map.title[0]}</span>
+        {thumb
+          ? <img className="card-img-photo" src={thumb} alt={map.title} loading="lazy" />
+          : <span className="card-img-letter">{map.title[0]}</span>}
         <div className="card-img-overlay" />
         {/* Badges top row */}
         <div className="card-badges">
