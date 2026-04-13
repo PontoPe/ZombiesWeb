@@ -39,6 +39,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 <script is:inline>
   (function () {
     let pagefind = null;
+    const isIntroMode = new URLSearchParams(window.location.search).get('intro') === '1';
 
     async function loadPagefind() {
       if (pagefind) return pagefind;
@@ -56,6 +57,11 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     const results = document.getElementById('pf-results');
     const status  = document.getElementById('pf-status');
     if (!input || !results || !status) return;
+    const root = document.querySelector('.search-root');
+    if (isIntroMode && root instanceof HTMLElement) {
+      root.classList.add('is-intro');
+      document.body.classList.add('search-intro');
+    }
 
     let debounce;
 
@@ -84,6 +90,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     }
 
     async function runSearch(q) {
+      if (root instanceof HTMLElement) {
+        root.classList.toggle('has-query', !!q.trim());
+      }
       if (!q.trim()) {
         results.innerHTML = '';
         status.textContent = '';
@@ -178,6 +187,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     display: flex;
     flex-direction: column;
     gap: 20px;
+    transition: transform 0.36s ease, opacity 0.24s ease;
   }
 
   .search-input-wrap {
@@ -233,6 +243,43 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+
+  :global(body.search-intro) .page-header {
+    opacity: 0;
+    transform: translateY(-14px);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .search-root.is-intro {
+    min-height: calc(100vh - 180px);
+    justify-content: center;
+  }
+
+  .search-root.is-intro .search-status,
+  .search-root.is-intro .search-results {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  .search-root.is-intro.has-query {
+    justify-content: flex-start;
+    min-height: auto;
+  }
+
+  .search-root.is-intro.has-query .search-status,
+  .search-root.is-intro.has-query .search-results {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   .hit {
