@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { MapLoreEntry, StoryImpact } from '../../data/mapLore';
 
-// ── Impact badge colours ─────────────────────────────────────
 const IMPACT_COLOUR: Record<StoryImpact, string> = {
   Low:      '#5a7a5a',
   Medium:   '#7a7a3a',
@@ -17,14 +16,14 @@ interface Props {
 export default function MapLoreModal({ entry, onClose }: Props) {
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  /* close on Escape */
+  
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  /* close on backdrop click */
+  
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === backdropRef.current) onClose();
   };
@@ -77,7 +76,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
           boxShadow: '0 12px 60px rgba(0,0,0,0.7)',
         }}
       >
-        {/* ── Close button ── */}
+        
         <button
           onClick={onClose}
           aria-label="Close"
@@ -105,9 +104,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
 
         <div style={{ padding: '28px 36px 36px' }}>
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 1 — HEADER / OVERVIEW
-             ══════════════════════════════════════════════════ */}
+          
           <div
             style={{
               fontSize: 8,
@@ -135,7 +132,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
             {entry.title}
           </h1>
 
-          {/* Header grid */}
+          
           <div
             style={{
               display: 'grid',
@@ -148,13 +145,13 @@ export default function MapLoreModal({ entry, onClose }: Props) {
               marginBottom: 28,
             }}
           >
-            {/* Setting */}
+            
             <div style={{ gridColumn: '1 / -1' }}>
               <div style={labelStyle}>Setting</div>
               <div style={valueStyle}>{entry.header.setting}</div>
             </div>
 
-            {/* Crew */}
+            
             <div>
               <div style={labelStyle}>Crew</div>
               <div style={valueStyle}>
@@ -164,13 +161,13 @@ export default function MapLoreModal({ entry, onClose }: Props) {
               </div>
             </div>
 
-            {/* Zombie Controller */}
+            
             <div>
               <div style={labelStyle}>Zombie Controller</div>
               <div style={valueStyle}>{entry.header.zombieController}</div>
             </div>
 
-            {/* Story Impact */}
+            
             <div>
               <div style={labelStyle}>Story Impact</div>
               <div
@@ -192,9 +189,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 2 — PRELUDE (Before)
-             ══════════════════════════════════════════════════ */}
+          
           <SectionBlock
             number="II"
             title="Prelude"
@@ -202,9 +197,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
             subsections={entry.prelude}
           />
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 3 — THE QUEST (During)
-             ══════════════════════════════════════════════════ */}
+          
           <SectionBlock
             number="III"
             title="The Quest"
@@ -212,9 +205,7 @@ export default function MapLoreModal({ entry, onClose }: Props) {
             subsections={entry.quest}
           />
 
-          {/* ══════════════════════════════════════════════════
-              SECTION 4 — AFTERMATH (After)
-             ══════════════════════════════════════════════════ */}
+          
           <SectionBlock
             number="IV"
             title="Aftermath"
@@ -226,8 +217,6 @@ export default function MapLoreModal({ entry, onClose }: Props) {
     </div>
   );
 }
-
-// ── Shared styles ────────────────────────────────────────────
 
 const labelStyle: React.CSSProperties = {
   fontSize: 8,
@@ -245,8 +234,6 @@ const valueStyle: React.CSSProperties = {
   lineHeight: 1.55,
 };
 
-// ── Section Block ────────────────────────────────────────────
-
 function SectionBlock({
   number,
   title,
@@ -260,7 +247,7 @@ function SectionBlock({
 }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      {/* Section header */}
+      
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4 }}>
         <span
           style={{
@@ -299,7 +286,7 @@ function SectionBlock({
 
       <div style={{ height: 1, background: '#c9a24a18', marginBottom: 16 }} />
 
-      {/* Subsections */}
+      
       {subsections.map((sub, i) => (
         <div key={i} style={{ marginBottom: 16 }}>
           <div

@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-// ── Virtual filesystem ──────────────────────────────────────
-
 type DirNode = { type: 'dir'; children: Record<string, DirNode | FileNode> };
 type FileNode = { type: 'file'; content: string };
 type FSNode = DirNode | FileNode;
@@ -156,8 +154,6 @@ const virtualFS: Record<string, DirNode> = {
   },
 };
 
-// ── FS helpers ──────────────────────────────────────────────
-
 function getNode(pathArr: PathArr): FSNode | null {
   let node: FSNode = virtualFS['/'] as FSNode;
   for (const part of pathArr) {
@@ -171,8 +167,6 @@ function getPathString(pathArr: PathArr): string {
   const path = pathArr.join('/');
   return `richtofen@GRP935:/${path ? path : ''}`;
 }
-
-// ── Zombies commands ────────────────────────────────────────
 
 const PERK_JINGLES: Record<string, string[]> = {
   juggernog: [
@@ -388,8 +382,6 @@ function processZombiesCommand(cmd: string, args: string[]): string[] | null {
   }
 }
 
-// ── Help text ───────────────────────────────────────────────
-
 const HELP_TEXT = [
   '═══════════════════════════════════════════',
   '  GROUP 935 TERMINAL — COMMAND REFERENCE',
@@ -417,8 +409,6 @@ const HELP_TEXT = [
   '═══════════════════════════════════════════',
 ];
 
-// ── Terminal component ──────────────────────────────────────
-
 interface LabTerminalProps {
   onClose: () => void;
 }
@@ -438,14 +428,12 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [history]);
 
-  // Focus input on mount
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 50);
     return () => clearTimeout(timer);
@@ -511,7 +499,6 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
 
       const newHistory = [...history, `${getPathString(cwd)} $ ${rawInput}`];
 
-      // ── Filesystem commands ──
       const node = getNode(cwd);
 
       if (cmd === 'ls') {
@@ -532,7 +519,6 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
           if (target === '..' || target === '../') {
             if (cwd.length > 0) setCwd(cwd.slice(0, -1));
           } else if (target === '.') {
-            // noop
           } else if (
             node &&
             node.type === 'dir' &&
@@ -568,9 +554,7 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
         onClose();
         return;
       } else if (cmd === '') {
-        // empty enter
       } else {
-        // ── Zombies commands ──
         const result = processZombiesCommand(cmd, args);
         if (result) {
           newHistory.push(...result);
@@ -605,7 +589,7 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
         inputRef.current?.focus();
       }}
     >
-      {/* CRT overlay */}
+      
       <div
         style={{
           width: '70%',
@@ -622,7 +606,7 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
           position: 'relative',
         }}
       >
-        {/* Scanline effect */}
+        
         <div
           style={{
             position: 'absolute',
@@ -634,7 +618,7 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
           }}
         />
 
-        {/* Title bar */}
+        
         <div
           style={{
             padding: '6px 12px',
@@ -677,7 +661,7 @@ export default function LabTerminal({ onClose }: LabTerminalProps) {
           </button>
         </div>
 
-        {/* Terminal body */}
+        
         <div
           ref={terminalRef}
           style={{

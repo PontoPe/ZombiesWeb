@@ -1,5 +1,3 @@
-// Wonder Weapon compendium — cross-game reference.
-// Each entry covers acquisition, upgrade (PaP), effect, ammo, and map availability.
 
 import type { GameId } from './maps';
 
@@ -25,27 +23,25 @@ export type AcquisitionMethod =
 export interface WonderWeapon {
   id: string;
   name: string;
-  /** Short alternate name / nickname */
+  
   aka?: string;
   type: WWType;
   introducedIn: { mapId: string; mapTitle: string; game: GameId };
-  /** Additional maps this WW (or a direct variant) appears on */
+  
   alsoOn?: { mapId: string; mapTitle: string; note?: string }[];
   acquisition: AcquisitionMethod;
   acquisitionNote: string;
   papName?: string;
   papEffect: string;
   ammo: string;
-  /** One-line damage profile */
+  
   damage: string;
   description: string;
-  /** Upgrade variants beyond standard PaP (e.g. elemental staff upgrades) */
+  
   variants?: string[];
 }
 
 export const WONDER_WEAPONS: WonderWeapon[] = [
-
-  // ══════════════ WORLD AT WAR ══════════════
 
   {
     id: 'wunderwaffe-dg2',
@@ -66,8 +62,6 @@ export const WONDER_WEAPONS: WonderWeapon[] = [
     damage: 'One-shot kills through walls and through the entire chain.',
     description: "Group 935's lightning cannon — the original wonder weapon. Forks between every zombie in a huge radius with a single trigger pull. Will kill the user if they are caught in the chain at low rounds.",
   },
-
-  // ══════════════ BLACK OPS ══════════════
 
   {
     id: 'ray-gun',
@@ -202,8 +196,6 @@ export const WONDER_WEAPONS: WonderWeapon[] = [
     description: 'Chaos grenade. Best thought of as a gamble: sometimes you get a Max Ammo, sometimes you get a sad fart.',
   },
 
-  // ══════════════ BLACK OPS II ══════════════
-
   {
     id: 'sliquifier',
     name: 'Sliquifier',
@@ -263,8 +255,6 @@ export const WONDER_WEAPONS: WonderWeapon[] = [
     variants: ['Ull\'s Arrow (Ice)', "Kagutsuchi's Blood (Fire)", "Kimat's Bite (Lightning)", "Boreas' Fury (Wind)"],
   },
 
-  // ══════════════ BLACK OPS III ══════════════
-
   {
     id: 'apothicon-servant',
     name: 'Apothicon Servant',
@@ -322,8 +312,6 @@ export const WONDER_WEAPONS: WonderWeapon[] = [
     damage: 'Plasma rounds — high single-target damage.',
     description: 'Soviet plasma pistol bonded with dragon essence. Its alt-fire dragon breath is one of the most flashy WW abilities in the series.',
   },
-
-  // ══════════════ BLACK OPS 4 ══════════════
 
   {
     id: 'sentinel-artifact',
@@ -389,7 +377,6 @@ export const WONDER_WEAPONS: WonderWeapon[] = [
 
 ];
 
-/** Group by source game. */
 export function wwByGame(): Record<GameId, WonderWeapon[]> {
   const out = { waw: [], bo1: [], bo2: [], bo3: [], bo4: [] } as Record<GameId, WonderWeapon[]>;
   for (const w of WONDER_WEAPONS) out[w.introducedIn.game].push(w);

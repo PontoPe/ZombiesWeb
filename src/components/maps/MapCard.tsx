@@ -38,13 +38,13 @@ export default function MapCard({ map }: Props) {
   return (
     <a href={`/maps/${map.id}`} className="map-card">
 
-      {/* ── Image / placeholder ── */}
+      
       <div className="card-img">
         {thumb
           ? <img className="card-img-photo" src={thumb} alt={map.title} loading="lazy" />
           : <span className="card-img-letter">{map.title[0]}</span>}
         <div className="card-img-overlay" />
-        {/* Badges top row */}
+        
         <div className="card-badges">
           <span className="badge-game" style={{ background: game.color }}>
             {game.short}
@@ -54,25 +54,25 @@ export default function MapCard({ map }: Props) {
         </div>
       </div>
 
-      {/* ── Body ── */}
+      
       <div className="card-body">
 
-        {/* Title */}
+        
         <h3 className="card-title">{map.title}</h3>
 
-        {/* Setting / date */}
+        
         <p className="card-setting">
           {map.setting}
           <span className="card-date"> · {map.inUniverseDate}</span>
         </p>
 
-        {/* Description */}
+        
         <p className="card-desc">{map.description}</p>
 
-        {/* Divider */}
+        
         <div className="card-rule" />
 
-        {/* Stats */}
+        
         <div className="card-stats">
           <div className="stat-row">
             <span className="stat-label">QUEST</span>
@@ -90,7 +90,7 @@ export default function MapCard({ map }: Props) {
           </div>
         </div>
 
-        {/* CTA */}
+        
         <div className="card-cta">
           <span>ENTER MAP</span>
           <span className="cta-arrow">→</span>

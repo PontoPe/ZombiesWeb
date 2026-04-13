@@ -15,14 +15,14 @@ export interface TimelineNode {
   label: string;
   x: number;
   y: number;
-  /** Accent colour override — red/green for fractures & end-states, #7aa991 for branch reasons */
+  
   color?: string;
-  /* Only populated for 'event' nodes (clickable map cards) */
+  
   summary?: string;
   date?: string;
   location?: string;
   mapId?: string;
-  /** Crew that plays this map (used for crew highlight filter) */
+  
   crew?: string;
 }
 
@@ -30,15 +30,14 @@ export interface TimelineEdge {
   id: string;
   source: string;
   target: string;
-  /** Override source handle position: 'right' (default), 'bottom', 'top', 'left' */
+  
   sourceHandle?: 'right' | 'bottom' | 'top' | 'left';
-  /** Override target handle position: 'left' (default), 'top', 'bottom', 'right' */
+  
   targetHandle?: 'left' | 'top' | 'bottom' | 'right';
-  /** Optional label displayed on the edge */
+  
   label?: string;
 }
 
-/* Legacy — kept so other pages still compile */
 export interface LoreEvent {
   id: string;
   title: string;
@@ -59,11 +58,6 @@ export interface LoreConnection {
   label?: string;
 }
 
-// ══════════════════════════════════════════════════════════════
-//  HORIZONTAL FLOWCHART DATA  (matches Aether timeline diagram)
-// ══════════════════════════════════════════════════════════════
-
-// Card dimensions
 const EW = 240;   // event card width
 const DW = 180;   // dimension header width
 const FW = 160;   // fracture label width
@@ -71,10 +65,8 @@ const BW = 200;   // branch-reason width
 const TW = 320;   // title width
 const SW = 160;   // end-state width
 
-// Centre a node of width w at horizontal position p
 const cx = (p: number, w: number) => p - w / 2;
 
-// ── Row centres (y-axis) — vertical lanes ───────────────────
 const ROW_AGONIA      = -80;   // Agonia fracture sub-branch
 const ROW_DECEPTIO    = 100;
 const ROW_OD          = 280;   // Shared OD maps (Nacht, Verrückt)
@@ -87,42 +79,20 @@ const ROW_AGARTHA     = 1500;
 const ROW_EMPTY       = 1750;
 const ROW_GW          = 900;   // Great War — roughly centred
 
-// ── Column centres (x-axis) — flow direction ────────────────
 const STEP = 340;
 const X = (n: number) => n * STEP + 200;
 
-// Col  0 = Title
-// Col  1 = Great War
-// Col  2 = Branch reasons → dimensions
-// Col  3 = Dimension headers
-// Col  4 = Nacht / D63 Origins / AG Revelations / EE Zero
-// Col  5 = Verrückt / D63 MOTD / AG Children
-// Col  6 = Branch reasons from Verrückt / D63 br-cycle/br-broken
-// Col  7 = Fracture & TL labels / D63 tl-cycle/tl-broken
-// Col  8 = Giant, Gorod+Five (parallel), Zetsubou, Shi No Numa / D63 lab, blood
-// Col  9 = Eisendrache, Der Riese / D63 SoE
-// Col 10 = Shangri-La / D63 destroyed
-// Col 11 = Kino
-// Col 12 = Classified
-// Col 13 = Ascension
-// Col 14 = Call of the Dead
-// Col 15 = Moon + Nuketown + Alpha Omega (parallel)
-// Col 16–20 = TranZit → Buried → Tag → Destroyed
-
 export const TIMELINE_NODES: TimelineNode[] = [
 
-  // ─── Title ────────────────────────────────────────────────
   { id: 'title', nodeType: 'title', label: 'THE BEGINNING OF TIME',
     x: cx(X(0), TW), y: ROW_GW },
 
-  // ─── Root ─────────────────────────────────────────────────
   { id: 'great-war', nodeType: 'event', label: 'THE GREAT WAR',
     x: cx(X(1), EW), y: ROW_GW,
     date: '~1300 AD', location: 'Earth / Agartha borderlands',
     summary: 'The Apothicons breach reality and invade Earth. The Keepers recruit four human champions.',
   },
 
-  // ─── Branch reasons → Dimensions (col 2) ─────────────────
   { id: 'br-pablo-no',  nodeType: 'branchReason', label: 'PABLO DOESNT WRITE HIS JOURNAL',
     x: cx(X(2), BW), y: ROW_OD, color: '#7aa991' },
   { id: 'br-pablo-yes', nodeType: 'branchReason', label: 'PABLO WRITES HIS JOURNAL',
@@ -130,7 +100,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'br-no-life',   nodeType: 'branchReason', label: 'LIFE NEVER DEVELOPS ON EARTH',
     x: cx(X(2), BW), y: ROW_EMPTY, color: '#7aa991' },
 
-  // ─── Dimension headers (col 3) ────────────────────────────
   { id: 'dim-od',       nodeType: 'dimension', label: 'THE ORIGINAL DIMENSION',
     x: cx(X(3), DW), y: ROW_OD, color: '#00e5ff' },
   { id: 'dim-63',       nodeType: 'dimension', label: 'DIMENSION 63',
@@ -140,9 +109,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'dim-empty',    nodeType: 'dimension', label: 'EMPTY EARTH',
     x: cx(X(3), DW), y: ROW_EMPTY, color: '#00e5ff' },
 
-  // ═══ THE ORIGINAL DIMENSION ═══════════════════════════════
-
-  // Shared maps: Nacht (col 4), Verrückt (col 5) ────────────
   { id: 'nacht', nodeType: 'event', label: 'NACHT DER UNTOTEN',
     x: cx(X(4), EW), y: ROW_OD,
     date: 'June 4th, 1945', location: 'Abandoned bunker, Germany', mapId: 'nacht-der-untoten',
@@ -156,7 +122,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Marines',
   },
 
-  // Branch reasons from Verrückt (col 6) ─────────────────────
   { id: 'br-gruber',          nodeType: 'branchReason', label: 'GRUBER 8 CREATES DRAGONS',
     x: cx(X(6), BW), y: ROW_AGONIA, color: '#7aa991' },
   { id: 'br-richtofen-kills', nodeType: 'branchReason', label: 'RICHTOFEN KILLS MAXIS',
@@ -166,7 +131,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'br-ultimis',         nodeType: 'branchReason', label: 'ULTIMIS IS FORMED',
     x: cx(X(6), BW), y: ROW_TRUE_TL, color: '#7aa991' },
 
-  // Fracture & timeline labels (col 7) ───────────────────────
   { id: 'frac-agonia',    nodeType: 'fracture', label: 'AGONIA FRACTURE',
     x: cx(X(7), FW), y: ROW_AGONIA, color: '#cc2222',
     summary: 'A fractured timeline where the Battle of Stalingrad never ends. Group 935 deploys dragons on the Eastern Front, and WWII rages indefinitely. Stalingrad becomes a three-way war between dragons, machines, and the undead.',
@@ -184,7 +148,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     summary: 'The original, unbroken sequence of events. Ultimis is formed and embarks on a globe-spanning journey from Shi No Numa to the Moon, culminating in Richtofen\'s Grand Scheme and the fracturing of Earth.',
   },
 
-  // ─── Agonia fracture path (sequential: G -> F) ───────
   { id: 'gorod-krovi', nodeType: 'event', label: 'GOROD KROVI',
     x: cx(X(8), EW), y: ROW_AGONIA,
     date: 'November 6th, 1945', location: 'Stalingrad, Soviet Union', mapId: 'gorod-krovi',
@@ -199,7 +162,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   },
   
 
-  // ─── Deceptio fracture path (cols 8–9) ────────────────────
   { id: 'the-giant', nodeType: 'event', label: 'THE GIANT',
     x: cx(X(8), EW), y: ROW_DECEPTIO,
     date: 'October 13th, 1945', location: 'Der Riese Facility, Poland', mapId: 'the-giant',
@@ -213,7 +175,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Primis',
   },
 
-  // ─── Proditone fracture path (col 8) ──────────────────────
   { id: 'zetsubou', nodeType: 'event', label: 'ZETSUBOU NO SHIMA',
     x: cx(X(8), EW), y: ROW_PRODITONE_F,
     date: 'October 1st, 1945', location: 'Pohnpei Island, Pacific', mapId: 'zetsubou-no-shima',
@@ -221,7 +182,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Primis',
   },
 
-  // ─── True Timeline path (cols 8–20) ───────────────────────
   { id: 'tt-shi-no-numa', nodeType: 'event', label: 'SHI NO NUMA',
     x: cx(X(8), EW), y: ROW_TRUE_TL,
     date: 'October 21st, 1945', location: 'Shi No Numa Facility, Japan', mapId: 'shi-no-numa',
@@ -265,7 +225,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Ultimis',
   },
 
-  // ─── Oct 13 2025 — parallel trio (col 15) ─────────────────
   { id: 'tt-alpha-omega', nodeType: 'event', label: 'ALPHA OMEGA',
     x: cx(X(15), EW), y: ROW_TRUE_TL - 120,
     date: 'October 13th, 2025', location: 'Camp Edward, Nevada', mapId: 'alpha-omega',
@@ -285,7 +244,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'CIA/CDC',
   },
 
-  // ─── Post-2025 continuation ───────────────────────────────
   { id: 'tt-tranzit', nodeType: 'event', label: 'TRANZIT',
     x: cx(X(16), EW), y: ROW_TRUE_TL,
     date: 'October 21st, 2035', location: 'Hanford, Washington', mapId: 'tranzit',
@@ -313,8 +271,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'tt-destroyed', nodeType: 'endState', label: 'MULTIVERSE DESTROYED',
     x: cx(X(20), SW), y: ROW_TRUE_TL, color: '#cc2222' },
 
-  // ═══ DIMENSION 63 ═════════════════════════════════════════
-
   { id: 'd63-origins', nodeType: 'event', label: 'ORIGINS',
     x: cx(X(4), EW), y: ROW_D63,
     date: 'June 4th, 1918', location: 'Excavation Site 64, France', mapId: 'origins',
@@ -328,13 +284,11 @@ export const TIMELINE_NODES: TimelineNode[] = [
     crew: 'Mob Crew',
   },
 
-  // Branch reasons (col 6)
   { id: 'br-cycle',  nodeType: 'branchReason', label: 'MOBSTERS NEVER BREAK THE CYCLE',
     x: cx(X(6), BW), y: ROW_CYCLE, color: '#7aa991' },
   { id: 'br-broken', nodeType: 'branchReason', label: 'MOBSTERS BREAK THE CYCLE',
     x: cx(X(6), BW), y: ROW_BROKEN, color: '#7aa991' },
 
-  // Timeline labels (col 7)
   { id: 'tl-cycle',  nodeType: 'fracture', label: 'CYCLE TIMELINE',
     x: cx(X(7), FW), y: ROW_CYCLE, color: '#cc2222',
     summary: 'In this timeline the mobsters of Alcatraz never break free. The cycle repeats endlessly — Sal, Finn, and Billy kill Al, die, and wake to do it again. Richtofen exploits the pocket dimension for his plans.',
@@ -344,7 +298,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
     summary: 'Al finally prevails over the other mobsters, breaking the Alcatraz cycle. This allows Primis to later arrive at the pocket dimension in Blood of the Dead, where Primis Richtofen sacrifices himself to break free.',
   },
 
-  // Cycle path (cols 8–10)
   { id: 'd63-lab', nodeType: 'event', label: 'RICHTOFENS LAB',
     x: cx(X(8), EW), y: ROW_CYCLE,
     date: '1940s', location: 'Richtofen\'s hidden laboratory',
@@ -359,15 +312,12 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'd63-destroyed', nodeType: 'endState', label: 'UNIVERSE DESTROYED',
     x: cx(X(10), SW), y: ROW_CYCLE, color: '#cc2222' },
 
-  // Broken path (col 8)
   { id: 'd63-blood', nodeType: 'event', label: 'BLOOD OF THE DEAD',
     x: cx(X(8), EW), y: ROW_BROKEN,
     date: 'July 4th, 1941', location: 'Alcatraz Island, USA', mapId: 'blood-of-the-dead',
     summary: 'Primis arrives at the Alcatraz pocket dimension. The Warden traps them in a cycle. Primis Richtofen is replaced by a post-Revelations version who breaks the cycle.',
     crew: 'Primis',
   },
-
-  // ═══ AGARTHA ══════════════════════════════════════════════
 
   { id: 'ag-revelations', nodeType: 'event', label: 'REVELATIONS',
     x: cx(X(19), EW), y: ROW_AGARTHA,
@@ -378,8 +328,6 @@ export const TIMELINE_NODES: TimelineNode[] = [
   { id: 'ag-children', nodeType: 'endState', label: 'CHILDREN ARE SAFE',
     x: cx(X(20), SW), y: ROW_AGARTHA, color: '#22cc44' },
 
-  // ═══ EMPTY EARTH ══════════════════════════════════════════
-
   { id: 'ee-zero-base', nodeType: 'event', label: 'ZERO BASE',
     x: cx(X(4), EW), y: ROW_EMPTY,
     date: 'Unknown', location: 'Empty Earth',
@@ -387,13 +335,9 @@ export const TIMELINE_NODES: TimelineNode[] = [
   },
 ];
 
-// ── Edges ────────────────────────────────────────────────────
-
 export const TIMELINE_EDGES: TimelineEdge[] = [
-  // Root
   { id: 'e-title',         source: 'title',        target: 'great-war' },
 
-  // Great War → dimension branches
   { id: 'e-gw-od',         source: 'great-war',    target: 'br-pablo-no' },
   { id: 'e-gw-63',         source: 'great-war',    target: 'br-pablo-yes' },
   { id: 'e-gw-ag',         source: 'great-war',    target: 'dim-agartha' },
@@ -403,34 +347,27 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   { id: 'e-br-63',         source: 'br-pablo-yes', target: 'dim-63' },
   { id: 'e-br-ee',         source: 'br-no-life',   target: 'dim-empty' },
 
-  // ── Original Dimension ──────────────────────────────────
   { id: 'e-od-nacht',      source: 'dim-od',        target: 'nacht' },
   { id: 'e-nacht-ver',     source: 'nacht',         target: 'verruckt' },
 
-  // Verrückt → four branch reasons
   { id: 'e-ver-gruber',    source: 'verruckt',      target: 'br-gruber',          sourceHandle: 'top' },
   { id: 'e-ver-richtofen', source: 'verruckt',      target: 'br-richtofen-kills', sourceHandle: 'top' },
   { id: 'e-ver-shi',       source: 'verruckt',      target: 'br-shi-overrun',     sourceHandle: 'bottom' },
   { id: 'e-ver-ultimis',   source: 'verruckt',      target: 'br-ultimis',         sourceHandle: 'bottom' },
 
-  // Branch reasons → fracture / TL labels
   { id: 'e-gruber-ag',     source: 'br-gruber',          target: 'frac-agonia' },
   { id: 'e-br-dec',        source: 'br-richtofen-kills', target: 'frac-deceptio' },
   { id: 'e-shi-pro',       source: 'br-shi-overrun',     target: 'frac-proditone' },
   { id: 'e-br-tt',         source: 'br-ultimis',         target: 'tl-true' },
 
-  // Agonia path (sequential: Gorod → Five)
   { id: 'e-ag-gk',         source: 'frac-agonia',   target: 'gorod-krovi' },
   { id: 'e-gk-five',       source: 'gorod-krovi',   target: 'five-agonia' },
 
-  // Deceptio path
   { id: 'e-dec-giant',     source: 'frac-deceptio', target: 'the-giant' },
   { id: 'e-giant-eis',     source: 'the-giant',     target: 'der-eisendrache' },
 
-  // Proditone path
   { id: 'e-pro-zet',       source: 'frac-proditone', target: 'zetsubou' },
 
-  // True Timeline path
   { id: 'e-tt-1',  source: 'tl-true',          target: 'tt-shi-no-numa' },
   { id: 'e-tt-2',  source: 'tt-shi-no-numa',   target: 'tt-der-riese' },
   { id: 'e-tt-3',  source: 'tt-der-riese',     target: 'tt-shangri-la' },
@@ -438,11 +375,9 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   { id: 'e-tt-5',  source: 'tt-kino',          target: 'tt-classified' },
   { id: 'e-tt-6',  source: 'tt-classified',    target: 'tt-ascension' },
   { id: 'e-tt-7',  source: 'tt-ascension',     target: 'tt-call-dead' },
-  // Oct 13 2025 parallel fan-out
   { id: 'e-tt-8',  source: 'tt-call-dead',     target: 'tt-moon' },
   { id: 'e-tt-8b', source: 'tt-call-dead',     target: 'tt-nuketown',     sourceHandle: 'bottom' },
   { id: 'e-tt-8c', source: 'tt-call-dead',     target: 'tt-alpha-omega',  sourceHandle: 'top' },
-  // Main chain continues — all three parallel nodes converge on TranZit
   { id: 'e-tt-9',  source: 'tt-moon',          target: 'tt-tranzit' },
   { id: 'e-tt-9b', source: 'tt-nuketown',      target: 'tt-tranzit',      sourceHandle: 'bottom' },
   { id: 'e-tt-9c', source: 'tt-alpha-omega',   target: 'tt-tranzit',      sourceHandle: 'bottom' },
@@ -451,42 +386,29 @@ export const TIMELINE_EDGES: TimelineEdge[] = [
   { id: 'e-tt-12', source: 'tt-buried',        target: 'tt-tag' },
   { id: 'e-tt-13', source: 'tt-tag',           target: 'tt-destroyed' },
 
-  // ── Dimension 63 ───────────────────────────────────────
   { id: 'e-63-origins',    source: 'dim-63',       target: 'd63-origins' },
   { id: 'e-63-motd',       source: 'd63-origins',  target: 'd63-motd' },
-  // Primis crew's multiverse journey: Origins (1918, D63) → The Giant (1945, OD).
-  // After Origins, Primis spend ~27 years hunting Ultimis Richtofens across
-  // dimensions before arriving at Der Riese via teleporter in The Giant.
   { id: 'e-origins-giant', source: 'd63-origins',  target: 'the-giant', sourceHandle: 'top', targetHandle: 'top' },
 
-  // Cycle / Broken branches
   { id: 'e-motd-cycle',    source: 'd63-motd',     target: 'br-cycle' },
   { id: 'e-motd-broken',   source: 'd63-motd',     target: 'br-broken' },
   { id: 'e-br-cycle',      source: 'br-cycle',     target: 'tl-cycle' },
   { id: 'e-br-broken',     source: 'br-broken',    target: 'tl-broken' },
 
-  // Cycle path
   { id: 'e-cyc-lab',       source: 'tl-cycle',     target: 'd63-lab' },
   { id: 'e-lab-soe',       source: 'd63-lab',      target: 'd63-soe' },
   { id: 'e-soe-dest',      source: 'd63-soe',      target: 'd63-destroyed' },
 
-  // Broken path
   { id: 'e-brk-blood',     source: 'tl-broken',    target: 'd63-blood' },
 
-  // ── Agartha ────────────────────────────────────────────
   { id: 'e-ag-rev',        source: 'dim-agartha',  target: 'ag-revelations' },
-  // Primis cross-fracture journey (DE → Zetsubou → Gorod Krovi)
   { id: 'e-eis-zet',       source: 'der-eisendrache',  target: 'zetsubou' },
   { id: 'e-zet-gk',        source: 'zetsubou',         target: 'gorod-krovi' },
-  // Fracture paths converge on Revelations (Primis collects all souls)
   { id: 'e-gk-rev',        source: 'gorod-krovi',      target: 'ag-revelations' },
   { id: 'e-rev-child',     source: 'ag-revelations', target: 'ag-children' },
-  // The Cycle: Monty sends Primis back to the Great War
   { id: 'e-cycle',         source: 'ag-revelations', target: 'great-war', sourceHandle: 'bottom', targetHandle: 'bottom', label: 'THE CYCLE' },
-  // ── Empty Earth ────────────────────────────────────────
   { id: 'e-ee-zero',       source: 'dim-empty',    target: 'ee-zero-base' },
 ];
 
-// ── Legacy exports (keep other pages compiling) ─────────────
 export const LORE_EVENTS: LoreEvent[] = [];
 export const LORE_CONNECTIONS: LoreConnection[] = [];

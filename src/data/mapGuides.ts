@@ -1,9 +1,7 @@
-// Extended guide data for individual map pages.
-// Maps without an entry here will show placeholder sections.
 
 export interface PartLocation {
   name: string;
-  /** Path relative to /public, e.g. "/images/maps/kino/engine-cafeteria.jpg" */
+  
   image?: string;
 }
 
@@ -23,11 +21,10 @@ export interface EEStep {
   title: string;
   desc: string;
   tip?: string;
-  /** Path relative to /public */
+  
   image?: string;
 }
 
-/** Arbitrary extra section — for map-specific content like shield builds, WW upgrades, etc. */
 export interface GuideItem {
   title?: string;
   desc: string;
@@ -38,7 +35,7 @@ export interface GuideItem {
 export interface GuideSection {
   id: string;
   title: string;
-  /** Sub-label shown above the title, e.g. "Field Manual — Weapons" */
+  
   label?: string;
   items: GuideItem[];
 }
@@ -61,16 +58,16 @@ export interface MapGuide {
   buildables?: Buildable[];
   eeOverview?: string;
   eeSteps?: EEStep[];
-  /** Whether the main easter egg can be completed solo */
+  
   eeSoloable?: 'yes' | 'partial' | 'no';
   strategies?: string[];
-  /** Unique/special enemy types on this map — what they do and how to handle them */
+  
   specialEnemies?: SpecialEnemy[];
   loreNote?: string;
   wwNote?: string;
-  /** All perk machine locations on this map */
+  
   perks?: PerkEntry[];
-  /** Possible Mystery Box spawn locations */
+  
   mysteryBoxSpawns?: string[];
   customSections?: GuideSection[];
 }
@@ -4704,6 +4701,4 @@ export const MAP_GUIDES: Record<string, MapGuide> = {
   },
 
 };
-
-
 

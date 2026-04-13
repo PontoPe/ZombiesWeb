@@ -65,6 +65,24 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       });
     }
 
+    function stripHtml(str) {
+      return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function buildHitUrl(rawUrl, excerpt) {
+      const text = stripHtml(excerpt).slice(0, 120);
+      if (!text) return rawUrl;
+
+      const split = rawUrl.split('#');
+      const base = split[0];
+      const hash = split[1] || '';
+      const anchor = hash ? hash.split(':~:text=')[0] : '';
+      const fragment = '#'
+        + (anchor ? anchor + ':~:text=' : ':~:text=')
+        + encodeURIComponent(text);
+      return base + fragment;
+    }
+
     async function runSearch(q) {
       if (!q.trim()) {
         results.innerHTML = '';
@@ -90,7 +108,8 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       results.innerHTML = hits.map(function (h) {
         const title = escapeHtml((h.meta && h.meta.title) || h.url);
         const url   = escapeHtml(h.url);
-        return '<a class="hit" href="' + h.url + '">' +
+        const hitUrl = escapeHtml(buildHitUrl(h.url, h.excerpt));
+        return '<a class="hit" href="' + hitUrl + '">' +
           '<div class="hit-head">' +
             '<span class="hit-title">' + title + '</span>' +
             '<span class="hit-url">' + url + '</span>' +
@@ -120,7 +139,6 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 </script>
 
 <style>
-  /* Header (shared) */
   .page-header {
     position: relative;
     margin-bottom: 36px;
@@ -155,7 +173,6 @@ import OpsLayout from '../layouts/OpsLayout.astro';
   }
   .header-count { color: #e07b2a; }
 
-  /* Search */
   .search-root {
     max-width: 860px;
     display: flex;

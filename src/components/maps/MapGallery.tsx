@@ -62,7 +62,6 @@ export default function MapGallery() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [collapsed, setCollapsed] = useState<Set<GameId>>(new Set());
 
-  // ── Apply filters ──────────────────────────────────────────────
   const filtered = useMemo(() => {
     return MAPS.filter(map => {
       if (filters.games.length > 0 && !filters.games.includes(map.game)) return false;
@@ -75,7 +74,6 @@ export default function MapGallery() {
     });
   }, [filters]);
 
-  // ── Group by game, apply sort within each group ───────────────
   const groups = useMemo(() => {
     return GAME_ORDER
       .map(game => ({
@@ -85,7 +83,6 @@ export default function MapGallery() {
       .filter(g => g.maps.length > 0);
   }, [filtered, filters.sortBy]);
 
-  // ── Helpers ───────────────────────────────────────────────────
   function toggleGame(g: GameId) {
     setFilters(f => ({
       ...f,
@@ -111,12 +108,12 @@ export default function MapGallery() {
   return (
     <div className="gallery-root">
 
-      {/* ════════════════════════════════════════ */}
-      {/* FILTER BAR                               */}
-      {/* ════════════════════════════════════════ */}
+      
+      
+      
       <div className="filter-bar">
 
-        {/* Game toggles */}
+        
         <div className="filter-group">
           <span className="filter-group-label">GAME</span>
           <div className="filter-game-btns">
@@ -135,7 +132,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Crew */}
+        
         <div className="filter-group">
           <span className="filter-group-label">CREW</span>
           <select
@@ -152,7 +149,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Quest Difficulty */}
+        
         <div className="filter-group">
           <span className="filter-group-label">MAX QUEST DIFF</span>
           <div className="filter-range-btns">
@@ -168,7 +165,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Setup Difficulty */}
+        
         <div className="filter-group">
           <span className="filter-group-label">MAX SETUP</span>
           <div className="filter-range-btns">
@@ -184,7 +181,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Min rating */}
+        
         <div className="filter-group">
           <span className="filter-group-label">MIN RATING</span>
           <div className="filter-range-btns">
@@ -200,7 +197,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Main Quest only toggle */}
+        
         <div className="filter-group">
           <button
             className={`ee-toggle ${filters.mainQuestOnly ? 'active' : ''}`}
@@ -212,7 +209,7 @@ export default function MapGallery() {
 
         <div className="filter-divider" />
 
-        {/* Sort */}
+        
         <div className="filter-group">
           <span className="filter-group-label">SORT</span>
           <div className="filter-range-btns">
@@ -228,7 +225,7 @@ export default function MapGallery() {
           </div>
         </div>
 
-        {/* Reset filters */}
+        
         {activeFilters && (
           <button className="filter-reset" onClick={resetFilters}>
             ✕ RESET
@@ -236,16 +233,16 @@ export default function MapGallery() {
         )}
       </div>
 
-      {/* Result count */}
+      
       <p className="gallery-count">
         <span className="count-num">{totalShown}</span>
         <span className="count-label"> MAP{totalShown !== 1 ? 'S' : ''} FOUND</span>
         {activeFilters && <span className="count-filtered"> — FILTERED</span>}
       </p>
 
-      {/* ════════════════════════════════════════ */}
-      {/* GAME SECTIONS                            */}
-      {/* ════════════════════════════════════════ */}
+      
+      
+      
       {groups.length === 0 ? (
         <div className="no-results">
           <p>No maps match your filters.</p>

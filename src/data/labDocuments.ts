@@ -6,27 +6,24 @@ export interface LabDocument {
   title: string;
   fileNo?: string;
   date?: string;
-  /** autopsy: examiner name */
+  
   examiner?: string;
-  /** autopsy/dossier: species/type */
+  
   species?: string;
-  /** autopsy: subject designation */
+  
   subject?: string;
-  /** blueprint: designer/signer */
+  
   designer?: string;
-  /** dossier: active years */
+  
   active?: string;
   body: string;
-  /** Handwritten margin scribbles */
+  
   marginNotes?: string[];
-  /** Rubber-stamp overlay text */
+  
   stamp?: string;
 }
 
-// ── Full document pool ───────────────────────────────────────
-
 export const LAB_DOCUMENTS: LabDocument[] = [
-  // ── AUTOPSY REPORTS ────────────────────────────────────────
 
   {
     id: 'autopsy-hellhound',
@@ -67,8 +64,6 @@ export const LAB_DOCUMENTS: LabDocument[] = [
     marginNotes: ['The MPD did this — not the 115', 'Samantha\'s doing?'],
   },
 
-  // ── WEAPON BLUEPRINTS ──────────────────────────────────────
-
   {
     id: 'blueprint-ray-gun',
     template: 'blueprint',
@@ -102,8 +97,6 @@ export const LAB_DOCUMENTS: LabDocument[] = [
     marginNotes: ['found in Kino projection room', 'who designed this?', 'ammo is the only weakness'],
   },
 
-  // ── FIELD OPERATIONS ───────────────────────────────────────
-
   {
     id: 'fieldops-der-riese',
     template: 'field-ops',
@@ -132,8 +125,6 @@ export const LAB_DOCUMENTS: LabDocument[] = [
     body: 'This is Dr. Groph transmitting from Griffin Station, lunar surface. Richtofen has arrived and completed the soul transfer. He is now in control of the MPD. Samantha\'s consciousness has been displaced into Richtofen\'s body on Earth. The Vril generator is at capacity. Richtofen has ordered the activation of the missile array. He intends to fire on the Earth. We cannot stop him. This is our final transmission. God help us all.',
     stamp: 'EMERGENCY',
   },
-
-  // ── ENEMY DOSSIERS ─────────────────────────────────────────
 
   {
     id: 'dossier-brutus',
@@ -165,8 +156,6 @@ export const LAB_DOCUMENTS: LabDocument[] = [
     body: 'The Margwa is a three-headed Apothicon entity that serves as a heavy assault creature. Each head contains a glowing weak point that must be destroyed individually. Once all three heads are eliminated, the creature collapses. Margwas are incredibly durable and can down a player in two melee strikes. They are slow but relentless and will track the nearest player through any terrain.',
     marginNotes: ['Shotguns work best — one shell per head if close enough', 'They come through the Rift portals'],
   },
-
-  // ── RESEARCH NOTES ─────────────────────────────────────────
 
   {
     id: 'research-115',
@@ -389,8 +378,6 @@ export const LAB_DOCUMENTS: LabDocument[] = [
     stamp: 'RESTRICTED',
   },
 ];
-
-// ── Utility: pick N random documents ─────────────────────────
 
 export function pickRandomDocuments(count: number): LabDocument[] {
   const shuffled = [...LAB_DOCUMENTS].sort(() => Math.random() - 0.5);

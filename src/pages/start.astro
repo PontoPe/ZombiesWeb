@@ -24,7 +24,7 @@ const mapPayload = MAPS.map(m => ({
 
   <div id="quiz-root">
 
-    <!-- INTRO -->
+    
     <div class="quiz-screen" id="screen-intro" data-screen="intro">
       <div class="screen-inner">
         <p class="screen-eyebrow">[ OPERATIVE BRIEFING ]</p>
@@ -35,7 +35,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q1: Setup & Complexity -->
+    
     <div class="quiz-screen hidden" id="screen-q1" data-screen="q1" data-qkey="setup">
       <div class="screen-inner">
         <div class="progress-bar" data-step="1"></div>
@@ -61,7 +61,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q2: Survival Style -->
+    
     <div class="quiz-screen hidden" id="screen-q2" data-screen="q2" data-qkey="layout">
       <div class="screen-inner">
         <div class="progress-bar" data-step="2"></div>
@@ -87,7 +87,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q3: Wonder Weapons -->
+    
     <div class="quiz-screen hidden" id="screen-q3" data-screen="q3" data-qkey="ww">
       <div class="screen-inner">
         <div class="progress-bar" data-step="3"></div>
@@ -113,7 +113,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q4: Special Enemies -->
+    
     <div class="quiz-screen hidden" id="screen-q4" data-screen="q4" data-qkey="enemies">
       <div class="screen-inner">
         <div class="progress-bar" data-step="4"></div>
@@ -139,7 +139,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q5: Easter Eggs -->
+    
     <div class="quiz-screen hidden" id="screen-q5" data-screen="q5" data-qkey="ee">
       <div class="screen-inner">
         <div class="progress-bar" data-step="5"></div>
@@ -165,7 +165,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- Q6: Atmosphere -->
+    
     <div class="quiz-screen hidden" id="screen-q6" data-screen="q6" data-qkey="atmosphere">
       <div class="screen-inner">
         <div class="progress-bar" data-step="6"></div>
@@ -191,7 +191,7 @@ const mapPayload = MAPS.map(m => ({
       </div>
     </div>
 
-    <!-- RESULTS -->
+    
     <div class="quiz-screen hidden" id="screen-results" data-screen="results">
       <div class="screen-inner screen-inner--results">
         <p class="screen-eyebrow">[ MISSION ASSIGNMENT ]</p>
@@ -211,8 +211,6 @@ const mapPayload = MAPS.map(m => ({
 
 <script define:vars={{ mapPayload }}>
 
-  // ── Scoring tables ────────────────────────────────────
-  // Each answer → { mapId: points }
   const SCORE_TABLE = {
     setup: {
       simple:   { 'kino-der-toten': 4, 'der-riese': 4, 'ascension': 4, 'five': 2, 'classified': 2, 'nacht-der-untoten': 2, 'verruckt': 2 },
@@ -246,7 +244,6 @@ const mapPayload = MAPS.map(m => ({
     },
   };
 
-  // Human-readable reason phrases per answer value
   const ANSWER_PHRASES = {
     setup: {
       simple:   'straightforward setup',
@@ -280,21 +277,17 @@ const mapPayload = MAPS.map(m => ({
     },
   };
 
-  // ── State ──────────────────────────────────────────────
   const answers = {};
   const QUESTION_FLOW = ['q1','q2','q3','q4','q5','q6'];
 
-  // ── Screen transitions ──────────────────────────────────
   function showScreen(id) {
     document.querySelectorAll('.quiz-screen').forEach(s => s.classList.add('hidden'));
     const next = document.getElementById(id);
     next.classList.remove('hidden');
-    // Force reflow for fade-in
     void next.offsetWidth;
     next.classList.add('screen-visible');
   }
 
-  // ── Progress bar render ─────────────────────────────────
   function buildProgressBars() {
     document.querySelectorAll('.progress-bar[data-step]').forEach(bar => {
       const step = parseInt(bar.dataset.step);
@@ -307,10 +300,8 @@ const mapPayload = MAPS.map(m => ({
     });
   }
 
-  // ── Scoring ─────────────────────────────────────────────
   function scoreAllMaps() {
     const totals = {};
-    // Track per-question contribution per map for reason generation
     const contribs = {}; // mapId → { qkey: points }
 
     for (const [qkey, val] of Object.entries(answers)) {
@@ -321,7 +312,6 @@ const mapPayload = MAPS.map(m => ({
         contribs[mapId][qkey] = (contribs[mapId][qkey] ?? 0) + pts;
       }
     }
-    // Blend with community rating (small bonus so equally-scored maps are broken by quality)
     for (const map of mapPayload) {
       totals[map.id] = (totals[map.id] ?? 0) + map.communityRating * 0.5;
     }
@@ -329,10 +319,8 @@ const mapPayload = MAPS.map(m => ({
     return { totals, contribs };
   }
 
-  // ── Reason generator ────────────────────────────────────
   function getReason(mapId, contribs) {
     const contrib = contribs[mapId] ?? {};
-    // Sort question keys by how much they contributed to this map
     const ranked = Object.entries(contrib)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
@@ -342,7 +330,6 @@ const mapPayload = MAPS.map(m => ({
       .join(' · ');
   }
 
-  // ── Render results ───────────────────────────────────────
   function renderResults() {
     const { totals, contribs } = scoreAllMaps();
 
@@ -376,14 +363,12 @@ const mapPayload = MAPS.map(m => ({
     showScreen('screen-results');
   }
 
-  // ── Wire options ─────────────────────────────────────────
   document.querySelectorAll('.option-card').forEach(btn => {
     btn.addEventListener('click', () => {
       const screen = btn.closest('.quiz-screen');
       const qkey   = screen.dataset.qkey;
       answers[qkey] = btn.dataset.v;
 
-      // Highlight selection
       screen.querySelectorAll('.option-card').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
 
@@ -399,7 +384,6 @@ const mapPayload = MAPS.map(m => ({
     });
   });
 
-  // ── Start / restart ──────────────────────────────────────
   document.getElementById('btn-start').addEventListener('click', () => {
     showScreen('screen-q1');
   });
@@ -410,15 +394,14 @@ const mapPayload = MAPS.map(m => ({
     showScreen('screen-intro');
   });
 
-  // ── Init ─────────────────────────────────────────────────
   buildProgressBars();
   showScreen('screen-intro');
 </script>
 
 <style>
-  /* ════════════════════════════════════════════════ */
-  /* Root                                             */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   #quiz-root {
     min-height: calc(100vh - 52px);
     display: flex;
@@ -426,9 +409,9 @@ const mapPayload = MAPS.map(m => ({
     justify-content: center;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Screen                                           */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .quiz-screen {
     width: 100%;
     max-width: 900px;
@@ -454,9 +437,9 @@ const mapPayload = MAPS.map(m => ({
     max-width: 100%;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Type                                             */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .screen-eyebrow {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
@@ -496,9 +479,9 @@ const mapPayload = MAPS.map(m => ({
     margin: 0 0 28px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Intro                                            */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .intro-bar {
     width: 56px;
     height: 2px;
@@ -506,9 +489,9 @@ const mapPayload = MAPS.map(m => ({
     margin-bottom: 40px;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Progress                                         */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .progress-bar {
     display: flex;
     gap: 5px;
@@ -525,9 +508,9 @@ const mapPayload = MAPS.map(m => ({
   .progress-step.active { background: rgba(224, 123, 42, 0.6); }
   .progress-step.filled { background: #e07b2a; }
 
-  /* ════════════════════════════════════════════════ */
-  /* Options                                          */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .option-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -586,9 +569,9 @@ const mapPayload = MAPS.map(m => ({
     line-height: 1.6;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Buttons                                          */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .primary-btn {
     display: inline-flex;
     align-items: center;
@@ -626,9 +609,9 @@ const mapPayload = MAPS.map(m => ({
 
   .ghost-btn:hover { color: #dde1ea; border-color: #4a4e5a; }
 
-  /* ════════════════════════════════════════════════ */
-  /* Results                                          */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   .results-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -768,9 +751,9 @@ const mapPayload = MAPS.map(m => ({
     flex-wrap: wrap;
   }
 
-  /* ════════════════════════════════════════════════ */
-  /* Responsive                                       */
-  /* ════════════════════════════════════════════════ */
+  
+  
+  
   @media (max-width: 768px) {
     .option-grid  { grid-template-columns: 1fr; }
     .results-grid { grid-template-columns: 1fr; }
