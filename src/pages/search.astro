@@ -94,6 +94,13 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       return base + fragment;
     }
 
+    function shouldUseNodeLayout() {
+      return window.innerWidth >= 700;
+    }
+
+    function positionNodes() {
+      if (!(root instanceof HTMLElement) || !(inputWrap instanceof HTMLElement) || !(linksSvg instanceof SVGSVGElement)) return;
+      if (!root.classList.contains('has-query') || !root.classList.contains('node-layout')) {
     function positionNodes() {
       if (!(root instanceof HTMLElement) || !(inputWrap instanceof HTMLElement) || !(linksSvg instanceof SVGSVGElement)) return;
       if (!root.classList.contains('is-intro') || !root.classList.contains('has-query') || window.innerWidth < 900) {
@@ -144,6 +151,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     async function runSearch(q) {
       if (root instanceof HTMLElement) {
         root.classList.toggle('has-query', !!q.trim());
+        root.classList.toggle('node-layout', !!q.trim() && shouldUseNodeLayout());
       }
       if (!q.trim()) {
         results.innerHTML = '';
@@ -153,7 +161,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       }
       const pf = await loadPagefind();
       if (!pf) {
-        status.textContent = 'SEARCH INDEX UNAVAILABLE — run `npm run build` to generate /pagefind/';
+        status.textContent = 'SEARCH INDEX UNAVAILABLE — run `npm run build` and then `npm run preview` (or copy `dist/pagefind` into `public/pagefind` for dev).';
         return;
       }
       status.textContent = 'SEARCHING...';
@@ -168,7 +176,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       }
 
       status.textContent = search.results.length + ' RESULT' + (search.results.length === 1 ? '' : 'S');
-      results.innerHTML = hits.slice(0, root instanceof HTMLElement && root.classList.contains('is-intro') ? 14 : hits.length).map(function (h) {
+      results.innerHTML = hits.slice(0, root instanceof HTMLElement && root.classList.contains('node-layout') ? 14 : hits.length).map(function (h) {
         const title = escapeHtml((h.meta && h.meta.title) || h.url);
         const url   = escapeHtml(h.url);
         const hitUrl = escapeHtml(buildHitUrl(h.url, h.excerpt));
@@ -197,6 +205,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     }
 
     window.addEventListener('resize', function () {
+      if (root instanceof HTMLElement) {
+        root.classList.toggle('node-layout', root.classList.contains('has-query') && shouldUseNodeLayout());
+      }
       window.requestAnimationFrame(positionNodes);
     });
 
@@ -360,18 +371,18 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     stroke-dasharray: 4 5;
   }
 
-  .search-root.is-intro.has-query .search-network {
+  .search-root.node-layout.has-query .search-network {
     min-height: 68vh;
   }
 
-  .search-root.is-intro.has-query .search-results {
+  .search-root.node-layout.has-query .search-results {
     position: relative;
     display: block;
     min-height: 68vh;
     z-index: 1;
   }
 
-  .search-root.is-intro.has-query .hit {
+  .search-root.node-layout.has-query .hit {
     position: absolute;
     width: 240px;
     min-height: 110px;
@@ -381,7 +392,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     box-shadow: 0 0 0 1px rgba(224, 123, 42, 0.08);
   }
 
-  .search-root.is-intro.has-query .hit .hit-url {
+  .search-root.node-layout.has-query .hit .hit-url {
     max-width: 92px;
   }
 
@@ -436,9 +447,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     .search-hint { display: none; }
   }
 
-  @media (max-width: 900px) {
-    .search-root.is-intro.has-query .search-network,
-    .search-root.is-intro.has-query .search-results {
+  @media (max-width: 700px) {
+    .search-root.node-layout.has-query .search-network,
+    .search-root.node-layout.has-query .search-results {
       min-height: auto;
     }
 
@@ -446,7 +457,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       display: none;
     }
 
-    .search-root.is-intro.has-query .hit {
+    .search-root.node-layout.has-query .hit {
       position: static;
       width: auto;
       min-height: 0;
