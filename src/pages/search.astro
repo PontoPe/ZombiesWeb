@@ -1,0 +1,271 @@
+---
+import OpsLayout from '../layouts/OpsLayout.astro';
+---
+
+<OpsLayout title="Search">
+
+  <header class="page-header">
+    <div class="header-hud-tl" aria-hidden="true"></div>
+    <p class="header-eyebrow">[ OPERATIVE DATABASE · INDEX ]</p>
+    <h1 class="header-title">SEARCH</h1>
+    <p class="header-sub">
+      <span class="header-count">FULL-TEXT</span>
+      &nbsp;·&nbsp; Maps, lore, wonder weapons, perks, FAQs
+    </p>
+  </header>
+
+  <div class="search-root" data-pagefind-ignore="all">
+
+    <div class="search-input-wrap">
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input
+        id="pf-input"
+        type="search"
+        class="search-input"
+        placeholder='Try "Gorod Krovi", "teleporter", "Primis", "Juggernog"...'
+        autocomplete="off"
+        autofocus
+      />
+      <span class="search-hint">ESC to clear</span>
+    </div>
+
+    <div id="pf-status" class="search-status"></div>
+    <div id="pf-results" class="search-results"></div>
+
+  </div>
+
+</OpsLayout>
+
+<script is:inline>
+  (function () {
+    let pagefind = null;
+
+    async function loadPagefind() {
+      if (pagefind) return pagefind;
+      try {
+        pagefind = await import('/pagefind/pagefind.js');
+        await pagefind.options({ excerptLength: 22 });
+        return pagefind;
+      } catch (err) {
+        console.error('Pagefind load failed', err);
+        return null;
+      }
+    }
+
+    const input   = document.getElementById('pf-input');
+    const results = document.getElementById('pf-results');
+    const status  = document.getElementById('pf-status');
+    if (!input || !results || !status) return;
+
+    let debounce;
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    async function runSearch(q) {
+      if (!q.trim()) {
+        results.innerHTML = '';
+        status.textContent = '';
+        return;
+      }
+      const pf = await loadPagefind();
+      if (!pf) {
+        status.textContent = 'SEARCH INDEX UNAVAILABLE — run `npm run build` to generate /pagefind/';
+        return;
+      }
+      status.textContent = 'SEARCHING...';
+      const search = await pf.search(q);
+      const hits = await Promise.all(search.results.slice(0, 30).map(function (r) { return r.data(); }));
+
+      if (hits.length === 0) {
+        status.textContent = 'NO RESULTS FOR "' + q + '"';
+        results.innerHTML = '';
+        return;
+      }
+
+      status.textContent = search.results.length + ' RESULT' + (search.results.length === 1 ? '' : 'S');
+      results.innerHTML = hits.map(function (h) {
+        const title = escapeHtml((h.meta && h.meta.title) || h.url);
+        const url   = escapeHtml(h.url);
+        return '<a class="hit" href="' + h.url + '">' +
+          '<div class="hit-head">' +
+            '<span class="hit-title">' + title + '</span>' +
+            '<span class="hit-url">' + url + '</span>' +
+          '</div>' +
+          '<p class="hit-excerpt">' + h.excerpt + '</p>' +
+        '</a>';
+      }).join('');
+    }
+
+    input.addEventListener('input', function () {
+      window.clearTimeout(debounce);
+      debounce = window.setTimeout(function () { runSearch(input.value); }, 120);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; runSearch(''); }
+    });
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(function () { loadPagefind(); });
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const q0 = params.get('q');
+    if (q0) { input.value = q0; runSearch(q0); }
+  })();
+</script>
+
+<style>
+  /* Header (shared) */
+  .page-header {
+    position: relative;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #1e2028;
+  }
+  .header-hud-tl {
+    position: absolute; top: 0; left: 0;
+    width: 24px; height: 24px;
+    border-top: 2px solid #e07b2a;
+    border-left: 2px solid #e07b2a;
+    opacity: 0.6;
+  }
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.28em;
+    color: #e07b2a; opacity: 0.8;
+    margin: 0 0 10px 0; padding-left: 4px;
+  }
+  .header-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1; color: #dde1ea;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin: 0 0 12px 0;
+  }
+  .header-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: #4a4e5a;
+    letter-spacing: 0.1em; margin: 0;
+  }
+  .header-count { color: #e07b2a; }
+
+  /* Search */
+  .search-root {
+    max-width: 860px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #252830;
+    background: #0f1114;
+    padding: 0 16px;
+    transition: border-color 0.15s;
+  }
+  .search-input-wrap:focus-within { border-color: #e07b2a; }
+
+  .search-icon {
+    font-size: 20px;
+    color: #e07b2a;
+    margin-right: 12px;
+  }
+
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    padding: 18px 0;
+    color: #dde1ea;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+  .search-input::placeholder { color: #4a4e5a; }
+
+  .search-hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: #4a4e5a;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .search-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #e07b2a;
+    opacity: 0.8;
+    min-height: 14px;
+    text-transform: uppercase;
+  }
+
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hit {
+    display: block;
+    border: 1px solid #1e2028;
+    background: #0f1114;
+    padding: 16px 20px;
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .hit:hover { border-color: #e07b2a; transform: translateY(-1px); }
+
+  .hit-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .hit-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    color: #dde1ea;
+    text-transform: uppercase;
+  }
+  .hit-url {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #4a4e5a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hit-excerpt {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #8a8f9e;
+    margin: 0;
+  }
+  .hit-excerpt :global(mark) {
+    background: rgba(224, 123, 42, 0.2);
+    color: #e07b2a;
+    padding: 0 2px;
+  }
+
+  @media (max-width: 640px) {
+    .hit-head { flex-direction: column; gap: 2px; }
+    .search-hint { display: none; }
+  }
+</style>

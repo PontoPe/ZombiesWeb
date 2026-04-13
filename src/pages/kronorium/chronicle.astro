@@ -1,0 +1,206 @@
+---
+import LoreLayout from '../../layouts/LoreLayout.astro';
+import { CHRONICLE_ENTRIES, CHRONICLE_SECTIONS, CREW_META, type ChronicleSection } from '../../data/aetherChronicle';
+
+const grouped: Record<ChronicleSection, typeof CHRONICLE_ENTRIES> = {
+  main: [], dim63: [], agartha: [], deceptio: [], proditone: [], agonia: [], broken: [], darkAether: [],
+};
+for (const e of CHRONICLE_ENTRIES) grouped[e.section].push(e);
+for (const k of Object.keys(grouped) as ChronicleSection[]) {
+  grouped[k].sort((a, b) => a.dateSort - b.dateSort);
+}
+---
+
+<LoreLayout title="The Chronicle">
+
+  <article class="chron-article" data-pagefind-body>
+
+    <header class="chron-head">
+      <p class="eyebrow">[ KRONORIUM · COMPLETE CHRONICLE ]</p>
+      <h1 class="chron-title">The Aether Chronicle</h1>
+      <p class="chron-sub">
+        {CHRONICLE_ENTRIES.length} entries across {CHRONICLE_SECTIONS.length} timeline branches
+      </p>
+    </header>
+
+    {CHRONICLE_SECTIONS.map((section) => {
+      const entries = grouped[section.id];
+      if (entries.length === 0) return null;
+      return (
+        <section class="chron-section" id={section.id}>
+          <h2 class="section-title">{section.label}</h2>
+          {section.subtitle && <p class="section-subtitle">{section.subtitle}</p>}
+
+          <ol class="entries">
+            {entries.map((e) => (
+              <li class="entry">
+                <div class="entry-date">{e.date}</div>
+                <div class="entry-body">
+                  {e.title && <h3 class="entry-title">{e.title}</h3>}
+                  <p class="entry-desc">{e.description}</p>
+                  <div class="entry-meta">
+                    {e.crew !== 'none' && (
+                      <span class="crew-tag" style={`color: ${CREW_META[e.crew].color}; border-color: ${CREW_META[e.crew].color}`}>
+                        {CREW_META[e.crew].label}
+                      </span>
+                    )}
+                    {e.source && <span class="src">— {e.source}</span>}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      );
+    })}
+
+    <nav class="lore-nav">
+      <a href="/kronorium">← Return to the Timeline Graph</a>
+    </nav>
+
+  </article>
+
+</LoreLayout>
+
+<style>
+  :global(.lore-body) {
+    overflow-y: auto !important;
+    display: block !important;
+  }
+
+  .chron-article {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 40px 100px;
+    color: #d4c29a;
+    font-family: 'EB Garamond', Garamond, serif;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: #c9a24a;
+    opacity: 0.7;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+  }
+  .chron-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: clamp(32px, 4.5vw, 56px);
+    color: #e8d9b0;
+    margin: 0 0 10px 0;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .chron-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: #7a6a50;
+    margin: 0 0 48px 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #2e2416;
+  }
+
+  .chron-section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: #c9a24a;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2e2416;
+  }
+  .section-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: #7a6a50;
+    text-transform: uppercase;
+    margin: 0 0 24px 0;
+  }
+
+  .entries {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .entry {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+  }
+  .entry-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: #c9a24a;
+    padding-top: 3px;
+    text-transform: uppercase;
+  }
+  .entry-body {}
+  .entry-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    color: #e8d9b0;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+  }
+  .entry-desc {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #c9b58a;
+  }
+  .entry-meta {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .crew-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    padding: 2px 7px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .src {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #7a6a50;
+    font-style: italic;
+  }
+
+  .lore-nav {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid #2e2416;
+  }
+  .lore-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: #7a6a50;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .lore-nav a:hover { color: #c9a24a; }
+
+  @media (max-width: 640px) {
+    .entry { grid-template-columns: 1fr; gap: 6px; }
+    .chron-article { padding: 32px 20px 80px; }
+  }
+</style>

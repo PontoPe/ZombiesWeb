@@ -1,0 +1,392 @@
+---
+import OpsLayout from '../layouts/OpsLayout.astro';
+import { WONDER_WEAPONS } from '../data/wonderWeapons';
+import { GAMES } from '../data/maps';
+
+const grouped = (['waw', 'bo1', 'bo2', 'bo3', 'bo4'] as const).map(g => ({
+  game: g,
+  meta: GAMES[g],
+  weapons: WONDER_WEAPONS.filter(w => w.introducedIn.game === g),
+}));
+
+const TYPE_LABEL: Record<string, string> = {
+  ray: 'RAY',
+  elemental: 'ELEMENTAL',
+  explosive: 'EXPLOSIVE',
+  melee: 'MELEE',
+  plant: 'BIOLOGICAL',
+  artifact: 'ARTIFACT',
+  sonic: 'SONIC',
+  ice: 'CRYO',
+  lightning: 'TESLA',
+  other: 'UNIQUE',
+};
+
+const ACQ_LABEL: Record<string, string> = {
+  box: 'Mystery Box',
+  buildable: 'Buildable',
+  wall: 'Wall Buy',
+  'ee-reward': 'EE Reward',
+  ritual: 'Ritual',
+};
+---
+
+<OpsLayout title="Wonder Weapon Compendium">
+
+  <header class="page-header">
+    <div class="header-hud-tl" aria-hidden="true"></div>
+    <p class="header-eyebrow">[ OPERATIVE DATABASE · ARMORY ]</p>
+    <h1 class="header-title">WONDER WEAPONS</h1>
+    <p class="header-sub">
+      <span class="header-count">{WONDER_WEAPONS.length} ENTRIES</span>
+      &nbsp;·&nbsp; Cross-game reference: acquisition, upgrade, damage profile
+    </p>
+  </header>
+
+  <nav class="ww-toc">
+    {grouped.map(({ game, meta, weapons }) => (
+      weapons.length > 0 && (
+        <a href={`#${game}`} class="toc-link">
+          <span class="toc-short" style={`color: ${meta.color}`}>{meta.short}</span>
+          <span class="toc-label">{meta.label}</span>
+          <span class="toc-count">{weapons.length}</span>
+        </a>
+      )
+    ))}
+  </nav>
+
+  <div class="ww-root">
+    {grouped.map(({ game, meta, weapons }) => (
+      weapons.length > 0 && (
+        <section class="ww-section" id={game}>
+          <div class="ww-section-header">
+            <span class="ww-section-short" style={`background: ${meta.color}`}>{meta.short}</span>
+            <span class="ww-section-title">{meta.label}</span>
+            <span class="ww-section-year">{meta.year}</span>
+          </div>
+
+          <div class="ww-grid">
+            {weapons.map(w => (
+              <article class="ww-card">
+
+                <header class="ww-card-head">
+                  <div class="ww-titles">
+                    <h2 class="ww-name">{w.name}</h2>
+                    {w.aka && <p class="ww-aka">aka "{w.aka}"</p>}
+                  </div>
+                  <span class="ww-type">{TYPE_LABEL[w.type] ?? w.type}</span>
+                </header>
+
+                <p class="ww-desc">{w.description}</p>
+
+                <dl class="ww-stats">
+                  <div class="stat">
+                    <dt>ACQUIRE</dt>
+                    <dd>
+                      <span class="stat-pill">{ACQ_LABEL[w.acquisition]}</span>
+                      <span class="stat-note">{w.acquisitionNote}</span>
+                    </dd>
+                  </div>
+                  {w.papName && (
+                    <div class="stat">
+                      <dt>PAP NAME</dt>
+                      <dd>{w.papName}</dd>
+                    </div>
+                  )}
+                  <div class="stat">
+                    <dt>UPGRADE</dt>
+                    <dd>{w.papEffect}</dd>
+                  </div>
+                  <div class="stat">
+                    <dt>AMMO</dt>
+                    <dd>{w.ammo}</dd>
+                  </div>
+                  <div class="stat">
+                    <dt>DAMAGE</dt>
+                    <dd>{w.damage}</dd>
+                  </div>
+                  {w.variants && w.variants.length > 0 && (
+                    <div class="stat">
+                      <dt>VARIANTS</dt>
+                      <dd>
+                        <ul class="variant-list">
+                          {w.variants.map(v => <li>{v}</li>)}
+                        </ul>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+
+                <footer class="ww-footer">
+                  <div class="ww-origin">
+                    <span class="footer-label">FIRST SEEN</span>
+                    <a href={`/maps/${w.introducedIn.mapId}`} class="footer-link">
+                      {w.introducedIn.mapTitle}
+                    </a>
+                  </div>
+                  {w.alsoOn && w.alsoOn.length > 0 && (
+                    <div class="ww-origin">
+                      <span class="footer-label">ALSO ON</span>
+                      <div class="footer-also">
+                        {w.alsoOn.map((m, i) => (
+                          <>
+                            <a href={`/maps/${m.mapId}`} class="footer-link">{m.mapTitle}</a>
+                            {i < w.alsoOn!.length - 1 && <span class="dot">·</span>}
+                          </>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </footer>
+
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    ))}
+  </div>
+
+</OpsLayout>
+
+<style>
+  /* ════════════════ Page header (shared pattern) ════════════════ */
+  .page-header {
+    position: relative;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #1e2028;
+  }
+  .header-hud-tl {
+    position: absolute; top: 0; left: 0;
+    width: 24px; height: 24px;
+    border-top: 2px solid #e07b2a;
+    border-left: 2px solid #e07b2a;
+    opacity: 0.6;
+  }
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.28em;
+    color: #e07b2a; opacity: 0.8;
+    margin: 0 0 10px 0; padding-left: 4px;
+  }
+  .header-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1; color: #dde1ea;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin: 0 0 12px 0;
+  }
+  .header-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: #4a4e5a;
+    letter-spacing: 0.1em; margin: 0;
+  }
+  .header-count { color: #e07b2a; }
+
+  /* ════════════════ Table of contents (game jump) ════════════════ */
+  .ww-toc {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #1e2028;
+  }
+  .toc-link {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid #1e2028;
+    background: #0f1114;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .toc-link:hover { border-color: #e07b2a; background: #13151c; }
+  .toc-short {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .toc-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    color: #8a8f9e; text-transform: uppercase;
+  }
+  .toc-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #e07b2a;
+    padding: 2px 6px;
+    background: rgba(224, 123, 42, 0.1);
+  }
+
+  /* ════════════════ Sections ════════════════ */
+  .ww-root { display: flex; flex-direction: column; gap: 56px; }
+
+  .ww-section { scroll-margin-top: 24px; }
+
+  .ww-section-header {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1e2028;
+  }
+  .ww-section-short {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: #0b0c0f;
+    padding: 3px 10px;
+    letter-spacing: 0.1em;
+  }
+  .ww-section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 20px;
+    color: #dde1ea;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ww-section-year {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: #4a4e5a;
+    margin-left: auto;
+  }
+
+  /* ════════════════ Grid of cards ════════════════ */
+  .ww-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
+
+  .ww-card {
+    border: 1px solid #1e2028;
+    background: #0f1114;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .ww-card:hover { border-color: #e07b2a; transform: translateY(-1px); }
+
+  .ww-card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1e2028;
+  }
+  .ww-titles { min-width: 0; }
+  .ww-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 22px;
+    color: #dde1ea;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 2px 0;
+    line-height: 1.15;
+  }
+  .ww-aka {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #8a8f9e;
+    margin: 0;
+    font-style: italic;
+  }
+  .ww-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: #e07b2a;
+    padding: 4px 8px;
+    border: 1px solid rgba(224, 123, 42, 0.3);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .ww-desc {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #c4c8d4;
+    margin: 0;
+  }
+
+  /* ════════════════ Stats definition list ════════════════ */
+  .ww-stats {
+    margin: 0;
+    display: flex; flex-direction: column; gap: 10px;
+    padding-top: 4px;
+  }
+  .stat {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .stat dt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: #4a4e5a;
+    padding-top: 2px;
+  }
+  .stat dd {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #8a8f9e;
+    margin: 0;
+  }
+  .stat-pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: #e07b2a;
+    padding: 2px 7px;
+    background: rgba(224, 123, 42, 0.08);
+    border: 1px solid rgba(224, 123, 42, 0.25);
+    margin-right: 8px;
+  }
+  .stat-note { color: #8a8f9e; }
+
+  .variant-list {
+    margin: 0; padding-left: 16px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .variant-list li { color: #c4c8d4; font-size: 12px; }
+
+  /* ════════════════ Footer (origin + cross-links) ════════════════ */
+  .ww-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #1e2028;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ww-origin { display: flex; align-items: baseline; gap: 10px; }
+  .footer-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: #4a4e5a;
+    flex-shrink: 0;
+    min-width: 72px;
+  }
+  .footer-link {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    color: #c4c8d4;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .footer-link:hover { color: #e07b2a; border-color: #e07b2a; }
+  .footer-also { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .dot { color: #4a4e5a; }
+
+  /* ════════════════ Responsive ════════════════ */
+  @media (max-width: 640px) {
+    .ww-grid { grid-template-columns: 1fr; }
+    .stat { grid-template-columns: 70px 1fr; gap: 10px; }
+    .ww-name { font-size: 18px; }
+  }
+</style>

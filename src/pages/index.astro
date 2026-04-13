@@ -76,30 +76,11 @@ import '../styles/global.css';
   ==============================================================
   Highest-ROI gap: new players hit the site with no entry point.
 
-  [ ] 4. "WHERE TO START" GUIDE
-  ----------------------------------------------------------
-  - [ ] Dedicated onboarding route (e.g., /start or /beginners-guide) separate
-        from the map database — explains the game loop, what Pack-a-Punch is,
-        what Easter Eggs are, and why any of it matters before presenting a map.
-  - [ ] Curated "recommended first maps" list with reasoning (solo vs. co-op,
-        story vs. pure survival, difficulty level).
-  - [ ] Map Recommendation Quiz: short decision-tree quiz ("solo or co-op?",
-        "story or survival?", "new or experienced?") that routes the player to
-        a recommended starting map.
+  [x] 4. "WHERE TO START" GUIDE — shipped at /start
 
-  [ ] 5. FAQ PAGE
-  ----------------------------------------------------------
-  - [ ] Standalone FAQ route (e.g., /faq) covering the most common new-player
-        questions: does EE progress carry over?, what is the Mystery Box?,
-        do I need to do Easter Eggs to enjoy the game?, what order should I
-        play the story maps?, etc.
+  [x] 5. FAQ PAGE — shipped at /faq
 
-  [ ] 6. GLOBAL SEARCH
-  ----------------------------------------------------------
-  - [ ] Site-wide search bar (header or landing) that indexes maps, lore entries,
-        chronicle events, perks, wonder weapons, and guide sections.
-  - [ ] Search should handle both exact names ("Gorod Krovi") and terms
-        ("teleporter", "golden rod", "Primis").
+  [x] 6. GLOBAL SEARCH — shipped via Pagefind. /search route + nav button, "/" shortcut.
 
   ==============================================================
   VETERAN / COMPLETIONIST CONTENT
@@ -121,12 +102,7 @@ import '../styles/global.css';
   - [ ] Currently scattered per-map in guide pages — veterans need a single
         cross-game reference.
 
-  [ ] 9. WONDER WEAPON COMPENDIUM
-  ----------------------------------------------------------
-  - [ ] Standalone wonder weapon reference (e.g., /wonder-weapons) covering
-        every wonder weapon: how to obtain (box vs. buildable vs. EE reward),
-        upgrade/PaP name and effect change, ammo count, and damage profile.
-  - [ ] Cross-links to the map guide page for the respective map.
+  [x] 9. WONDER WEAPON COMPENDIUM — shipped at /wonder-weapons
 
   [ ] 10. ACHIEVEMENT / TROPHY GUIDE
   ----------------------------------------------------------
@@ -149,6 +125,12 @@ import '../styles/global.css';
 -->
 
 <Layout title="Element 115 — CoD Zombies">
+  <a href="/search" class="landing-search" aria-label="Search the archive">
+    <span class="ls-icon" aria-hidden="true">⌕</span>
+    <span class="ls-label">SEARCH THE ARCHIVE</span>
+    <span class="ls-key">/</span>
+  </a>
+
   <main id="landing">
 
     <!-- ══════════════════════════════════════ -->
@@ -232,6 +214,14 @@ import '../styles/global.css';
   const ops     = document.getElementById('ops-panel') as HTMLElement;
   const lore    = document.getElementById('lore-panel') as HTMLElement;
   const opsGrid = ops.querySelector('.ops-grid-bg') as HTMLElement;
+
+  // "/" hotkey → search
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      window.location.href = '/search';
+    }
+  });
 
   // ── OPS: mouse-parallax grid ──────────────────────────────────
   ops.addEventListener('mousemove', (e) => {
@@ -332,6 +322,45 @@ import '../styles/global.css';
 </script>
 
 <style>
+  /* ─── Landing search pill ─── */
+  .landing-search {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    background: rgba(11, 12, 15, 0.82);
+    border: 1px solid #252830;
+    backdrop-filter: blur(6px);
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: #8a8f9e;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  }
+  .landing-search:hover {
+    border-color: #e07b2a;
+    color: #e07b2a;
+    transform: translateX(-50%) translateY(1px);
+  }
+  .ls-icon { font-size: 16px; color: #e07b2a; line-height: 1; }
+  .ls-key {
+    padding: 1px 6px;
+    border: 1px solid #3a3d48;
+    color: #4a4e5a;
+    font-size: 9px;
+  }
+  @media (max-width: 640px) {
+    .landing-search { top: 12px; padding: 7px 12px; }
+    .ls-label { display: none; }
+  }
+
   /* ─── Root container ─── */
   #landing {
     display: flex;

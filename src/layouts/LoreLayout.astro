@@ -30,12 +30,28 @@ const { title = 'The Kronorium' } = Astro.props;
         <span class="header-omega">Ω</span>
       </div>
 
-      <div class="header-file">FILE NO. Ω-532-115 · CLASSIFIED</div>
+      <div class="header-right">
+        <a href="/search" class="lore-search" aria-label="Search">
+          <span class="lore-search-icon" aria-hidden="true">⌕</span>
+          <span class="lore-search-label">SEARCH</span>
+          <span class="lore-search-key">/</span>
+        </a>
+        <div class="header-file">FILE NO. Ω-532-115</div>
+      </div>
     </header>
 
     <div class="lore-body">
       <slot />
     </div>
+
+    <script>
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+          e.preventDefault();
+          window.location.href = '/search';
+        }
+      });
+    </script>
 
   </body>
 </html>
@@ -116,6 +132,35 @@ const { title = 'The Kronorium' } = Astro.props;
     letter-spacing: 0.2em;
     color: #3a2e1e;
     text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .lore-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border: 1px solid #2e2416;
+    background: #17130d;
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: #7a6a50;
+    text-transform: uppercase;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .lore-search:hover { border-color: #c9a24a; color: #c9a24a; }
+  .lore-search-icon { font-size: 13px; color: #c9a24a; }
+  .lore-search-key {
+    padding: 1px 5px;
+    border: 1px solid #2e2416;
+    color: #5a4a32;
+    font-size: 8px;
   }
 
   /* ── Body slot ── */
