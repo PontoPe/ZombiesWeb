@@ -101,6 +101,9 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     function positionNodes() {
       if (!(root instanceof HTMLElement) || !(inputWrap instanceof HTMLElement) || !(linksSvg instanceof SVGSVGElement)) return;
       if (!root.classList.contains('has-query') || !root.classList.contains('node-layout')) {
+    function positionNodes() {
+      if (!(root instanceof HTMLElement) || !(inputWrap instanceof HTMLElement) || !(linksSvg instanceof SVGSVGElement)) return;
+      if (!root.classList.contains('is-intro') || !root.classList.contains('has-query') || window.innerWidth < 900) {
         linksSvg.innerHTML = '';
         return;
       }
