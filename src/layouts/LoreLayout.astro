@@ -45,12 +45,50 @@ const { title = 'The Kronorium' } = Astro.props;
     </div>
 
     <script>
-      document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
-          e.preventDefault();
-          window.location.href = '/search';
+      (function () {
+        function goToSearchWithAnimation(triggerEl) {
+          const body = document.body;
+          if (!body || body.classList.contains('search-transitioning')) {
+            window.location.href = '/search?intro=1';
+            return;
+          }
+
+          body.classList.add('search-transitioning');
+
+          const overlay = document.createElement('div');
+          overlay.className = 'search-transition-overlay';
+
+          const ghost = triggerEl.cloneNode(true);
+          ghost.classList.add('search-transition-ghost');
+
+          overlay.appendChild(ghost);
+          body.appendChild(overlay);
+
+          window.setTimeout(function () {
+            overlay.classList.add('active');
+          }, 10);
+
+          window.setTimeout(function () {
+            window.location.href = '/search?intro=1';
+          }, 440);
         }
-      });
+
+        const searchLink = document.querySelector('.lore-search');
+        if (searchLink instanceof HTMLAnchorElement) {
+          searchLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            goToSearchWithAnimation(searchLink);
+          });
+        }
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+            e.preventDefault();
+            const trigger = searchLink instanceof HTMLAnchorElement ? searchLink : document.body;
+            goToSearchWithAnimation(trigger);
+          }
+        });
+      })();
     </script>
 
   </body>
@@ -169,5 +207,41 @@ const { title = 'The Kronorium' } = Astro.props;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: opacity 0.25s ease;
+  }
+
+  .lore-header { transition: opacity 0.25s ease; }
+
+  :global(body.search-transitioning) .lore-header,
+  :global(body.search-transitioning) .lore-body {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :global(.search-transition-overlay) {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  :global(.search-transition-ghost) {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border: 1px solid #c9a24a;
+    background: rgba(23, 19, 13, 0.95);
+    color: #c9a24a;
+    opacity: 0;
+    transform: scale(0.82);
+    transition: transform 0.32s ease, opacity 0.2s ease;
+  }
+
+  :global(.search-transition-overlay.active) .search-transition-ghost {
+    opacity: 1;
+    transform: scale(1.38);
   }
 </style>

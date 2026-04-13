@@ -30,7 +30,10 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     </div>
 
     <div id="pf-status" class="search-status"></div>
-    <div id="pf-results" class="search-results"></div>
+    <div class="search-network">
+      <svg id="pf-links" class="search-links" aria-hidden="true"></svg>
+      <div id="pf-results" class="search-results"></div>
+    </div>
 
   </div>
 
@@ -39,6 +42,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
 <script is:inline>
   (function () {
     let pagefind = null;
+    const isIntroMode = new URLSearchParams(window.location.search).get('intro') === '1';
 
     async function loadPagefind() {
       if (pagefind) return pagefind;
@@ -55,7 +59,14 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     const input   = document.getElementById('pf-input');
     const results = document.getElementById('pf-results');
     const status  = document.getElementById('pf-status');
+    const linksSvg = document.getElementById('pf-links');
     if (!input || !results || !status) return;
+    const root = document.querySelector('.search-root');
+    const inputWrap = document.querySelector('.search-input-wrap');
+    if (isIntroMode && root instanceof HTMLElement) {
+      root.classList.add('is-intro');
+      document.body.classList.add('search-intro');
+    }
 
     let debounce;
 
@@ -83,15 +94,71 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       return base + fragment;
     }
 
+    function shouldUseNodeLayout() {
+      return window.innerWidth >= 700;
+    }
+
+    function positionNodes() {
+      if (!(root instanceof HTMLElement) || !(inputWrap instanceof HTMLElement) || !(linksSvg instanceof SVGSVGElement)) return;
+      if (!root.classList.contains('has-query') || !root.classList.contains('node-layout')) {
+        linksSvg.innerHTML = '';
+        return;
+      }
+
+      const nodeEls = Array.from(results.querySelectorAll('.hit'));
+      if (!nodeEls.length) {
+        linksSvg.innerHTML = '';
+        return;
+      }
+
+      const network = results.parentElement;
+      if (!(network instanceof HTMLElement)) return;
+      const netRect = network.getBoundingClientRect();
+      const wrapRect = inputWrap.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(netRect.width));
+      const height = Math.max(1, Math.floor(netRect.height));
+
+      linksSvg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      linksSvg.setAttribute('width', String(width));
+      linksSvg.setAttribute('height', String(height));
+
+      const centerX = wrapRect.left - netRect.left + (wrapRect.width / 2);
+      const centerY = wrapRect.bottom - netRect.top + 10;
+      const baseRadius = Math.min(width, height) * 0.36;
+
+      const positions = [];
+      nodeEls.forEach(function (node, i) {
+        const angle = (-Math.PI / 2) + (i * ((Math.PI * 2) / nodeEls.length));
+        const radiusOffset = ((i % 3) - 1) * 55;
+        const radius = baseRadius + radiusOffset;
+        const nodeWidth = 240;
+        const nodeHeight = 110;
+        const x = Math.min(width - nodeWidth, Math.max(0, centerX + (Math.cos(angle) * radius) - (nodeWidth / 2)));
+        const y = Math.min(height - nodeHeight, Math.max(0, centerY + (Math.sin(angle) * radius) - (nodeHeight / 2)));
+        node.style.left = x + 'px';
+        node.style.top = y + 'px';
+        positions.push({ x: x + (nodeWidth / 2), y: y + (nodeHeight / 2) });
+      });
+
+      linksSvg.innerHTML = positions.map(function (p) {
+        return '<line x1="' + centerX.toFixed(1) + '" y1="' + centerY.toFixed(1) + '" x2="' + p.x.toFixed(1) + '" y2="' + p.y.toFixed(1) + '" />';
+      }).join('');
+    }
+
     async function runSearch(q) {
+      if (root instanceof HTMLElement) {
+        root.classList.toggle('has-query', !!q.trim());
+        root.classList.toggle('node-layout', !!q.trim() && shouldUseNodeLayout());
+      }
       if (!q.trim()) {
         results.innerHTML = '';
         status.textContent = '';
+        positionNodes();
         return;
       }
       const pf = await loadPagefind();
       if (!pf) {
-        status.textContent = 'SEARCH INDEX UNAVAILABLE — run `npm run build` to generate /pagefind/';
+        status.textContent = 'SEARCH INDEX UNAVAILABLE — run `npm run build` and then `npm run preview` (or copy `dist/pagefind` into `public/pagefind` for dev).';
         return;
       }
       status.textContent = 'SEARCHING...';
@@ -101,15 +168,16 @@ import OpsLayout from '../layouts/OpsLayout.astro';
       if (hits.length === 0) {
         status.textContent = 'NO RESULTS FOR "' + q + '"';
         results.innerHTML = '';
+        positionNodes();
         return;
       }
 
       status.textContent = search.results.length + ' RESULT' + (search.results.length === 1 ? '' : 'S');
-      results.innerHTML = hits.map(function (h) {
+      results.innerHTML = hits.slice(0, root instanceof HTMLElement && root.classList.contains('node-layout') ? 14 : hits.length).map(function (h) {
         const title = escapeHtml((h.meta && h.meta.title) || h.url);
         const url   = escapeHtml(h.url);
         const hitUrl = escapeHtml(buildHitUrl(h.url, h.excerpt));
-        return '<a class="hit" href="' + hitUrl + '">' +
+        return '<a class="hit" href="' + hitUrl + '" tabindex="0">' +
           '<div class="hit-head">' +
             '<span class="hit-title">' + title + '</span>' +
             '<span class="hit-url">' + url + '</span>' +
@@ -117,6 +185,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
           '<p class="hit-excerpt">' + h.excerpt + '</p>' +
         '</a>';
       }).join('');
+      window.requestAnimationFrame(positionNodes);
     }
 
     input.addEventListener('input', function () {
@@ -131,6 +200,13 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     if ('requestIdleCallback' in window) {
       window.requestIdleCallback(function () { loadPagefind(); });
     }
+
+    window.addEventListener('resize', function () {
+      if (root instanceof HTMLElement) {
+        root.classList.toggle('node-layout', root.classList.contains('has-query') && shouldUseNodeLayout());
+      }
+      window.requestAnimationFrame(positionNodes);
+    });
 
     const params = new URLSearchParams(window.location.search);
     const q0 = params.get('q');
@@ -178,6 +254,7 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     display: flex;
     flex-direction: column;
     gap: 20px;
+    transition: transform 0.36s ease, opacity 0.24s ease;
   }
 
   .search-input-wrap {
@@ -233,6 +310,87 @@ import OpsLayout from '../layouts/OpsLayout.astro';
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+
+  :global(body.search-intro) .page-header {
+    opacity: 0;
+    transform: translateY(-14px);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .search-root.is-intro {
+    min-height: calc(100vh - 180px);
+    justify-content: center;
+  }
+
+  .search-root.is-intro .search-status,
+  .search-root.is-intro .search-results {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  .search-root.is-intro.has-query {
+    justify-content: flex-start;
+    min-height: auto;
+  }
+
+  .search-root.is-intro.has-query .search-status,
+  .search-root.is-intro.has-query .search-results {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .search-network {
+    position: relative;
+    min-height: 0;
+  }
+
+  .search-links {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .search-links line {
+    stroke: rgba(224, 123, 42, 0.32);
+    stroke-width: 1.1;
+    stroke-dasharray: 4 5;
+  }
+
+  .search-root.node-layout.has-query .search-network {
+    min-height: 68vh;
+  }
+
+  .search-root.node-layout.has-query .search-results {
+    position: relative;
+    display: block;
+    min-height: 68vh;
+    z-index: 1;
+  }
+
+  .search-root.node-layout.has-query .hit {
+    position: absolute;
+    width: 240px;
+    min-height: 110px;
+    padding: 12px 14px;
+    background: rgba(15, 17, 20, 0.92);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 0 0 1px rgba(224, 123, 42, 0.08);
+  }
+
+  .search-root.node-layout.has-query .hit .hit-url {
+    max-width: 92px;
   }
 
   .hit {
@@ -284,5 +442,23 @@ import OpsLayout from '../layouts/OpsLayout.astro';
   @media (max-width: 640px) {
     .hit-head { flex-direction: column; gap: 2px; }
     .search-hint { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .search-root.node-layout.has-query .search-network,
+    .search-root.node-layout.has-query .search-results {
+      min-height: auto;
+    }
+
+    .search-links {
+      display: none;
+    }
+
+    .search-root.node-layout.has-query .hit {
+      position: static;
+      width: auto;
+      min-height: 0;
+      margin-bottom: 10px;
+    }
   }
 </style>
