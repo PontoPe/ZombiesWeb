@@ -1,13 +1,15 @@
 ---
 interface Props {
   title?: string;
+  noindex?: boolean;
 }
-const { title = 'Element 115' } = Astro.props;
+const { title = 'Element 115', noindex = false } = Astro.props;
 ---
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

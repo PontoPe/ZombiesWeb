@@ -1,0 +1,1408 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+---
+
+<Layout title="Development Board" noindex>
+  <main class="dev-page" data-pagefind-ignore="all">
+    <img class="dev-mark" src="/images/Group_935_Logo.webp" alt="" aria-hidden="true" />
+
+    <section class="dev-hero" aria-labelledby="dev-title">
+      <p class="dev-kicker">[ INTERNAL BUILD QUEUE ]</p>
+      <div class="dev-title-row">
+        <div>
+          <h1 id="dev-title">DEVELOPMENT BOARD</h1>
+          <p class="dev-subtitle">Track features, fixes, tweaks, and experiments before they enter the outbreak.</p>
+        </div>
+        <div class="dev-counters" aria-label="Board counters">
+          <span><strong id="total-count">0</strong> total</span>
+          <span><strong id="due-count">0</strong> due soon</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="dev-composer" aria-labelledby="composer-title">
+      <div class="composer-head">
+        <div>
+          <p class="dev-kicker">[ NEW CARD ]</p>
+          <h2 id="composer-title">Create Work Item</h2>
+        </div>
+        <button class="quiet-btn is-hidden" id="cancel-edit" type="button">Cancel edit</button>
+      </div>
+
+      <form id="card-form" class="card-form">
+        <input id="card-id" type="hidden" />
+
+        <label class="form-field field-title">
+          <span>Title</span>
+          <input id="card-title" type="text" maxlength="80" placeholder="Add map route planner" required />
+        </label>
+
+        <label class="form-field">
+          <span>Type</span>
+          <select id="card-type" required>
+            <option value="Feature">Feature</option>
+            <option value="Bug Fix">Bug Fix</option>
+            <option value="Tweak">Tweak</option>
+            <option value="Content">Content</option>
+            <option value="Design">Design</option>
+            <option value="Research">Research</option>
+            <option value="Performance">Performance</option>
+            <option value="Chore">Chore</option>
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Forecast date</span>
+          <input id="card-due" type="date" required />
+        </label>
+
+        <label class="form-field">
+          <span>Status</span>
+          <select id="card-status" required>
+            <option value="todo">To Do</option>
+            <option value="progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+
+        <label class="form-field field-description">
+          <span>Description</span>
+          <textarea id="card-description" rows="3" maxlength="420" placeholder="What needs to change, where, and why?" required></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary-btn" id="submit-card" type="submit">Create card</button>
+          <button class="quiet-btn" id="clear-board" type="button">Clear done</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="board-shell" aria-label="Development board">
+      <article class="board-column" data-status="todo">
+        <header class="column-head">
+          <div>
+            <p class="column-label">Backlog</p>
+            <h2>To Do</h2>
+          </div>
+          <span class="column-count" data-count="todo">0</span>
+        </header>
+        <div class="column-drop" data-dropzone="todo"></div>
+      </article>
+
+      <article class="board-column" data-status="progress">
+        <header class="column-head">
+          <div>
+            <p class="column-label">Active</p>
+            <h2>In Progress</h2>
+          </div>
+          <span class="column-count" data-count="progress">0</span>
+        </header>
+        <div class="column-drop" data-dropzone="progress"></div>
+      </article>
+
+      <article class="board-column" data-status="done">
+        <header class="column-head">
+          <div>
+            <p class="column-label">Shipped</p>
+            <h2>Done</h2>
+          </div>
+          <span class="column-count" data-count="done">0</span>
+        </header>
+        <div class="column-drop" data-dropzone="done"></div>
+      </article>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+  (function () {
+    const STORAGE_KEY = 'zombies-web-development-board:v1';
+    const SEED_KEY = STORAGE_KEY + ':seed-version';
+    const SEED_VERSION = 'readme-product-todos-2026-04-14';
+    const STATUSES = ['todo', 'progress', 'done'];
+    const STATUS_LABELS = {
+      todo: 'To Do',
+      progress: 'In Progress',
+      done: 'Done',
+    };
+    const SEEDED_TODO_CARDS = [
+      {
+        id: 'readme-product-todo-in-game-mode-for-guides',
+        title: 'In-game mode for guides',
+        type: 'Feature',
+        dueOffsetDays: 7,
+        source: 'README.md:149',
+        description: 'Build a focused guide mode that is comfortable to use mid-match.',
+      },
+      {
+        id: 'readme-product-todo-step-checklist',
+        title: 'Step checklist',
+        type: 'Feature',
+        dueOffsetDays: 10,
+        source: 'README.md:150',
+        description: 'Add tap-to-complete checklist controls inside in-game guide mode.',
+      },
+      {
+        id: 'readme-product-todo-large-next-previous-step-controls',
+        title: 'Large Next / Previous step controls',
+        type: 'Design',
+        dueOffsetDays: 12,
+        source: 'README.md:151',
+        description: 'Give in-game mode large, easy controls for moving through guide steps.',
+      },
+      {
+        id: 'readme-product-todo-keep-screen-awake-toggle',
+        title: 'Optional keep-screen-awake toggle',
+        type: 'Feature',
+        dueOffsetDays: 14,
+        source: 'README.md:152',
+        description: 'Let players keep the device awake while following a guide.',
+      },
+      {
+        id: 'readme-product-todo-hide-spoilers-toggle',
+        title: 'Hide-spoilers toggle',
+        type: 'Tweak',
+        dueOffsetDays: 16,
+        source: 'README.md:153',
+        description: 'Collapse future steps so players can follow guides without seeing spoilers.',
+      },
+      {
+        id: 'readme-product-todo-interactive-puzzle-solvers',
+        title: 'Interactive puzzle solvers',
+        type: 'Feature',
+        dueOffsetDays: 19,
+        source: 'README.md:155',
+        description: 'Create an interactive solver surface for map-specific Zombies puzzles.',
+      },
+      {
+        id: 'readme-product-todo-first-solver-set',
+        title: 'Ship first solver set for 2-3 maps',
+        type: 'Content',
+        dueOffsetDays: 22,
+        source: 'README.md:156',
+        description: 'Choose the first maps and ship their initial interactive puzzle solvers.',
+      },
+      {
+        id: 'readme-product-todo-puzzle-pattern-support',
+        title: 'Support common puzzle patterns',
+        type: 'Feature',
+        dueOffsetDays: 25,
+        source: 'README.md:157',
+        description: 'Support code wheels, symbol translators, dial puzzles, and valve sequences.',
+      },
+      {
+        id: 'readme-product-todo-progress-tracking-local-first',
+        title: 'Progress tracking (local-first)',
+        type: 'Feature',
+        dueOffsetDays: 28,
+        source: 'README.md:159',
+        description: 'Track player progress locally before adding any account or sync features.',
+      },
+      {
+        id: 'readme-product-todo-mark-ee-completed',
+        title: 'Mark EE completed',
+        type: 'Feature',
+        dueOffsetDays: 31,
+        source: 'README.md:160',
+        description: 'Let players mark Easter Eggs completed for solo and co-op runs.',
+      },
+      {
+        id: 'readme-product-todo-per-map-personal-notes',
+        title: 'Per-map personal notes',
+        type: 'Feature',
+        dueOffsetDays: 34,
+        source: 'README.md:161',
+        description: 'Add local notes for each map so players can keep their own setup reminders.',
+      },
+      {
+        id: 'readme-product-todo-export-share-completion-card',
+        title: 'Export/share completion card',
+        type: 'Feature',
+        dueOffsetDays: 37,
+        source: 'README.md:162',
+        description: 'Generate a shareable completion card from local progress data.',
+      },
+      {
+        id: 'readme-product-todo-coverage-beyond-bo4',
+        title: 'Content coverage beyond BO4',
+        type: 'Content',
+        dueOffsetDays: 40,
+        source: 'README.md:164',
+        description: 'Plan coverage for Zombies content after Black Ops 4.',
+      },
+      {
+        id: 'readme-product-todo-cold-war-coverage-plan',
+        title: 'Cold War coverage plan',
+        type: 'Research',
+        dueOffsetDays: 43,
+        source: 'README.md:165',
+        description: 'Define map, guide, weapon, and lore coverage for Cold War.',
+      },
+      {
+        id: 'readme-product-todo-vanguard-coverage-plan',
+        title: 'Vanguard coverage plan',
+        type: 'Research',
+        dueOffsetDays: 46,
+        source: 'README.md:166',
+        description: 'Decide what Vanguard Zombies coverage belongs in the site.',
+      },
+      {
+        id: 'readme-product-todo-modern-era-coverage-plan',
+        title: 'MWZ / modern-era coverage plan',
+        type: 'Research',
+        dueOffsetDays: 49,
+        source: 'README.md:167',
+        description: 'Plan modern-era Zombies coverage and how it should be grouped.',
+      },
+      {
+        id: 'readme-product-todo-visible-coverage-roadmap',
+        title: 'Visible coverage roadmap page',
+        type: 'Content',
+        dueOffsetDays: 52,
+        source: 'README.md:168',
+        description: 'Publish a user-facing page showing what coverage is done and what is coming.',
+      },
+      {
+        id: 'readme-product-todo-community-feedback-loop',
+        title: 'Community feedback loop',
+        type: 'Feature',
+        dueOffsetDays: 55,
+        source: 'README.md:170',
+        description: 'Add a lightweight way for users to improve content quality over time.',
+      },
+      {
+        id: 'readme-product-todo-suggest-a-correction',
+        title: 'Suggest-a-correction',
+        type: 'Feature',
+        dueOffsetDays: 58,
+        source: 'README.md:171',
+        description: 'Let users suggest corrections on map and step entries.',
+      },
+      {
+        id: 'readme-product-todo-tips-section-with-voting',
+        title: 'Tips section with voting',
+        type: 'Feature',
+        dueOffsetDays: 61,
+        source: 'README.md:172',
+        description: 'Create a small tips area where useful advice can be voted upward.',
+      },
+      {
+        id: 'readme-product-todo-heavy-routes-optional-dlc',
+        title: 'Treat heavy routes like optional DLC',
+        type: 'Performance',
+        dueOffsetDays: 64,
+        source: 'README.md:176',
+        description: 'Reduce initial load by isolating heavy Kronorium and Lab code paths.',
+      },
+      {
+        id: 'readme-product-todo-route-level-code-splitting',
+        title: 'Route-level code splitting',
+        type: 'Performance',
+        dueOffsetDays: 67,
+        source: 'README.md:177',
+        description: 'Split Kronorium and Lab surfaces so they load only when needed.',
+      },
+      {
+        id: 'readme-product-todo-lazy-load-3d-assets',
+        title: 'Lazy-load 3D assets on lab route',
+        type: 'Performance',
+        dueOffsetDays: 70,
+        source: 'README.md:178',
+        description: 'Load 3D assets only when visiting /kronorium/lab.',
+      },
+      {
+        id: 'readme-product-todo-low-spec-mode-toggle',
+        title: 'Low-spec mode toggle',
+        type: 'Performance',
+        dueOffsetDays: 73,
+        source: 'README.md:179',
+        description: 'Add a reduced-effects mode for lower-end devices.',
+      },
+      {
+        id: 'readme-product-todo-search-ux-upgrades',
+        title: 'Search UX upgrades',
+        type: 'Tweak',
+        dueOffsetDays: 76,
+        source: 'README.md:181',
+        description: 'Improve search discovery, filtering, and result navigation.',
+      },
+      {
+        id: 'readme-product-todo-search-type-filters',
+        title: 'Add search type filters',
+        type: 'Feature',
+        dueOffsetDays: 79,
+        source: 'README.md:182',
+        description: 'Add filters for Maps, Lore, Wonder Weapons, and Perks.',
+      },
+      {
+        id: 'readme-product-todo-search-highlighting-anchors',
+        title: 'Improve search highlighting',
+        type: 'Tweak',
+        dueOffsetDays: 82,
+        source: 'README.md:183',
+        description: 'Improve section-level highlights and jump-to anchors from search results.',
+      },
+      {
+        id: 'readme-product-todo-open-source-basics',
+        title: 'Open-source basics',
+        type: 'Chore',
+        dueOffsetDays: 85,
+        source: 'README.md:187',
+        description: 'Add the baseline files and policies needed for open-source readiness.',
+      },
+      {
+        id: 'readme-product-todo-license',
+        title: 'Add LICENSE',
+        type: 'Chore',
+        dueOffsetDays: 88,
+        source: 'README.md:188',
+        description: 'Choose and add a project license.',
+      },
+      {
+        id: 'readme-product-todo-contributing',
+        title: 'Add CONTRIBUTING.md',
+        type: 'Chore',
+        dueOffsetDays: 91,
+        source: 'README.md:189',
+        description: 'Document how contributors should propose changes.',
+      },
+      {
+        id: 'readme-product-todo-attribution-policy',
+        title: 'Add attribution policy',
+        type: 'Chore',
+        dueOffsetDays: 94,
+        source: 'README.md:190',
+        description: 'Document content sources and attribution policy.',
+      },
+      {
+        id: 'readme-product-todo-quality-guardrails',
+        title: 'Quality guardrails',
+        type: 'Chore',
+        dueOffsetDays: 97,
+        source: 'README.md:192',
+        description: 'Add repeatable checks before code reaches pull requests.',
+      },
+      {
+        id: 'readme-product-todo-lint-format-scripts',
+        title: 'Add lint and format scripts',
+        type: 'Chore',
+        dueOffsetDays: 100,
+        source: 'README.md:193',
+        description: 'Add eslint and prettier scripts to standardize code quality.',
+      },
+      {
+        id: 'readme-product-todo-typecheck-script',
+        title: 'Add typecheck script',
+        type: 'Chore',
+        dueOffsetDays: 103,
+        source: 'README.md:194',
+        description: 'Add astro check and/or tsc --noEmit as a typecheck script.',
+      },
+      {
+        id: 'readme-product-todo-ci-workflow',
+        title: 'Add CI workflow',
+        type: 'Chore',
+        dueOffsetDays: 106,
+        source: 'README.md:195',
+        description: 'Run build and typecheck automatically on pull requests.',
+      },
+    ];
+
+    const form = document.getElementById('card-form');
+    const idInput = document.getElementById('card-id');
+    const titleInput = document.getElementById('card-title');
+    const typeInput = document.getElementById('card-type');
+    const dueInput = document.getElementById('card-due');
+    const statusInput = document.getElementById('card-status');
+    const descriptionInput = document.getElementById('card-description');
+    const submitButton = document.getElementById('submit-card');
+    const cancelEditButton = document.getElementById('cancel-edit');
+    const clearDoneButton = document.getElementById('clear-board');
+    const totalCount = document.getElementById('total-count');
+    const dueCount = document.getElementById('due-count');
+
+    if (!form || !idInput || !titleInput || !typeInput || !dueInput || !statusInput || !descriptionInput) return;
+
+    let cards = loadCards();
+    setDefaultDueDate();
+    render();
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const cardId = getInputValue(idInput);
+      const now = new Date().toISOString();
+      const nextCard = {
+        id: cardId || createId(),
+        title: getInputValue(titleInput),
+        type: getInputValue(typeInput),
+        dueDate: getInputValue(dueInput),
+        status: getInputValue(statusInput),
+        description: getInputValue(descriptionInput),
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      if (cardId) {
+        cards = cards.map(function (card) {
+          return card.id === cardId
+            ? Object.assign({}, card, nextCard, { createdAt: card.createdAt || now, updatedAt: now })
+            : card;
+        });
+      } else {
+        cards = [nextCard].concat(cards);
+      }
+
+      saveCards();
+      resetForm();
+      render();
+    });
+
+    cancelEditButton?.addEventListener('click', resetForm);
+
+    clearDoneButton?.addEventListener('click', function () {
+      const doneCount = cards.filter(function (card) { return card.status === 'done'; }).length;
+      if (!doneCount) return;
+      const ok = window.confirm('Remove all Done cards?');
+      if (!ok) return;
+      cards = cards.filter(function (card) { return card.status !== 'done'; });
+      saveCards();
+      render();
+    });
+
+    document.querySelectorAll('[data-dropzone]').forEach(function (zone) {
+      zone.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        zone.classList.add('is-over');
+      });
+
+      zone.addEventListener('dragleave', function () {
+        zone.classList.remove('is-over');
+      });
+
+      zone.addEventListener('drop', function (event) {
+        event.preventDefault();
+        zone.classList.remove('is-over');
+        const status = zone.getAttribute('data-dropzone');
+        const id = event.dataTransfer?.getData('text/plain');
+        if (!status || !id) return;
+        moveCard(id, status);
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const actionButton = target.closest('[data-action]');
+      if (!(actionButton instanceof HTMLElement)) return;
+
+      const id = actionButton.getAttribute('data-id');
+      const action = actionButton.getAttribute('data-action');
+      if (!id || !action) return;
+
+      if (action === 'edit') editCard(id);
+      if (action === 'delete') deleteCard(id);
+      if (action === 'move-prev') moveCard(id, getAdjacentStatus(id, -1));
+      if (action === 'move-next') moveCard(id, getAdjacentStatus(id, 1));
+    });
+
+    function loadCards() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        const savedCards = Array.isArray(parsed) ? parsed.filter(isValidCard) : [];
+        const seedVersion = window.localStorage.getItem(SEED_KEY);
+        if (seedVersion === SEED_VERSION) return savedCards;
+
+        const mergedCards = mergeSeedCards(savedCards);
+        window.localStorage.setItem(SEED_KEY, SEED_VERSION);
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedCards));
+        return mergedCards;
+      } catch (error) {
+        console.warn('Development board storage is unavailable.', error);
+        return mergeSeedCards([]);
+      }
+    }
+
+    function saveCards() {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    }
+
+    function mergeSeedCards(savedCards) {
+      const existingIds = new Set(savedCards.map(function (card) { return card.id; }));
+      const now = new Date().toISOString();
+      const seedCards = SEEDED_TODO_CARDS
+        .filter(function (seed) { return !existingIds.has(seed.id); })
+        .map(function (seed) {
+          return {
+            id: seed.id,
+            title: seed.title,
+            type: seed.type,
+            dueDate: toDateInputValue(addDays(seed.dueOffsetDays)),
+            status: 'todo',
+            description: seed.description,
+            source: seed.source,
+            createdAt: now,
+            updatedAt: now,
+          };
+        });
+
+      return savedCards.concat(seedCards);
+    }
+
+    function render() {
+      STATUSES.forEach(function (status) {
+        const zone = document.querySelector('[data-dropzone="' + status + '"]');
+        if (!zone) return;
+
+        const statusCards = cards
+          .filter(function (card) { return card.status === status; })
+          .sort(sortCards);
+
+        zone.innerHTML = statusCards.length
+          ? statusCards.map(renderCard).join('')
+          : '<div class="empty-state">Drop cards here or create one above.</div>';
+      });
+
+      updateCounts();
+      wireDragStarts();
+    }
+
+    function renderCard(card) {
+      const dueState = getDueState(card.dueDate);
+      const previousStatus = getAdjacentStatus(card.id, -1);
+      const nextStatus = getAdjacentStatus(card.id, 1);
+
+      return [
+        '<article class="task-card" draggable="true" data-card-id="' + escapeHtml(card.id) + '">',
+          '<div class="task-topline">',
+            '<span class="type-pill type-' + slugify(card.type) + '">' + escapeHtml(card.type) + '</span>',
+            '<span class="due-pill ' + dueState.className + '">' + escapeHtml(dueState.label) + '</span>',
+          '</div>',
+          '<h3>' + escapeHtml(card.title) + '</h3>',
+          '<p class="task-description">' + escapeHtml(card.description) + '</p>',
+          '<div class="task-meta">',
+            '<span>Forecast</span>',
+            '<strong>' + escapeHtml(formatDate(card.dueDate)) + '</strong>',
+          '</div>',
+          card.source ? '<div class="task-source">' + escapeHtml(card.source) + '</div>' : '',
+          '<div class="task-actions">',
+            '<button type="button" data-action="move-prev" data-id="' + escapeHtml(card.id) + '"' + (previousStatus ? '' : ' disabled') + '>Prev</button>',
+            '<button type="button" data-action="move-next" data-id="' + escapeHtml(card.id) + '"' + (nextStatus ? '' : ' disabled') + '>Next</button>',
+            '<button type="button" data-action="edit" data-id="' + escapeHtml(card.id) + '">Edit</button>',
+            '<button type="button" data-action="delete" data-id="' + escapeHtml(card.id) + '">Delete</button>',
+          '</div>',
+        '</article>',
+      ].join('');
+    }
+
+    function wireDragStarts() {
+      document.querySelectorAll('[data-card-id]').forEach(function (cardEl) {
+        cardEl.addEventListener('dragstart', function (event) {
+          const id = cardEl.getAttribute('data-card-id') || '';
+          event.dataTransfer?.setData('text/plain', id);
+          event.dataTransfer?.setData('application/x-development-card', id);
+          event.dataTransfer.effectAllowed = 'move';
+          cardEl.classList.add('is-dragging');
+        });
+
+        cardEl.addEventListener('dragend', function () {
+          cardEl.classList.remove('is-dragging');
+          document.querySelectorAll('.column-drop.is-over').forEach(function (zone) {
+            zone.classList.remove('is-over');
+          });
+        });
+      });
+    }
+
+    function updateCounts() {
+      STATUSES.forEach(function (status) {
+        const countEl = document.querySelector('[data-count="' + status + '"]');
+        const count = cards.filter(function (card) { return card.status === status; }).length;
+        if (countEl) countEl.textContent = String(count);
+      });
+
+      if (totalCount) totalCount.textContent = String(cards.length);
+      if (dueCount) {
+        dueCount.textContent = String(cards.filter(function (card) {
+          if (card.status === 'done') return false;
+          const state = getDueState(card.dueDate);
+          return state.key === 'overdue' || state.key === 'soon' || state.key === 'today';
+        }).length);
+      }
+    }
+
+    function editCard(id) {
+      const card = cards.find(function (item) { return item.id === id; });
+      if (!card) return;
+
+      setInputValue(idInput, card.id);
+      setInputValue(titleInput, card.title);
+      setInputValue(typeInput, card.type);
+      setInputValue(dueInput, card.dueDate);
+      setInputValue(statusInput, card.status);
+      setInputValue(descriptionInput, card.description);
+
+      if (submitButton) submitButton.textContent = 'Save card';
+      cancelEditButton?.classList.remove('is-hidden');
+      titleInput.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteCard(id) {
+      const card = cards.find(function (item) { return item.id === id; });
+      if (!card) return;
+      const ok = window.confirm('Delete "' + card.title + '"?');
+      if (!ok) return;
+      cards = cards.filter(function (item) { return item.id !== id; });
+      saveCards();
+      render();
+    }
+
+    function moveCard(id, status) {
+      if (!status) return;
+      cards = cards.map(function (card) {
+        return card.id === id
+          ? Object.assign({}, card, { status: status, updatedAt: new Date().toISOString() })
+          : card;
+      });
+      saveCards();
+      render();
+    }
+
+    function getAdjacentStatus(id, direction) {
+      const card = cards.find(function (item) { return item.id === id; });
+      if (!card) return '';
+      const index = STATUSES.indexOf(card.status);
+      const nextIndex = index + direction;
+      return STATUSES[nextIndex] || '';
+    }
+
+    function resetForm() {
+      form.reset();
+      setInputValue(idInput, '');
+      setDefaultDueDate();
+      if (submitButton) submitButton.textContent = 'Create card';
+      cancelEditButton?.classList.add('is-hidden');
+    }
+
+    function setDefaultDueDate() {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setInputValue(dueInput, toDateInputValue(tomorrow));
+    }
+
+    function sortCards(a, b) {
+      if (a.status === 'done' && b.status === 'done') {
+        return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+      }
+
+      const byDate = String(a.dueDate || '').localeCompare(String(b.dueDate || ''));
+      if (byDate !== 0) return byDate;
+      return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+    }
+
+    function getDueState(dateValue) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = parseLocalDate(dateValue);
+      if (!due) return { key: 'neutral', label: 'No date', className: 'due-neutral' };
+
+      const diff = Math.round((due.getTime() - today.getTime()) / 86400000);
+      if (diff < 0) return { key: 'overdue', label: 'Overdue', className: 'due-hot' };
+      if (diff === 0) return { key: 'today', label: 'Today', className: 'due-warm' };
+      if (diff <= 3) return { key: 'soon', label: diff + 'd left', className: 'due-warm' };
+      return { key: 'later', label: diff + 'd left', className: 'due-cool' };
+    }
+
+    function parseLocalDate(value) {
+      if (!value) return null;
+      const parts = value.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function formatDate(value) {
+      const date = parseLocalDate(value);
+      if (!date) return 'No date';
+      return new Intl.DateTimeFormat('en', { month: 'short', day: '2-digit', year: 'numeric' }).format(date);
+    }
+
+    function toDateInputValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
+
+    function addDays(days) {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + days);
+      return date;
+    }
+
+    function isValidCard(card) {
+      return card
+        && typeof card.id === 'string'
+        && typeof card.title === 'string'
+        && typeof card.description === 'string'
+        && typeof card.type === 'string'
+        && typeof card.dueDate === 'string'
+        && STATUSES.includes(card.status);
+    }
+
+    function getInputValue(input) {
+      return input instanceof HTMLInputElement || input instanceof HTMLSelectElement || input instanceof HTMLTextAreaElement
+        ? input.value.trim()
+        : '';
+    }
+
+    function setInputValue(input, value) {
+      if (input instanceof HTMLInputElement || input instanceof HTMLSelectElement || input instanceof HTMLTextAreaElement) {
+        input.value = value;
+      }
+    }
+
+    function createId() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return 'card-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+    }
+
+    function slugify(value) {
+      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function (char) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        }[char];
+      });
+    }
+  })();
+</script>
+
+<style>
+  :global(body) {
+    background: #0b0c0f;
+  }
+
+  .dev-page {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    padding: 32px;
+    color: #dde1ea;
+    font-family: 'Rajdhani', sans-serif;
+    background:
+      linear-gradient(rgba(224, 123, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224, 123, 42, 0.04) 1px, transparent 1px),
+      radial-gradient(circle at 20% 8%, rgba(61, 220, 132, 0.08), transparent 28%),
+      radial-gradient(circle at 88% 24%, rgba(209, 70, 63, 0.08), transparent 30%),
+      #0b0c0f;
+    background-size: 44px 44px, 44px 44px, auto, auto, auto;
+  }
+
+  .dev-page::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+  }
+
+  .dev-mark {
+    position: fixed;
+    right: 24px;
+    bottom: 18px;
+    width: 180px;
+    max-width: 34vw;
+    opacity: 0.06;
+    pointer-events: none;
+    filter: grayscale(1);
+  }
+
+  .dev-hero,
+  .dev-composer,
+  .board-shell {
+    position: relative;
+    z-index: 1;
+    width: min(1440px, 100%);
+    margin: 0 auto;
+  }
+
+  .dev-hero {
+    padding: 18px 0 28px;
+    border-bottom: 1px solid #252830;
+  }
+
+  .dev-kicker,
+  .column-label,
+  .form-field span,
+  .dev-counters,
+  .task-meta,
+  .task-actions button,
+  .quiet-btn {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .dev-kicker {
+    margin: 0 0 10px;
+    color: #e07b2a;
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .dev-title-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    overflow-wrap: anywhere;
+  }
+
+  h1 {
+    margin: 0;
+    color: #dde1ea;
+    font-size: 64px;
+    line-height: 0.95;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .dev-subtitle {
+    max-width: 620px;
+    margin: 14px 0 0;
+    color: #8a8f9e;
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .dev-counters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    color: #8a8f9e;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .dev-counters span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 7px 10px;
+    border: 1px solid #252830;
+    background: rgba(15, 17, 20, 0.76);
+  }
+
+  .dev-counters strong {
+    color: #3ddc84;
+    font-size: 15px;
+  }
+
+  .dev-composer {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid #252830;
+    background: rgba(15, 17, 20, 0.86);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+  }
+
+  .composer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .composer-head h2 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .card-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr);
+    gap: 14px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .field-description {
+    grid-column: 1 / -1;
+  }
+
+  .form-field span {
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #252830;
+    border-radius: 4px;
+    background: #0b0c0f;
+    color: #dde1ea;
+    font: inherit;
+    font-size: 17px;
+    letter-spacing: 0;
+    padding: 10px 12px;
+    outline: none;
+  }
+
+  .form-field textarea {
+    min-height: 86px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: #e07b2a;
+    box-shadow: 0 0 0 2px rgba(224, 123, 42, 0.16);
+  }
+
+  .form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .primary-btn,
+  .quiet-btn {
+    min-height: 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .primary-btn {
+    border: 1px solid #e07b2a;
+    background: #e07b2a;
+    color: #0b0c0f;
+    padding: 10px 18px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .primary-btn:hover {
+    background: #f09040;
+  }
+
+  .quiet-btn {
+    border: 1px solid #252830;
+    background: transparent;
+    color: #8a8f9e;
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+
+  .quiet-btn:hover {
+    border-color: #6b7280;
+    color: #dde1ea;
+  }
+
+  .is-hidden {
+    display: none;
+  }
+
+  .board-shell {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+    align-items: start;
+  }
+
+  .board-column {
+    min-width: 0;
+    border: 1px solid #252830;
+    background: rgba(11, 12, 15, 0.72);
+  }
+
+  .board-column[data-status='todo'] {
+    border-top: 3px solid #8a8f9e;
+  }
+
+  .board-column[data-status='progress'] {
+    border-top: 3px solid #e07b2a;
+  }
+
+  .board-column[data-status='done'] {
+    border-top: 3px solid #3ddc84;
+  }
+
+  .column-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 84px;
+    padding: 16px;
+    border-bottom: 1px solid #1e2028;
+    background: rgba(15, 17, 20, 0.72);
+  }
+
+  .column-label {
+    margin: 0 0 5px;
+    color: #4a4e5a;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .column-head h2 {
+    margin: 0;
+    color: #dde1ea;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .column-count {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid #303541;
+    color: #e07b2a;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+
+  .column-drop {
+    display: grid;
+    gap: 12px;
+    min-height: 280px;
+    padding: 14px;
+    transition: background 0.16s, box-shadow 0.16s;
+  }
+
+  .column-drop.is-over {
+    background: rgba(224, 123, 42, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(224, 123, 42, 0.34);
+  }
+
+  :global(.empty-state) {
+    display: grid;
+    min-height: 118px;
+    place-items: center;
+    border: 1px dashed #2e2416;
+    color: #5a4a32;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+    text-transform: uppercase;
+    background: rgba(17, 14, 9, 0.46);
+  }
+
+  :global(.task-card) {
+    display: grid;
+    gap: 10px;
+    min-height: 238px;
+    position: relative;
+    padding: 12px 14px 14px;
+    border: 1px solid #2e2416;
+    border-top: 2px solid #c9a24a;
+    border-radius: 2px;
+    background:
+      linear-gradient(135deg, rgba(201, 162, 74, 0.12), transparent 46%),
+      #17130d;
+    box-shadow: 0 2px 8px #00000060;
+    cursor: grab;
+    transition: box-shadow 0.15s, border-color 0.15s, background 0.15s, opacity 0.16s, transform 0.16s;
+  }
+
+  :global(.task-card::before),
+  :global(.task-card::after) {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: #c9a24a;
+    transform: translateY(-50%);
+    box-shadow: 0 0 12px rgba(201, 162, 74, 0.24);
+  }
+
+  :global(.task-card::before) {
+    left: -4px;
+  }
+
+  :global(.task-card::after) {
+    right: -4px;
+  }
+
+  :global(.task-card:hover) {
+    border-color: #c9a24a;
+    background: #1e1810;
+    box-shadow: 0 0 0 1px rgba(201, 162, 74, 0.32), 0 4px 24px #00000090;
+    transform: translateY(-1px);
+  }
+
+  :global(.task-card.is-dragging) {
+    opacity: 0.52;
+  }
+
+  :global(.task-topline) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  :global(.type-pill),
+  :global(.due-pill) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 21px;
+    padding: 3px 7px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  :global(.type-pill) {
+    border: 1px solid rgba(201, 162, 74, 0.46);
+    background: rgba(201, 162, 74, 0.1);
+    color: #c9a24a;
+  }
+
+  :global(.type-bug-fix) {
+    border-color: rgba(209, 70, 63, 0.56);
+    background: rgba(209, 70, 63, 0.12);
+    color: #ff5555;
+  }
+
+  :global(.type-tweak),
+  :global(.type-design) {
+    border-color: rgba(122, 169, 145, 0.5);
+    background: rgba(122, 169, 145, 0.12);
+    color: #7aa991;
+  }
+
+  :global(.type-content),
+  :global(.type-research) {
+    border-color: rgba(0, 229, 255, 0.34);
+    background: rgba(0, 229, 255, 0.08);
+    color: #7ecfcf;
+  }
+
+  :global(.type-performance) {
+    border-color: rgba(171, 71, 188, 0.42);
+    background: rgba(171, 71, 188, 0.1);
+    color: #ce93d8;
+  }
+
+  :global(.type-chore) {
+    border-color: rgba(122, 106, 80, 0.5);
+    background: rgba(122, 106, 80, 0.1);
+    color: #9e8e72;
+  }
+
+  :global(.due-pill) {
+    border: 1px solid #3a2e1c;
+    color: #7a6a50;
+    background: rgba(14, 11, 7, 0.55);
+  }
+
+  :global(.due-hot) {
+    border-color: rgba(209, 70, 63, 0.56);
+    color: #ff5555;
+  }
+
+  :global(.due-warm) {
+    border-color: rgba(201, 162, 74, 0.56);
+    color: #c9a24a;
+  }
+
+  :global(.due-cool) {
+    border-color: rgba(68, 238, 102, 0.38);
+    color: #44ee66;
+  }
+
+  :global(.task-card h3) {
+    margin: 0;
+    color: #ede0c8;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+
+  :global(.task-description) {
+    margin: 0;
+    color: #c8b48e;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  :global(.task-meta) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 2px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(201, 162, 74, 0.18);
+    color: #4a3a22;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :global(.task-meta strong) {
+    color: #7a6a50;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  :global(.task-source) {
+    color: #4a3a22;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  :global(.task-actions) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  :global(.task-actions button) {
+    min-height: 29px;
+    border: 1px solid #2e2416;
+    border-radius: 2px;
+    background: #110e09;
+    color: #7a6a50;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :global(.task-actions button:hover:not(:disabled)) {
+    border-color: #c9a24a;
+    color: #c9a24a;
+    background: #1e1810;
+  }
+
+  :global(.task-actions button:disabled) {
+    cursor: not-allowed;
+    opacity: 0.36;
+  }
+
+  @media (max-width: 1100px) {
+    .card-form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-title {
+      grid-column: 1 / -1;
+    }
+
+    .board-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .column-drop {
+      min-height: 190px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .dev-page {
+      padding: 18px 12px 36px;
+    }
+
+    .dev-title-row,
+    .composer-head {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 42px;
+    }
+
+    .dev-subtitle {
+      font-size: 16px;
+    }
+
+    .dev-counters {
+      justify-content: flex-start;
+    }
+
+    .dev-composer {
+      padding: 14px;
+    }
+
+    .card-form {
+      grid-template-columns: 1fr;
+    }
+
+    .field-title,
+    .field-description,
+    .form-actions {
+      grid-column: auto;
+    }
+
+    .task-actions {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
